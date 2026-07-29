@@ -22,6 +22,30 @@ The MVP aims to demonstrate that users can:
 - Visualize Events on a timeline.
 - Save and load E2R datasets.
 - Exchange datasets with other E2R applications.
+---
+
+# Dataset Identity
+
+Every newly created dataset should automatically receive a unique identifier.
+
+The identifier is stored in `metadata.datasetId`.
+
+An implementation may generate this identifier using `crypto.randomUUID()` or an equivalent mechanism.
+
+The identifier remains stable for the lifetime of the dataset and is preserved during normal editing.
+
+This identifier is intended to support future features such as:
+
+- dataset identity
+- version management
+- branching
+- federation
+- peer-to-peer synchronization
+- deterministic generation
+
+These features are outside the scope of the MVP.
+
+The MVP is only responsible for generating and preserving the identifier.
 
 ---
 
