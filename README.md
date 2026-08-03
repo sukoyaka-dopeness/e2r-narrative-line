@@ -49,6 +49,8 @@ The MVP includes:
 - Timeline visualization.
 - Save and load E2R datasets.
 - Validation during dataset loading.
+- Navigate from Events to related Entities.
+- Relation-based Entity lookup.
 
 The MVP intentionally excludes:
 
@@ -99,11 +101,11 @@ Additional documentation will be added as the project evolves.
 ## Related Projects
 
 - E2R Specification
-- Relationship Graph
+- LinkScape (planned)
 
 NarrativeLine focuses on timeline editing.
 
-Relationship Graph will provide graph-based visualization and editing of the same E2R dataset.
+LinkScape will provide graph-based visualization and editing of the same E2R dataset.
 
 Both applications are intended to interoperate through the shared E2R data model.
 
@@ -112,3 +114,21 @@ Both applications are intended to interoperate through the shared E2R data model
 ## License
 
 This project is released under the MIT License.
+
+---
+
+## Long-term Vision
+
+NarrativeLine is expected to become one application within the future E2R Studio ecosystem.
+
+Different applications will provide different views and editing workflows while sharing the same E2R dataset.
+
+Examples include:
+
+- NarrativeLine (timeline editor)
+- LinkScape (relationship graph)
+- Dataset Explorer
+- Extension Editor
+- LLM-assisted editing tools
+
+The long-term goal is to enable multiple interoperable applications built on the same open data model.
