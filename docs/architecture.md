@@ -1,323 +1,304 @@
 # NarrativeLine Architecture
 
-This document describes the high-level architecture of NarrativeLine.
+## Overview
 
-It explains how application state, services, and views are organized.
+NarrativeLine is the reference application for the E2R-SPEC project.
 
-This document is independent of any specific UI framework, although the current implementation targets React.
+Its primary purpose is not to provide a feature-complete timeline editor, but to validate the E2R data model through practical use.
 
----
-
-# Design Goals
-
-The architecture aims to:
-
-- Keep responsibilities clearly separated.
-- Minimize duplicated logic.
-- Centralize state updates.
-- Keep views as simple as possible.
-- Make future Extensions easy to integrate.
-- Support future features such as Undo/Redo.
+The application focuses on editing and exploring E2R datasets while keeping the implementation as simple and transparent as possible.
 
 ---
 
-# Overview
+# Goals
 
-NarrativeLine separates the application into five major layers.
-
-```
-User
-  ↓
-Views
-  ↓
-Services
-  ↓
-Application State
-  ↓
-React Rendering
-```
-
-Views request operations.
-
-Services perform those operations.
-
-State stores the results.
-
-React automatically updates the visible interface.
+* Provide a minimal reference implementation of E2R-SPEC.
+* Keep application architecture independent from the data specification.
+* Separate UI, state management, and data manipulation.
+* Make future extensions possible without changing the Core architecture.
 
 ---
 
-# Application State
+# Current Architecture
 
-NarrativeLine currently maintains the following application state.
+```
+App
 
-## currentDataset
+├── HomeScreen
+├── TimelineScreen
+├── EventDetailScreen
+└── EntityDetailScreen
+```
 
-The currently opened dataset.
+App.tsx is responsible for application state and screen navigation.
 
-This is the primary application data.
-
-Only Services should modify this object.
+Individual screens are responsible only for presentation and user interaction.
 
 ---
 
-## currentScreen
+# Screen Responsibilities
 
-The currently visible screen.
+## HomeScreen
 
-Examples:
+Entry point of the application.
 
-- Home
-- Timeline
-- EventDetail
-- EntityDetail
+Responsibilities:
 
----
+* Open Timeline
+* Future dataset operations
 
-## currentDialog
+Planned:
 
-The currently open dialog.
-
-Examples:
-
-- NewFile
-- OpenDataset
-- Settings
-- DeleteEvent
-
-When no dialog is open:
-
-```
-currentDialog = null
-```
+* New Dataset
+* Open Dataset
+* Sample Dataset
+* Import
+* Export
+* Settings
 
 ---
 
-## selectedEvent
+## TimelineScreen
 
-The currently selected Event.
+Displays Events in chronological order.
 
-Example:
+Responsibilities:
 
-```
-selectedEvent = "ev123"
-```
+* Display Event list
+* Select Event
+* Open Event editor
+* Create Event
+
+The Timeline is Event-centric.
+
+Entities are accessed through Event Detail.
 
 ---
 
-## selectedEntity
+## EventDetailScreen
 
-The currently selected Entity.
+Displays and edits a single Event.
 
-Example:
+Responsibilities:
+
+* Edit Event
+* Delete Event
+* Display Related Entities
+
+Future:
+
+* Navigate to Entity Detail
+* Add / Remove Related Entities
+
+---
+
+## EntityDetailScreen
+
+Displays a single Entity.
+
+Responsibilities:
+
+* Display Entity information
+
+Future:
+
+* Edit Entity
+* Display Related Events
+* Navigate back to Event Detail
+
+---
+
+# State Management
+
+Application state is centralized in App.tsx.
+
+Current state:
 
 ```
-selectedEntity = "en456"
+currentScreen
+currentDataset
+currentDialog
+selectedEvent
+selectedEntity
 ```
+
+Screens receive only the state required for display.
 
 ---
 
 # Services
 
-Business logic is implemented inside Services.
+Services contain business logic.
 
-Views should request Services instead of directly modifying application state.
-
----
-
-## EventService
-
-Responsible for Event operations.
-
-Possible functions:
-
-- addEvent()
-- deleteEvent()
-- updateName()
-- updateDescription()
-- updateTime()
-
----
-
-## EntityService
-
-Responsible for Entity operations.
-
-Possible functions:
-
-- addEntity()
-- deleteEntity()
-- updateName()
-- updateDescription()
-
----
-
-## DatasetService
-
-Responsible for dataset management.
-
-Possible functions:
-
-- createFile()
-- importFile()
-- exportFile()
-- mergeFile() (Future)
-- addFile() (Future)
-- updateMetadataTitle()
-- updateMetadataDescription()
-
----
-
-## NavigationService
-
-Responsible for screen navigation.
-
-Possible functions:
-
-- home()
-- timeline()
-- eventDetail()
-- entityDetail()
-
----
-
-## DialogService
-
-Responsible for opening and closing dialogs.
-
-Possible functions:
-
-- newFile()
-- sampleFile()
-- openDataset()
-- writeDataset()
-- settings()
-- about()
-- deleteEvent()
-- deleteEntity()
-- close()
-
----
-
-## SelectionService
-
-Responsible for changing the current selection.
-
-Possible functions:
-
-- selectEvent()
-- selectEntity()
-- clearSelection()
-
----
-
-# Views
-
-Views display the current application state.
-
-Views should not contain business logic.
-
-Current views include:
-
-- Home
-- TimelineView
-- EventDetailView
-- EntityDetailView
-
-Dialogs are treated separately from Views.
-
----
-
-# State Ownership
-
-Each state has one primary owner.
-
-| State | Primary Service |
-|--------|-----------------|
-| currentDataset | DatasetService / EventService / EntityService |
-| currentScreen | NavigationService |
-| currentDialog | DialogService |
-| selectedEvent | SelectionService |
-| selectedEntity | SelectionService |
-
-This ownership model helps keep the architecture predictable and reduces duplicated logic.
-
----
-
-# Typical Flow
-
-For example, adding a new Event.
+Current services:
 
 ```
-TimelineView
-    ↓
-EventService.addEvent()
-    ↓
-currentDataset updated
-    ↓
-NavigationService.eventDetail()
-    ↓
-currentScreen updated
-    ↓
-React re-renders
+NavigationService
+EventService
 ```
 
-The View does not manipulate state directly.
+Planned services:
 
-Instead, it requests a Service to perform the operation.
+```
+EntityService
+RelationService
+DatasetService
+DialogService
+SelectionService
+```
+
+Services should be UI-independent.
 
 ---
 
-# Directory Structure
+# Data Flow
 
-A possible project structure is:
+Typical editing flow:
 
 ```
-src/
-    components/
-    pages/
-    hooks/
-    models/
-    services/
-    utils/
-    extensions/
+Timeline
+
+↓
+
+Select Event
+
+↓
+
+Event Detail
+
+↓
+
+EventService
+
+↓
+
+Dataset
+
+↓
+
+React State Update
+
+↓
+
+Timeline Refresh
 ```
 
-Responsibilities:
+Screens never modify datasets directly.
 
-- components : reusable UI components
-- pages : application screens
-- hooks : React hooks
-- models : TypeScript models
-- services : business logic
-- utils : helper functions
-- extensions : Extension-specific logic
+All dataset manipulation should eventually be performed by Services.
 
 ---
 
-# Future Architecture
+# Navigation
 
-Future versions may introduce additional Services, including:
+Current navigation:
 
-- HistoryService
-- CoordinateService
-- LayoutService
-- DictionaryService
+```
+Home
 
-These Services will manage Extension-specific behavior while keeping the Core architecture unchanged.
+↓
+
+Timeline
+
+↓
+
+Event Detail
+```
+
+Planned navigation:
+
+```
+Home
+
+↓
+
+Timeline
+
+↓
+
+Event Detail
+
+↓
+
+Entity Detail
+
+↓
+
+Related Events
+
+↓
+
+Event Detail
+```
+
+This bidirectional navigation reflects the relationship between Events and Entities in E2R.
 
 ---
 
-# Future Features
+# UI Principles
 
-The current architecture is designed to support future capabilities such as:
+The MVP intentionally separates selection from editing.
 
-- Undo / Redo
-- Multiple datasets
-- Plugin architecture
-- Extension editors
-- Multiple synchronized views
-- AI-assisted editing
-- Collaborative editing
+Planned interaction:
 
-These features should be implementable without fundamentally changing the application architecture.
+* Click row → Select
+* Click ✏ → Edit
+
+This pattern will be shared by Event lists and Entity lists.
+
+---
+
+# Relation Handling
+
+NarrativeLine does not expose Relations as a primary screen.
+
+Instead, Relations are presented indirectly through:
+
+* Related Entities
+* Related Events
+
+This keeps the application focused on user workflows rather than internal data structures.
+
+---
+
+# Dataset Handling
+
+Current implementation uses a single in-memory sample dataset.
+
+Future versions will introduce DatasetService to support:
+
+* New Dataset
+* Open Dataset
+* Save Dataset
+* Import
+* Export
+* Multiple datasets
+
+---
+
+# Future Components
+
+Planned additions include:
+
+* Entity editing
+* Relation editing
+* Dataset management
+* Dictionary support
+* History Extension support
+* Search
+* Filtering
+* View customization
+
+These features should be implemented without changing the fundamental application architecture.
+
+---
+
+# Design Philosophy
+
+NarrativeLine is intentionally simple.
+
+The application exists to validate E2R-SPEC through real editing workflows.
+
+Whenever possible, architectural simplicity is preferred over feature richness.
+
+The application should remain understandable, extensible, and suitable as a reference implementation for future E2R-based applications.
