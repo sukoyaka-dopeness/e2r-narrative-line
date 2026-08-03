@@ -233,3 +233,70 @@ NarrativeLine is a reference application for E2R.
 Its purpose is not only to edit E2R datasets but also to validate the specification itself.
 
 Practical implementation provides continuous feedback to E2R, helping identify opportunities to simplify the Core, improve Extensions, and clarify application responsibilities.
+
+## Current MVP Scope
+
+The current MVP focuses on validating the core editing workflow of E2R datasets.
+
+### Included
+
+- Home screen
+- Timeline screen
+- Event selection
+- Event editing
+- Entity detail screen
+- Navigation between Timeline → Event → Entity
+- Relation-based lookup from Event to Entity
+- In-memory dataset editing
+- Add Event
+- Delete Event
+
+### Deferred
+
+The following features are intentionally outside the MVP.
+
+- Entity editing
+- Relation editing
+- Add Entity
+- Add Relation
+- Dataset import/export
+- JSON file loading/saving
+- Extension editing
+- Search
+- Filtering
+- Undo/Redo
+- Multiple datasets
+- History stack navigation
+
+## UI Principles
+
+The MVP intentionally separates selection and editing.
+
+- Selecting an Event highlights it in the Timeline.
+- Editing is started explicitly by pressing the Edit button.
+- Detail screens are editing screens rather than read-only viewers.
+- Navigation should preserve editing context whenever possible.
+
+Target navigation flow:
+
+Home
+→ Timeline
+→ Event Detail
+→ Entity Detail
+
+Back navigation is expected to return to the previous editing context rather than always returning to the Timeline.
+
+## Future Direction
+
+NarrativeLine is intended to become the reference implementation of E2R Studio.
+
+Future capabilities include:
+
+- Complete E2R editing
+- Relation management
+- Extension management
+- Dataset validation
+- Multiple datasets
+- Local JSON editing
+- LLM-assisted editing
+- Visualization applications built on the same E2R dataset
