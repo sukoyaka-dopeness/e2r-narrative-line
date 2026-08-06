@@ -147,7 +147,9 @@ export function TimelineScreen({
                       alignItems: "center",
                     }}
                   >
-                    <strong>{event.name ?? "(Unnamed Event)"}</strong>
+                    <strong className="timeline-event-name">
+                      {event.name ?? "(Unnamed Event)"}
+                    </strong>
 
                     {isSelected && (
                       <button

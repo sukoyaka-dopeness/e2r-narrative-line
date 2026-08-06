@@ -268,6 +268,26 @@ button:disabled {
   gap: 8px;
 }
 
+.timeline-event-name,
+.related-card__name,
+.entity-picker-card__name,
+.entity-picker-card__description {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-event-name,
+.related-card__name {
+  flex: 1;
+}
+
+.entity-picker-card__description {
+  margin: 4px 0;
+  color: var(--text);
+}
+
 .related-card__header {
   justify-content: space-between;
 }

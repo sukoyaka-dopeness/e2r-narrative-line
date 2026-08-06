@@ -53,12 +53,12 @@ export function EntityPickerScreen({
                 key={entity.id}
                 className="entity-picker-card"
               >
-                <div style={{ fontWeight: 600 }}>
+                <div className="entity-picker-card__name" style={{ fontWeight: 600 }}>
                   {entity.name || "(Unnamed Entity)"}
                 </div>
                 {entity.description && (
-                  <p style={{ margin: "0.25rem 0", color: "#555" }}>
-                    {entity.description}
+                  <p className="entity-picker-card__description">
+                    {entity.description.split(/\r?\n/, 1)[0]}
                   </p>
                 )}
                 <div className="entity-picker-card__footer">

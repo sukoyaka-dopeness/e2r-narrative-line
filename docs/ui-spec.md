@@ -134,6 +134,9 @@ Timeline cards and their content rows are constrained to the available content
 width. Screen padding is included in that width, so a selected card and its
 preview do not create horizontal overflow.
 
+Event names use the same single-line ellipsis treatment as description
+previews. The full Event name remains available in Event Detail for editing.
+
 The Timeline action that returns to Home is labeled `Home` without a directional
 arrow.
 
@@ -240,6 +243,9 @@ Entity Picker displays each existing Entity as an individually bordered card.
 Its card footer and creation controls wrap as needed and stack vertically at
 viewport widths of 600 px or less. Long button labels may wrap within their
 buttons.
+
+Entity names and descriptions in the picker use single-line ellipsis previews;
+the stored Entity values are not shortened.
 
 When the creation controls stack, the Entity name input keeps its normal control
 height rather than inheriting the desktop horizontal flex basis as height.

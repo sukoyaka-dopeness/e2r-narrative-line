@@ -271,7 +271,9 @@ export function EventDetailScreen({
                 }`}
               >
                 <div className="related-card__header">
-                  <span>{entity.name ?? "(Unnamed Entity)"}</span>
+                  <span className="related-card__name">
+                    {entity.name ?? "(Unnamed Entity)"}
+                  </span>
 
                   {selectedRelatedEntity === entity.id && (
                     <div className="related-card__actions">

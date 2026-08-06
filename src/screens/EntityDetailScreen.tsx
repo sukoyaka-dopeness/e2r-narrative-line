@@ -109,7 +109,9 @@ export function EntityDetailScreen({
                 }`}
               >
                 <div className="related-card__header">
-                  <span>{event.name ?? "(Unnamed Event)"}</span>
+                  <span className="related-card__name">
+                    {event.name ?? "(Unnamed Event)"}
+                  </span>
 
                   {selectedRelatedEvent === event.id && (
                     <button
