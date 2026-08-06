@@ -204,6 +204,11 @@ button:disabled {
   padding: 32px;
 }
 
+.detail-screen > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .detail-header {
   margin-bottom: 24px;
 }
@@ -280,6 +285,7 @@ button:disabled {
 .related-card__name,
 .entity-picker-card__name {
   display: block;
+  width: 100%;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
