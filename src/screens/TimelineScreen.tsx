@@ -79,7 +79,6 @@ export function TimelineScreen({
       <h1>Timeline</h1>
 
       <div
-        className="timeline-actions"
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -177,6 +176,7 @@ export function TimelineScreen({
       </ul>
 
       <div
+        className="timeline-actions"
         style={{
           display: "flex",
           justifyContent: "space-between",
