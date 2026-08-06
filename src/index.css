@@ -209,7 +209,7 @@ button:disabled {
 .detail-screen {
   box-sizing: border-box;
   width: 100%;
-  padding: 32px;
+  padding: 32px 32px 112px;
 }
 
 .detail-screen > * {
@@ -381,13 +381,16 @@ button:disabled {
 }
 
 .detail-primary-actions {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
-  z-index: 5;
+  z-index: 20;
   box-sizing: border-box;
   padding: 12px 0;
-  margin-right: -32px;
-  margin-left: -32px;
+  justify-content: center;
+  margin-right: 0;
+  margin-left: 0;
   padding-right: 32px;
   padding-left: 32px;
   border-top: 1px solid var(--border);
@@ -440,12 +443,10 @@ button:disabled {
   }
 
   .detail-screen {
-    padding: 20px 16px;
+    padding: 20px 16px 152px;
   }
 
   .detail-primary-actions {
-    margin-right: -16px;
-    margin-left: -16px;
     padding-right: 16px;
     padding-left: 16px;
   }

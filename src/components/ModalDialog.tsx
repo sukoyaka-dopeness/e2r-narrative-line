@@ -92,7 +92,7 @@ export function ModalDialog({
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 1,
+        zIndex: 100,
         display: "grid",
         placeItems: "center",
         padding: "1rem",
