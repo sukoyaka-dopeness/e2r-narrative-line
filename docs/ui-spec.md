@@ -159,6 +159,9 @@ Event Detail keeps field edits locally until the user invokes `Save Event` or
 The Detail heading uses a compact size and keeps visible spacing between the
 screen title and the current Event name.
 
+The current Event name beneath the Event Detail heading is a single-line
+ellipsis preview. The complete name remains available in the Name field.
+
 Each related Entity is displayed as an individually bordered card. Selecting a
 card applies the shared accent border and background and exposes its contextual
 actions. `Remove Association` uses destructive styling without being presented

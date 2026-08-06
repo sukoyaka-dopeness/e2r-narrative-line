@@ -216,8 +216,12 @@ button:disabled {
 }
 
 .detail-header p {
+  max-width: 100%;
   margin-top: 8px;
   line-height: 145%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .date-fields {
@@ -284,6 +288,8 @@ button:disabled {
 }
 
 .entity-picker-card__description {
+  display: block;
+  max-width: 100%;
   margin: 4px 0;
   color: var(--text);
 }
