@@ -75,10 +75,11 @@ export function TimelineScreen({
   };
 
   return (
-    <main style={{ padding: "1rem" }}>
+    <main className="timeline-screen" style={{ padding: "1rem" }}>
       <h1>Timeline</h1>
 
       <div
+        className="timeline-actions"
         style={{
           display: "flex",
           justifyContent: "space-between",

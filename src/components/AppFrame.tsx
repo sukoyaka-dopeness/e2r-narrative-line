@@ -12,7 +12,9 @@ export function AppFrame({ children }: AppFrameProps) {
   return (
     <div className="app-frame">
       <header className="app-header">
-        <span className="app-brand">NarrativeLine</span>
+          <a className="app-brand" href={import.meta.env.BASE_URL}>
+            NarrativeLine
+          </a>
       </header>
 
       <div className="app-content">{children}</div>
