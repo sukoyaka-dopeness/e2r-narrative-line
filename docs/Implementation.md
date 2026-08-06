@@ -4,7 +4,8 @@ This document describes how NarrativeLine is organized as a software project.
 
 It bridges the gap between the functional specification and the source code.
 
-The purpose of this document is to define implementation responsibilities before writing code.
+The purpose of this document is to keep implementation responsibilities aligned
+with the current source code as the MVP evolves.
 
 ---
 
@@ -14,7 +15,7 @@ The implementation follows the architectural principles described in the design 
 
 Responsibilities are separated into independent layers.
 
-- State
+- React State
 - Services
 - UI
 - Models
@@ -33,28 +34,34 @@ They contain no UI logic.
 
 Examples include:
 
+- CoreObject
 - Dataset
 - Event
 - Entity
 - Relation
+- HistoryExtension
+- MetadataExtension
 
 ---
 
-## Store
+## React State
 
-The Store represents the current application state.
+App owns the current React state.
 
-It contains information shared across the application.
+The Dataset is held separately from navigation and selection state:
 
-Examples include:
+```text
+dataset
+state.currentScreen
+state.currentDialog
+state.selectedEvent
+state.selectedEntity
+```
 
-- currentDataset
-- currentScreen
-- currentDialog
-- selectedEvent
-- selectedEntity
+An optional `extensions.metadata.datasetId` is Dataset data. It is not an
+application-state key and its absence does not mean that no Dataset is open.
 
-The Store should not contain business logic.
+React state should not contain business logic.
 
 ---
 
@@ -67,10 +74,14 @@ Examples include:
 - EventService
 - EntityService
 - DatasetService
+- IdentifierService
+- HistoryService
+- ValidationService
 - NavigationService
-- DialogService
 
-Services update the Store.
+Services are UI-independent. Data Services return new Dataset values, and
+NavigationService returns the next AppState value. ValidationService returns a
+validation result. App applies returned values to React state.
 
 Services do not render UI.
 
@@ -102,6 +113,7 @@ Examples include:
 - Home
 - TimelineView
 - EventDetailView
+- EntityPickerView
 - EntityDetailView
 
 A Screen coordinates Components and calls Services.
@@ -110,17 +122,16 @@ A Screen coordinates Components and calls Services.
 
 ## Dialogs
 
-Dialogs represent temporary modal interfaces.
+Dialogs may represent brief temporary tasks when they are introduced.
 
-Examples include:
+Possible examples include:
 
-- New File
-- Sample Dataset
 - Open Dataset
 - Settings
 - About
 
-Dialogs are independent UI elements.
+Dataset creation and onboarding sample selection are direct Home actions, not
+dialogs.
 
 ---
 
@@ -133,58 +144,58 @@ User
 
 ↓
 
-Component
+Screen callback
 
 ↓
 
-Service
+App coordination
 
 ↓
 
-Store
+Service returns the next value
 
 ↓
 
-Component
+App React state update
 
 ↓
 
-Screen
+Screen re-render
 ```
 
-The Store acts as the single source of truth for application state.
+App's React state acts as the single source of truth for current application
+state. The in-memory Dataset remains the source of truth for edited E2R data.
 
 ---
 
 # Directory Structure
 
-The project is expected to follow a structure similar to:
+The current source structure is:
 
 ```
 src/
 
-    components/
-
-    dialogs/
-
-    hooks/
+    assets/
 
     models/
+
+    sample/
 
     screens/
 
     services/
 
-    store/
+    state/
 
-    styles/
+    App.tsx
 
-    types/
+    main.tsx
 
-    utils/
+    index.css
 ```
 
-Additional directories may be introduced when needed.
+Reusable components, hooks, dialogs, or utilities should receive their own
+directories only when the implementation requires them.
 
 ---
 
@@ -201,7 +212,7 @@ This document complements the existing design documents.
 | navigation.md | Navigation behavior |
 | ui-spec.md | User interface specification |
 | editing-model.md | Editing workflow |
-| implementation.md | Mapping the design to source code |
+| Implementation.md | Mapping the design to source code |
 
 ---
 

@@ -14,15 +14,18 @@ Each user operation changes one or more application states.
 
 The primary application states are:
 
-- currentDataset
+- dataset
 - currentScreen
-- currentDialog
+- currentDialog (reserved and currently `null`)
 - selectedEvent
 - selectedEntity
+- draftEventId
 
 Views request operations.
 
-Services update state.
+Services return the next Dataset or application-state value.
+
+App applies returned values to React state.
 
 React re-renders the interface.
 
@@ -30,14 +33,22 @@ React re-renders the interface.
 
 # Home
 
-## Create New Timeline
+## Create New Dataset
 
 ```
 User
     ↓
-DialogService.newFile()
+DatasetService.createDataset()
     ↓
-currentDialog = NewFile
+App applies the returned Dataset to `dataset`
+    ↓
+selectedEvent = null
+    ↓
+selectedEntity = null
+    ↓
+NavigationService.timeline()
+    ↓
+currentScreen = Timeline
 ```
 
 ---
@@ -47,14 +58,40 @@ currentDialog = NewFile
 ```
 User
     ↓
-DialogService.sampleFile()
+Onboarding sample selected
     ↓
-currentDialog = SampleFile
+App applies the selected Dataset to `dataset`
+    ↓
+selectedEvent = null
+    ↓
+selectedEntity = null
+    ↓
+NavigationService.timeline()
+    ↓
+currentScreen = Timeline
 ```
 
 ---
 
-## Open Dataset
+## Import E2R JSON
+
+```text
+User selects an E2R JSON file
+    ↓
+Home reads the file and DatasetService.importDatasetJson() validates it
+    ↓
+If valid, App applies the imported Dataset to `dataset`
+    ↓
+selectedEvent = null; selectedEntity = null; draftEventId = null
+    ↓
+currentScreen = Timeline
+```
+
+An invalid file leaves the user on Home and does not replace `dataset`.
+
+---
+
+## Legacy Open Dataset Dialog (Not Implemented)
 
 ```
 User
@@ -66,7 +103,7 @@ currentDialog = OpenDataset
 
 ---
 
-## Settings
+## Legacy Settings Dialog (Not Implemented)
 
 ```
 User
@@ -78,75 +115,7 @@ currentDialog = Settings
 
 ---
 
-# NewFile Dialog
-
-## Apply
-
-```
-User
-    ↓
-DatasetService.createFile()
-    ↓
-currentDataset updated
-    ↓
-DialogService.close()
-    ↓
-currentDialog = null
-    ↓
-NavigationService.timeline()
-    ↓
-currentScreen = Timeline
-```
-
----
-
-## Cancel
-
-```
-User
-    ↓
-DialogService.close()
-    ↓
-currentDialog = null
-```
-
----
-
-# SampleFile Dialog
-
-## Apply
-
-```
-User
-    ↓
-DatasetService.importSample()
-    ↓
-currentDataset updated
-    ↓
-DialogService.close()
-    ↓
-currentDialog = null
-    ↓
-NavigationService.timeline()
-    ↓
-currentScreen = Timeline
-```
-
----
-
-## Cancel
-
-```
-User
-    ↓
-DialogService.close()
-    ↓
-currentDialog = null
-```
-
----
-
-# OpenDataset Dialog
+# Legacy OpenDataset Dialog (Not Implemented)
 
 ## Apply
 
@@ -155,7 +124,7 @@ User
     ↓
 DatasetService.importFile()
     ↓
-currentDataset updated
+App applies the returned Dataset to `dataset`
     ↓
 DialogService.close()
     ↓
@@ -201,7 +170,7 @@ User
     ↓
 EventService.addEvent()
     ↓
-currentDataset updated
+App applies the returned Dataset to `dataset`
     ↓
 SelectionService.selectEvent(newEvent)
     ↓
@@ -211,6 +180,11 @@ NavigationService.eventDetail()
     ↓
 currentScreen = EventDetail
 ```
+
+---
+
+The new Event ID is also stored as `draftEventId`. Save Event or Save and Add
+Entity clears it; Cancel removes the draft Event and its connected Relations.
 
 ---
 
@@ -242,7 +216,7 @@ currentScreen = EntityDetail
 
 ---
 
-## Open Menu
+## Legacy Open Menu (Not Implemented)
 
 ```
 User
@@ -256,39 +230,43 @@ Implementation is application-defined.
 
 # EventDetailView
 
-## Rename Event
+## Edit Event Fields
 
 ```
-User
+User edits name, description, or History date
     ↓
-EventService.updateName()
+Event Detail local state updated
     ↓
-currentDataset updated
+dataset React state unchanged
 ```
+
+The History date editor accepts `year`, `month`, and `day`. Month requires a
+year, and day requires a month.
 
 ---
 
-## Edit Description
+## Apply Event Changes
 
 ```
 User
     ↓
-EventService.updateDescription()
+HistoryService.validateHistoryDate()
     ↓
-currentDataset updated
+valid
+    ↓
+EventService.updateEvent(selectedEvent, changedFields)
+    ↓
+App applies the returned Dataset to `dataset`
+    ↓
+NavigationService.timeline()
+    ↓
+currentScreen = Timeline
 ```
 
----
-
-## Edit Time
-
-```
-User
-    ↓
-EventService.updateTime()
-    ↓
-currentDataset updated
-```
+If the History date is invalid, the Event Detail view displays a validation
+message, keeps the local edits, and does not update the `dataset` React state.
+Only fields whose editor values differ from their initial values are included in
+`changedFields`.
 
 ---
 
@@ -304,27 +282,44 @@ selectedEntity = en456
 
 ---
 
-## Add Entity
+## Remove Entity Association
+
+```text
+User selects Remove for a related Entity
+    ↓
+Event Detail opens local removal confirmation
+    ↓
+User confirms Remove Association
+    ↓
+EventService.removeEventEntityRelations(selectedEvent, selectedEntity)
+    ↓
+App applies the returned Dataset to `dataset`
+```
+
+Canceling the confirmation leaves the Dataset unchanged. Confirming removal
+keeps the Entity and Relations to other Objects.
+
+---
+
+## Open Entity Picker
 
 ```
 User
     ↓
-EntityService.addEntity()
+NavigationService.entityPicker()
     ↓
-currentDataset updated
-    ↓
-SelectionService.selectEntity(newEntity)
-    ↓
-selectedEntity = newEntity
-    ↓
-NavigationService.entityDetail()
-    ↓
-currentScreen = EntityDetail
+currentScreen = EntityPicker
 ```
 
 ---
 
-## Delete Event
+The `Save and Add Related Entity` action validates and saves the Event's local edits
+before opening Entity Picker. An invalid History date keeps the user in Event
+Detail and does not update the Dataset.
+
+---
+
+## Delete Event (Future DialogService Model)
 
 ```
 User
@@ -336,7 +331,7 @@ currentDialog = DeleteEvent
 
 ---
 
-## Back to Timeline
+## Cancel Event Editing
 
 ```
 User
@@ -348,9 +343,119 @@ currentScreen = Timeline
 
 The previously selected Event should remain selected whenever possible.
 
+Canceling an existing Event discards the Event Detail view's unsaved local
+edits and does not update the `dataset` React state. It does not undo edits
+already saved through Save Event or Save and Add Related Entity.
+
+Canceling a newly created draft Event calls `EventService.deleteEvent()` before
+returning to Timeline. The draft Event and any connected Relations are removed,
+and `draftEventId` is cleared.
+
 ---
 
-# DeleteEvent Dialog
+# EntityPickerView
+
+Entity Picker operates on the Dataset containing `selectedEvent`.
+
+## Select Existing Entity
+
+```
+User
+    ↓
+EventService.addEventEntityRelation(selectedEvent, entityId)
+    ↓
+dataset React state updated when no direct Relation already exists
+    ↓
+NavigationService.eventDetail()
+    ↓
+currentScreen = EventDetail
+```
+
+An existing direct Relation in either direction prevents NarrativeLine from
+generating another Relation. Existing Relations are preserved.
+
+---
+
+## Create and Add Entity
+
+```
+User
+    ↓
+EntityService.addEntity(name)
+    ↓
+App applies the returned Dataset to `dataset`
+    ↓
+EventService.addEventEntityRelation(selectedEvent, newEntity)
+    ↓
+App applies the returned Dataset to `dataset`
+    ↓
+NavigationService.eventDetail()
+    ↓
+currentScreen = EventDetail
+```
+
+Entity names are not identifiers. An Entity may be created even when another
+Entity has the same name.
+
+---
+
+## Cancel
+
+```
+User
+    ↓
+NavigationService.eventDetail()
+    ↓
+currentScreen = EventDetail
+```
+
+Canceling does not create an Entity or Relation. It does not undo the Event
+edits saved before Entity Picker opened.
+
+---
+
+# Event Detail Delete Confirmation
+
+The current implementation keeps this confirmation as local Event Detail UI
+state rather than using `currentDialog` or DialogService.
+
+## Open
+
+```text
+User selects Delete Event
+    ↓
+isDeleteConfirmationOpen = true
+    ↓
+Dataset remains unchanged
+```
+
+## Confirm
+
+```text
+User confirms Delete Event
+    ↓
+EventService.deleteEvent(selectedEvent)
+    ↓
+App applies the returned Dataset to `dataset`
+    ↓
+selectedEvent = null
+    ↓
+NavigationService.timeline()
+```
+
+## Cancel
+
+```text
+User selects Keep Event
+    ↓
+isDeleteConfirmationOpen = false
+    ↓
+Dataset remains unchanged
+```
+
+---
+
+# Legacy DialogService Flow (Not Implemented)
 
 ## Delete
 
@@ -359,7 +464,7 @@ User
     ↓
 EventService.deleteEvent(selectedEvent)
     ↓
-currentDataset updated
+App applies the returned Dataset to `dataset`
     ↓
 DialogService.close()
     ↓
@@ -397,7 +502,7 @@ User
     ↓
 EntityService.updateName()
     ↓
-currentDataset updated
+App applies the returned Dataset to `dataset`
 ```
 
 ---
@@ -409,7 +514,7 @@ User
     ↓
 EntityService.updateDescription()
     ↓
-currentDataset updated
+App applies the returned Dataset to `dataset`
 ```
 
 ---
@@ -433,7 +538,7 @@ User
     ↓
 EventService.addEvent()
     ↓
-currentDataset updated
+App applies the returned Dataset to `dataset`
     ↓
 SelectionService.selectEvent(newEvent)
     ↓
@@ -446,7 +551,7 @@ currentScreen = EventDetail
 
 ---
 
-## Delete Entity
+## Legacy Delete Entity Dialog (Not Implemented)
 
 ```
 User
@@ -458,7 +563,7 @@ currentDialog = DeleteEntity
 
 ---
 
-## Back to Timeline
+## Cancel Entity Editing
 
 ```
 User
@@ -470,40 +575,45 @@ currentScreen = Timeline
 
 ---
 
-# DeleteEntity Dialog
+# Entity Detail Delete Confirmation
 
-## Delete
+The current implementation keeps this confirmation as local Entity Detail UI
+state. It does not use `currentDialog` or DialogService.
 
+## Open
+
+```text
+User selects Delete Entity
+    ↓
+isDeleteConfirmationOpen = true
+    ↓
+Dataset remains unchanged
 ```
-User
+
+## Confirm
+
+```text
+User confirms Delete Entity
     ↓
 EntityService.deleteEntity(selectedEntity)
     ↓
-currentDataset updated
-    ↓
-DialogService.close()
-    ↓
-currentDialog = null
-    ↓
-SelectionService.clearSelection()
+App applies the returned Dataset to `dataset`
     ↓
 selectedEntity = null
     ↓
 NavigationService.timeline()
-    ↓
-currentScreen = Timeline
 ```
 
 ---
 
 ## Cancel
 
-```
-User
+```text
+User selects Keep Entity
     ↓
-DialogService.close()
+isDeleteConfirmationOpen = false
     ↓
-currentDialog = null
+Dataset remains unchanged
 ```
 
 ---

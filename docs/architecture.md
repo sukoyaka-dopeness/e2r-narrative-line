@@ -24,15 +24,19 @@ The application focuses on editing and exploring E2R datasets while keeping the 
 ```
 App
 
-├── HomeScreen
-├── TimelineScreen
-├── EventDetailScreen
-└── EntityDetailScreen
+└── AppFrame
+    ├── Header
+    ├── HomeScreen / TimelineScreen / EventDetailScreen /
+    │   EntityPickerScreen / EntityDetailScreen
+    └── Footer
 ```
 
 App.tsx is responsible for application state and screen navigation.
 
 Individual screens are responsible only for presentation and user interaction.
+
+AppFrame provides the shared NarrativeLine Header and Footer around the current
+screen. It owns no Dataset, navigation, selection, or editing state.
 
 ---
 
@@ -44,16 +48,13 @@ Entry point of the application.
 
 Responsibilities:
 
-* Open Timeline
+* Create a new Dataset
+* Open the onboarding sample Dataset
+* Import an E2R JSON Dataset
 * Future dataset operations
 
 Planned:
 
-* New Dataset
-* Open Dataset
-* Sample Dataset
-* Import
-* Export
 * Settings
 
 ---
@@ -68,6 +69,7 @@ Responsibilities:
 * Select Event
 * Open Event editor
 * Create Event
+* Export the current Dataset as E2R JSON
 
 The Timeline is Event-centric.
 
@@ -84,11 +86,22 @@ Responsibilities:
 * Edit Event
 * Delete Event
 * Display Related Entities
-
-Future:
-
+* Open Entity Picker
 * Navigate to Entity Detail
-* Add / Remove Related Entities
+* Remove Related Entity associations
+
+---
+
+## EntityPickerScreen
+
+Displays Entities from the Dataset containing the edited Event.
+
+Responsibilities:
+
+* Select an existing Entity
+* Create a new Entity
+* Associate the selected Entity with the Event
+* Return to Event Detail without modifying the Dataset when canceled
 
 ---
 
@@ -98,29 +111,31 @@ Displays a single Entity.
 
 Responsibilities:
 
-* Display Entity information
-
-Future:
-
-* Edit Entity
+* Display and edit Entity information
 * Display Related Events
-* Navigate back to Event Detail
+* Navigate to Event Detail
+* Delete Entity with connected Relation cleanup
 
 ---
 
 # State Management
 
-Application state is centralized in App.tsx.
+React state is centralized in App.tsx.
 
 Current state:
 
 ```
-currentScreen
-currentDataset
-currentDialog
-selectedEvent
-selectedEntity
+dataset
+state.currentScreen
+state.currentDialog
+state.selectedEvent
+state.selectedEntity
+state.draftEventId
 ```
+
+`dataset` contains the current in-memory E2R Dataset. It is separate from
+`AppState`; an optional `extensions.metadata.datasetId` is Dataset data and is
+not used as application state indicating whether a Dataset is open.
 
 Screens receive only the state required for display.
 
@@ -135,14 +150,17 @@ Current services:
 ```
 NavigationService
 EventService
+EntityService
+DatasetService
+IdentifierService
+HistoryService
+ValidationService
 ```
 
 Planned services:
 
 ```
-EntityService
 RelationService
-DatasetService
 DialogService
 SelectionService
 ```
@@ -172,20 +190,21 @@ EventService
 
 ↓
 
-Dataset
+Updated Dataset returned to App
 
 ↓
 
-React State Update
+App updates the `dataset` React state
 
 ↓
 
 Timeline Refresh
 ```
 
-Screens never modify datasets directly.
+Screens invoke callbacks and never modify Datasets directly.
 
-All dataset manipulation should eventually be performed by Services.
+Dataset manipulation is performed by UI-independent Services that return new
+Dataset values for App to apply.
 
 ---
 
@@ -263,15 +282,16 @@ This keeps the application focused on user workflows rather than internal data s
 
 # Dataset Handling
 
-Current implementation uses a single in-memory sample dataset.
+The current implementation holds one in-memory Dataset at a time. Home can
+create a new Dataset, open the onboarding sample Dataset, or import an E2R JSON
+Dataset.
 
-Future versions will introduce DatasetService to support:
+DatasetService currently creates new Datasets using the Core `version`, empty
+Core collections, and `extensions.metadata.datasetId` generated as UUID v7.
 
-* New Dataset
-* Open Dataset
+Future Dataset handling will add:
+
 * Save Dataset
-* Import
-* Export
 * Multiple datasets
 
 ---
@@ -280,11 +300,10 @@ Future versions will introduce DatasetService to support:
 
 Planned additions include:
 
-* Entity editing
 * Relation editing
 * Dataset management
 * Dictionary support
-* History Extension support
+* History clock and Time Zone editing
 * Search
 * Filtering
 * View customization

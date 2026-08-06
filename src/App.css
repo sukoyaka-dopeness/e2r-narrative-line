@@ -1,0 +1,16 @@
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-screen {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.timeline-screen {
+  flex: 1;
+}

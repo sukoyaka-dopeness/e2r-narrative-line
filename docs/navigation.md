@@ -16,56 +16,19 @@ The MVP consists of the following views.
 - Timeline View
 - Event Detail
 - Entity Picker
-- Dataset Settings
+- Entity Detail
 
 ---
 
 # Navigation Overview
 
 ```text
-                 +----------------------+
-                 |        Home          |
-                 +----------------------+
-                  |       |        |
-                  |       |        |
-      Open Sample |       | New Dataset
-                  |       |
-          Open Dataset    |
-                  |       |
-                  +-------+
-                      |
-                      v
-          +----------------------+
-          |    Timeline View     |
-          +----------------------+
-             |      |        |
-             |      |        |
-     New     |      | Select Event
-     Event   |      |
-             |      |
-             |      v
-             | +----------------------+
-             | |    Event Detail      |
-             | +----------------------+
-             |      |
-             |      |
-             |      | Edit Entities
-             |      |
-             |      v
-             | +----------------------+
-             | |    Entity Picker     |
-             | +----------------------+
-             |      |
-             +------+
-                    |
-                    v
-          +----------------------+
-          |    Timeline View     |
-          +----------------------+
-
-From Timeline View:
-
-    Dataset Settings
+Home
+  └── Create Dataset / Import E2R JSON / Open Sample Dataset → Timeline View
+        ├── Add Event or Edit selected Event → Event Detail
+        │     ├── Save and Add Related Entity → Entity Picker → Event Detail
+        │     └── Edit a related Entity → Entity Detail
+        └── Back to Home
 ```
 
 ---
@@ -76,11 +39,20 @@ The Home screen is displayed when no dataset is open.
 
 Users can:
 
-- Open the onboarding sample dataset.
 - Create a new dataset.
 - Open an existing dataset.
+- Open the onboarding sample dataset.
+
+Create Dataset and Import E2R JSON are the primary Home actions and have equal
+button widths. Open Sample Dataset follows below them as a supplemental
+onboarding action.
 
 Opening or creating a dataset navigates to Timeline View.
+
+When importing an existing Dataset, Home reads the selected JSON file and
+validates its Core structure before navigation. A failed import remains on Home
+and displays the reported validation issues. A successful import replaces the
+in-memory Dataset and navigates to Timeline View.
 
 ---
 
@@ -92,10 +64,8 @@ Users can:
 
 - Create an Event.
 - Select an Event.
-- Delete an Event.
-- Save the dataset.
-- Load another dataset.
-- Open Dataset Settings.
+- Export the current Dataset as E2R JSON.
+- Return to Home.
 
 ---
 
@@ -108,10 +78,16 @@ Users can edit:
 - Name
 - Description
 - Date
-- Time
 - Related Entities
 
 Saving an Event returns focus to Timeline View.
+
+Canceling an existing Event discards unsaved local changes and returns to
+Timeline. Canceling a newly created Event before its first save removes the
+draft Event.
+
+Deleting an Event requires a confirmation in Event Detail. Confirming deletion
+returns to Timeline; canceling the confirmation keeps Event Detail open.
 
 ---
 
@@ -128,16 +104,11 @@ Closing Entity Picker returns to Event Detail.
 
 ---
 
-# Dataset Settings
+# Entity Detail
 
-Dataset Settings edits dataset metadata.
-
-For the MVP, editable fields are:
-
-- Title
-- Description
-
-Saving returns to Timeline View.
+Entity Detail allows users to edit an Entity's name and description, inspect
+related Events, and delete the Entity after confirmation. Deleting an Entity
+removes its connected Relations and returns to Timeline; connected Events remain.
 
 ---
 

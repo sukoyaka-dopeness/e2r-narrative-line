@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "entity-subject",
+      "name": "Subject Entity"
+    },
+    {
+      "id": "entity-unrelated",
+      "name": "Unrelated Entity"
+    }
+  ],
+  "events": [
+    {
+      "id": "event-subject",
+      "name": "Subject Event",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 8,
+            "day": 6
+          }
+        }
+      }
+    },
+    {
+      "id": "event-unrelated",
+      "name": "Unrelated Event"
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-subject-forward",
+      "sourceId": "event-subject",
+      "targetId": "entity-subject"
+    },
+    {
+      "id": "relation-subject-reverse",
+      "sourceId": "entity-subject",
+      "targetId": "event-subject"
+    },
+    {
+      "id": "relation-unrelated-event-entity",
+      "sourceId": "event-subject",
+      "targetId": "entity-unrelated"
+    },
+    {
+      "id": "relation-unrelated-entity-event",
+      "sourceId": "entity-subject",
+      "targetId": "event-unrelated"
+    }
+  ],
+  "extensions": {}
+}

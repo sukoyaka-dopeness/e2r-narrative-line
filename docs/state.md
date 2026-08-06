@@ -4,9 +4,10 @@ This document defines the application state used by NarrativeLine.
 
 Application state represents the information that must be remembered while the application is running.
 
-Views display the current state.
+Views display the current state and invoke callbacks for user actions.
 
-Services modify the current state.
+Services provide state-transition and Dataset-operation logic. App owns the
+React state and applies the values returned by Services.
 
 React automatically updates the user interface when the state changes.
 
@@ -18,9 +19,10 @@ The application state should be as small as possible.
 
 Each state has a single purpose.
 
-Each state has a clearly defined owner.
+App has one authoritative React state value for each concern.
 
-Business logic should modify state only through Services.
+Business logic should be implemented through Services, while React state
+updates remain in App.
 
 ---
 
@@ -28,19 +30,20 @@ Business logic should modify state only through Services.
 
 NarrativeLine currently maintains the following application state.
 
-| State | Purpose | Primary Owner |
-|--------|----------|---------------|
-| currentDataset | Current dataset | DatasetService / EventService / EntityService |
-| currentScreen | Current screen | NavigationService |
-| currentDialog | Current dialog | DialogService |
-| selectedEvent | Selected Event | SelectionService |
-| selectedEntity | Selected Entity | SelectionService |
+| State | Purpose | React owner | Operation logic |
+|-------|---------|-------------|-----------------|
+| dataset | Current Dataset data | App | DatasetService / EventService / EntityService |
+| currentScreen | Current screen | App | NavigationService |
+| currentDialog | Reserved shared-dialog state; currently always `null` | App | None |
+| selectedEvent | Selected Event | App | App coordination |
+| selectedEntity | Selected Entity | App | App coordination |
+| draftEventId | Newly created Event awaiting its first save | App | App |
 
 ---
 
-# currentDataset
+# dataset
 
-The currently loaded dataset.
+The current in-memory Dataset.
 
 This is the primary data of the application.
 
@@ -56,18 +59,24 @@ Examples:
 Example:
 
 ```
-currentDataset = {
-    metadata: ...,
-    entities: ...,
-    events: ...
+dataset = {
+    version: "1.0",
+    entities: [],
+    events: [],
+    relations: [],
+    extensions: {
+        metadata: {
+            datasetId: "..."
+        }
+    }
 }
 ```
 
-Owner:
+App owns this React state. DatasetService, EventService, and EntityService
+return new Dataset values for App to apply.
 
-- DatasetService
-- EventService
-- EntityService
+The Metadata Extension and `datasetId` are optional for imported Datasets.
+Their absence does not mean that no Dataset is open.
 
 ---
 
@@ -80,6 +89,7 @@ Possible values include:
 - Home
 - Timeline
 - EventDetail
+- EntityPicker
 - EntityDetail
 
 Example:
@@ -94,28 +104,15 @@ Only the NavigationService should modify this state.
 
 # currentDialog
 
-The dialog currently displayed.
-
-Only one dialog may be open at a time.
-
-Possible values include:
-
-- NewFile
-- SampleFile
-- OpenDataset
-- WriteDataset
-- Settings
-- About
-- DeleteEvent
-- DeleteEntity
-
-When no dialog is open:
+`currentDialog` is reserved for a future shared-dialog mechanism and is
+currently always `null`.
 
 ```
 currentDialog = null
 ```
 
-Only the DialogService should modify this state.
+The current delete and association-removal confirmations use local state inside
+Event Detail or Entity Detail. DialogService is not implemented.
 
 ---
 
@@ -137,7 +134,7 @@ Typical situations:
 - Opening EventDetailView
 - Returning from EventDetailView
 
-The SelectionService manages this state.
+App updates this state as part of navigation and selection callbacks.
 
 ---
 
@@ -157,7 +154,18 @@ Typical situations:
 - Opening EntityDetailView
 - Returning from EntityDetailView
 
-The SelectionService manages this state.
+App updates this state as part of navigation and selection callbacks.
+
+---
+
+# draftEventId
+
+The identifier of an Event created through Add Event that has not yet been
+saved. This is application state only and is never written to the Dataset.
+
+Canceling Event Detail for this Event removes it and its connected Relations.
+Saving it, using Save and Add Related Entity, deleting it, or opening another
+Dataset clears `draftEventId`.
 
 ---
 
@@ -174,7 +182,7 @@ Other states change less often.
 
 Examples:
 
-- currentDataset
+- dataset
 - currentScreen
 
 Understanding the lifetime of each state helps reduce unnecessary updates.
@@ -183,10 +191,11 @@ Understanding the lifetime of each state helps reduce unnecessary updates.
 
 # State Ownership
 
-Each state has one primary owner.
+App owns each React state value. Services own the corresponding operation
+logic.
 
 ```
-currentDataset
+dataset
     ↑
 DatasetService
 EventService
@@ -202,17 +211,18 @@ NavigationService
 ```
 currentDialog
     ↑
-DialogService
+Future DialogService (not implemented)
 ```
 
 ```
 selectedEvent
 selectedEntity
     ↑
-SelectionService
+App coordination
 ```
 
-Views should never modify these states directly.
+Views invoke callbacks rather than mutating these states directly. App applies
+the next values returned by Services or produced by its coordination logic.
 
 ---
 
@@ -231,16 +241,8 @@ This means:
 
 "The Event Detail screen is displaying Event ev123."
 
-Another example:
-
-```
-currentDialog = DeleteEvent
-selectedEvent = "ev123"
-```
-
-This means:
-
-"The Delete Event confirmation dialog is open for Event ev123."
+Delete and association-removal confirmations are local screen state rather than
+part of `AppState`.
 
 These combinations define the current situation of the application.
 

@@ -4,7 +4,8 @@ This document describes the responsibilities of each Service used by NarrativeLi
 
 Services contain business logic.
 
-Views should request Services to perform operations instead of directly modifying application state.
+Views should request operations through callbacks instead of directly modifying
+Dataset or application state.
 
 ---
 
@@ -12,7 +13,9 @@ Views should request Services to perform operations instead of directly modifyin
 
 Each Service should have a single responsibility.
 
-Services may update application state, but Views should not.
+Services are UI-independent. Data Services return new Dataset values, while
+Navigation and future state-oriented Services return the next application
+state. App owns the React state and applies the returned values.
 
 Whenever possible, one operation should have one implementation.
 
@@ -29,6 +32,8 @@ The EventService manages Event objects.
 - Create Events
 - Delete Events
 - Update Event properties
+- Write date-only History Extension values
+- Associate Events with Entities
 - Maintain Event consistency
 
 ## Functions
@@ -37,9 +42,9 @@ The EventService manages Event objects.
 
 Creates a new Event.
 
-Updates:
+Returns:
 
-- currentDataset
+- an updated Dataset and the new Event ID
 
 ---
 
@@ -47,39 +52,92 @@ Updates:
 
 Deletes an Event.
 
-Updates:
+Returns:
 
-- currentDataset
-
----
-
-### updateName()
-
-Updates the Event name.
-
-Updates:
-
-- currentDataset
+- an updated Dataset
 
 ---
 
-### updateDescription()
+### updateEvent()
 
-Updates the Event description.
+Updates the Event name, description, and date-only History information.
 
-Updates:
+Date information is written to `extensions.history.time`. The service validates
+year, month, and day before writing, preserves unrelated Extensions, removes
+invalid dependent finer fields when precision is reduced, and does not leave an
+empty Time Object. It does not write the legacy top-level `date` field.
 
-- currentDataset
+Returns:
+
+- an updated Dataset
 
 ---
 
-### updateTime()
+### addEventEntityRelation()
 
-Updates historical time information.
+Creates an Event-to-Entity Relation unless a direct Relation already connects
+the same objects in either direction. Existing Relations are preserved.
 
-Updates:
+Returns:
 
-- currentDataset
+- the original Dataset when a direct Relation already exists, otherwise an
+  updated Dataset containing the new Relation
+
+---
+
+### removeEventEntityRelations()
+
+Removes every direct Relation between the specified Event and Entity, in either
+direction. The Entity and Relations to other Objects are preserved.
+
+Returns:
+
+- an updated Dataset
+
+---
+
+# HistoryService
+
+The HistoryService provides pure read, validation, display, and comparison
+operations for date-only History information.
+
+## Responsibilities
+
+- Read year, month, and day from `extensions.history.time`
+- Validate contiguous date precision
+- Validate proleptic Gregorian month lengths and leap years
+- Format year, month, and day without inventing missing precision
+- Compare Events for Timeline presentation without reordering the Dataset
+- Return stable validation error codes for later UI localization
+
+## Functions
+
+### getEventHistoryDate()
+
+Returns the recorded year, month, and day without interpreting an omitted field.
+The legacy top-level `date` field is not read.
+
+---
+
+### validateHistoryDate()
+
+Validates integer fields, field dependencies, month range, and Gregorian day
+validity. Year zero and negative years are accepted.
+
+---
+
+### formatEventHistoryDate()
+
+Formats the recorded precision as a year, year-month, or year-month-day string.
+It does not add a clock value or interpret date-only information as midnight.
+
+---
+
+### compareEventsByHistoryDate()
+
+Orders a derived Timeline collection by valid stored date fields, precision,
+`temporalOrder` when applicable, and Event ID. Events without a valid recorded
+date follow dated Events.
 
 ---
 
@@ -97,33 +155,47 @@ The EntityService manages Entity objects.
 
 ### addEntity()
 
-Updates:
+Creates a new Entity with a UUID v7 identifier and returns the updated Dataset
+and generated Entity ID. Entity names are not required to be unique.
 
-- currentDataset
+Returns:
+
+- an updated Dataset and the new Entity ID
 
 ---
 
 ### deleteEntity()
 
-Updates:
+Returns:
 
-- currentDataset
+- an updated Dataset
 
 ---
 
 ### updateName()
 
-Updates:
+Returns:
 
-- currentDataset
+- an updated Dataset
 
 ---
 
 ### updateDescription()
 
-Updates:
+Returns:
 
-- currentDataset
+- an updated Dataset
+
+---
+
+# IdentifierService
+
+The IdentifierService generates UUID v7 identifiers for new Datasets and Core
+Objects.
+
+Generated Core Object identifiers are checked against Event, Entity, and
+Relation IDs in the current Dataset before use. Dataset identity is independent
+from Core Object identifiers. Existing and imported identifiers are preserved.
 
 ---
 
@@ -136,35 +208,54 @@ The DatasetService manages datasets.
 - Create datasets
 - Import datasets
 - Export datasets
-- Update metadata
+- Update supported Metadata Extension fields
 
 ## Functions
 
-### createFile()
+### createDataset()
 
-Creates an empty dataset.
+Creates an in-memory Dataset with:
 
-Updates:
+- the top-level Core `version`
+- a UUID v7 `extensions.metadata.datasetId`
+- empty Event, Entity, and Relation collections
 
-- currentDataset
+The optional `extensions.metadata.title` is omitted until a user assigns one.
+No History Extension or common Extension version wrapper is added merely
+because NarrativeLine supports History editing.
 
----
+Returns:
 
-### importFile()
-
-Loads a dataset.
-
-Updates:
-
-- currentDataset
+- the new Dataset
 
 ---
 
-### exportFile()
+### importDatasetJson()
 
-Exports the current dataset.
+Parses a JSON string and validates its E2R Core structure.
 
-Does not modify application state.
+Returns a distinct `json_parse_error` for malformed JSON. For valid JSON
+syntax, it returns the Core validation issues or the loaded Dataset.
+
+Importing does not assign or regenerate `extensions.metadata.datasetId` merely
+because the field is absent. File selection and reading are UI responsibilities
+that will call this function.
+
+Returns:
+
+- a validation result containing the loaded Dataset only after successful
+  validation
+
+---
+
+### exportDatasetJson()
+
+Validates the current Dataset and serializes it as formatted JSON.
+
+The function returns Core validation issues when the Dataset is invalid and a
+distinct `json_serialize_error` when it cannot be represented as JSON. It
+returns JSON only after successful validation and does not modify application
+state.
 
 ---
 
@@ -172,9 +263,9 @@ Does not modify application state.
 
 Merges another dataset into the current dataset.
 
-Updates:
+Returns:
 
-- currentDataset
+- an updated Dataset
 
 ---
 
@@ -182,25 +273,49 @@ Updates:
 
 Adds an additional dataset.
 
-Updates:
+Returns:
 
-- currentDataset
-
----
-
-### updateMetadataTitle()
-
-Updates:
-
-- currentDataset
+- an updated collection of open Datasets
 
 ---
 
-### updateMetadataDescription()
+### updateMetadataTitle() (Future)
 
-Updates:
+Returns:
 
-- currentDataset
+- an updated Dataset
+
+---
+
+# ValidationService
+
+The ValidationService validates the E2R Core structure independently of the
+user interface.
+
+## Responsibilities
+
+- Validate the required Dataset fields and their value types
+- Validate non-empty, Dataset-wide unique Core Object identifiers
+- Validate Relation `sourceId` and `targetId` fields
+- Resolve Relation endpoints to an Entity or Event in the same Dataset
+- Report stable error codes, JSON Pointer paths, and related identifiers
+- Allow unknown Core fields and unknown Extensions
+
+## Functions
+
+### validateCoreDataset()
+
+Accepts an unknown parsed JSON value and returns a result containing:
+
+- `isValid`
+- `issues`
+- the typed Dataset when the value is valid
+
+Each issue has a stable `code` and JSON Pointer `path`. Issues involving an
+identifier include `relatedIds`.
+
+Core validation does not interpret or reject unknown fields or Extensions.
+Supported Extension validation is a separate responsibility.
 
 ---
 
@@ -238,6 +353,14 @@ Updates:
 
 ---
 
+### entityPicker()
+
+Updates:
+
+- currentScreen
+
+---
+
 ### entityDetail()
 
 Updates:
@@ -246,9 +369,11 @@ Updates:
 
 ---
 
-# DialogService
+# DialogService (Future)
 
-The DialogService controls dialogs.
+The current Event deletion confirmation is local Event Detail UI state. A
+shared DialogService remains a future option for dialogs that require shared
+application state.
 
 ## Responsibilities
 
@@ -256,22 +381,6 @@ The DialogService controls dialogs.
 - Close dialogs
 
 ## Functions
-
-### newFile()
-
-Updates:
-
-- currentDialog
-
----
-
-### sampleFile()
-
-Updates:
-
-- currentDialog
-
----
 
 ### openDataset()
 
@@ -374,15 +483,16 @@ Updates:
 
 # State Ownership
 
-Each application state has a primary owner.
+App owns the React state. Services own operation logic and return the next value
+for App to apply.
 
-| State | Owner |
-|--------|-------|
-| currentDataset | EventService, EntityService, DatasetService |
-| currentScreen | NavigationService |
-| currentDialog | DialogService |
-| selectedEvent | SelectionService |
-| selectedEntity | SelectionService |
+| State | React owner | Operation logic |
+|-------|-------------|-----------------|
+| Dataset state | App | EventService, EntityService, DatasetService |
+| currentScreen | App | NavigationService |
+| currentDialog | App | DialogService |
+| selectedEvent | App | SelectionService |
+| selectedEntity | App | SelectionService |
 
 This ownership should be respected throughout the application.
 
@@ -424,7 +534,6 @@ Possible examples include:
 - UndoService
 - ClipboardService
 - SearchService
-- ValidationService
 - PluginService
 
 The current architecture is designed so that new Services can be added without changing the responsibilities of existing Services.
