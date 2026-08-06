@@ -274,9 +274,10 @@ button:disabled {
 
 .timeline-event-name,
 .related-card__name,
-.entity-picker-card__name,
-.entity-picker-card__description {
+.entity-picker-card__name {
+  display: block;
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -288,10 +289,17 @@ button:disabled {
 }
 
 .entity-picker-card__description {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
   max-width: 100%;
+  max-height: 1.45em;
   margin: 4px 0;
   color: var(--text);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .related-card__header {
