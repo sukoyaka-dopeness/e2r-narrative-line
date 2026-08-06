@@ -216,6 +216,8 @@ button:disabled {
 }
 
 .detail-header p {
+  display: block;
+  width: 100%;
   max-width: 100%;
   margin-top: 8px;
   line-height: 145%;
@@ -249,6 +251,8 @@ button:disabled {
 
 .related-card {
   box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -381,6 +385,10 @@ button:disabled {
 }
 
 .entity-picker-card {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
