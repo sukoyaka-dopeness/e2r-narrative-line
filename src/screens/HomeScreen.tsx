@@ -120,11 +120,13 @@ export function HomeScreen({
       </div>
 
       <a
-        href="https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/user-guide-ja.md"
+        href={ja
+          ? "https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/user-guide-ja.md"
+          : "https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/user-guide-en.md"}
         target="_blank"
         rel="noreferrer"
       >
-        {ja ? "日本語ユーザーガイド" : "Japanese user guide"}
+        {ja ? "日本語ユーザーガイド" : "English user guide"}
       </a>
 
       {fileReadError && <p role="alert">{fileReadError}</p>}

@@ -6,7 +6,7 @@ import { EntityDetailScreen } from "./screens/EntityDetailScreen";
 import { EntityPickerScreen } from "./screens/EntityPickerScreen";
 import { AppFrame } from "./components/AppFrame";
 import { navigate } from "./services/NavigationService";
-import { sampleDataset } from "./sample/sampleDataset";
+import { sampleDataset, sampleDatasetEn } from "./sample/sampleDataset";
 import type { AppState } from "./state/AppState";
 import type { Dataset } from "./models/Dataset";
 import {
@@ -28,8 +28,11 @@ import {
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
 import type { HistoryDate } from "./services/HistoryService";
 import type { CoreDatasetValidationIssue } from "./services/ValidationService";
+import { useLanguage } from "./i18n/LanguageContext";
 
 function App() {
+  const { language } = useLanguage();
+  const sample = language === "ja" ? sampleDataset : sampleDatasetEn;
   const storedDataset = (() => {
     try {
       const source = window.localStorage.getItem("narrativeline.lastDataset");
@@ -46,7 +49,7 @@ function App() {
     draftEventId: null,
   });
 
-  const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sampleDataset);
+  const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
   const [importWarnings, setImportWarnings] = useState<CoreDatasetValidationIssue[]>([]);
 
   useEffect(() => {
@@ -263,7 +266,7 @@ function App() {
     return (
       <AppFrame>
         <HomeScreen
-          onOpenTimeline={() => handleOpenDataset(sampleDataset)}
+          onOpenTimeline={() => handleOpenDataset(sample)}
           onResumeDataset={() => handleOpenDataset(dataset)}
           hasResumeDataset={storedDataset !== undefined}
           onCreateDataset={() => handleOpenDataset(createDataset())}
