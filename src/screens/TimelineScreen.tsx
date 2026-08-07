@@ -10,6 +10,7 @@ import {
   formatEventHistoryDate,
 } from "../services/HistoryService";
 import type { CoreDatasetValidationIssue } from "../services/ValidationService";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type TimelineScreenProps = {
   dataset: Dataset;
@@ -44,6 +45,8 @@ export function TimelineScreen({
   importWarnings = [],
   onUpdateDatasetTitle,
 }: TimelineScreenProps) {
+  const { language } = useLanguage();
+  const ja = language === "ja";
   const selectedEventRef = useRef<HTMLLIElement>(null);
   const [exportIssues, setExportIssues] = useState<DatasetExportIssue[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -85,14 +88,14 @@ export function TimelineScreen({
 
   return (
     <main className="timeline-screen" style={{ padding: "1rem" }}>
-      <h1>Timeline</h1>
+      <h1>{ja ? "タイムライン" : "Timeline"}</h1>
 
       <div className="dataset-title-editor">
         <input
           type="text"
           value={titleDraft}
           onChange={(event) => setTitleDraft(event.target.value)}
-          placeholder="Enter dataset title"
+          placeholder={ja ? "タイトルを入力してください" : "Enter dataset title"}
           aria-label="Dataset title"
         />
         <button
@@ -100,7 +103,7 @@ export function TimelineScreen({
           onClick={() => onUpdateDatasetTitle(titleDraft)}
           disabled={titleDraft === (dataset.extensions?.metadata?.title ?? "")}
         >
-          Apply title
+          {ja ? "タイトルを適用" : "Apply title"}
         </button>
       </div>
 
@@ -115,7 +118,7 @@ export function TimelineScreen({
         <p>{dataset.events.length} events</p>
 
         <button type="button" onClick={handleExport}>
-          Export E2R JSON
+          {ja ? "E2R JSONをエクスポート" : "Export E2R JSON"}
         </button>
       </div>
 
@@ -123,7 +126,7 @@ export function TimelineScreen({
 
       {importWarnings.length > 0 && (
         <section aria-labelledby="import-warnings-heading">
-          <h2 id="import-warnings-heading">Import warnings</h2>
+          <h2 id="import-warnings-heading">{ja ? "読み込み時の警告" : "Import warnings"}</h2>
           <ul>
             {importWarnings.map((issue, index) => {
               const location = issue.path === "" ? "the document" : issue.path;
@@ -143,7 +146,7 @@ export function TimelineScreen({
 
       {exportIssues.length > 0 && (
         <section aria-labelledby="export-errors-heading">
-          <h2 id="export-errors-heading">Export failed</h2>
+          <h2 id="export-errors-heading">{ja ? "エクスポートに失敗しました" : "Export failed"}</h2>
           <ul>
             {exportIssues.map((issue, index) => (
               <li key={`${issue.code}-${issue.path}-${index}`}>
@@ -204,7 +207,7 @@ export function TimelineScreen({
                           onEditEvent(event.id);
                         }}
                       >
-                        Edit
+                        {ja ? "編集" : "Edit"}
                       </button>
                     )}
                   </div>
@@ -229,9 +232,9 @@ export function TimelineScreen({
           marginTop: "1rem",
         }}
       >
-        <button onClick={onBackToHome}>Home</button>
+        <button onClick={onBackToHome}>{ja ? "ホーム" : "Home"}</button>
 
-        <button onClick={onAddEvent}>Add Event</button>
+        <button onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
       </div>
     </main>
   );

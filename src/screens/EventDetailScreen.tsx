@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
+import { useLanguage } from "../i18n/LanguageContext";
 import {
   getEventHistoryDate,
   validateHistoryDate,
@@ -74,6 +75,8 @@ export function EventDetailScreen({
   isDraft,
   onCancel,
 }: EventDetailScreenProps) {
+  const { language } = useLanguage();
+  const ja = language === "ja";
   const event =
     dataset.events.find((event) => event.id === selectedEvent) ?? null;
   const relatedEntityIds = new Set(
@@ -120,7 +123,7 @@ export function EventDetailScreen({
   );
 
   if (!event) {
-    return <p>Event not found.</p>;
+    return <p>{ja ? "Eventが見つかりません。" : "Event not found."}</p>;
   }
 
   const editedHistoryDate: HistoryDate = {
@@ -157,17 +160,17 @@ export function EventDetailScreen({
   return (
     <div className="detail-screen">
       <div className="detail-header">
-        <h1>Event Detail</h1>
+        <h1>{ja ? "できごとの詳細" : "Event Detail"}</h1>
         <p>
           {event.name || "(Unnamed Event)"}
         </p>
       </div>
 
       <div>
-        <label>Date</label>
+        <label>{ja ? "日付" : "Date"}</label>
         <div className="date-fields">
           <label>
-            Year
+            {ja ? "年" : "Year"}
             <br />
             <input
               type="number"
@@ -186,7 +189,7 @@ export function EventDetailScreen({
           </label>
 
           <label>
-            Month
+            {ja ? "月" : "Month"}
             <br />
             <input
               type="number"
@@ -207,7 +210,7 @@ export function EventDetailScreen({
           </label>
 
           <label>
-            Day
+            {ja ? "日" : "Day"}
             <br />
             <input
               type="number"
@@ -231,11 +234,12 @@ export function EventDetailScreen({
       <br />
 
       <div>
-        <label>Name</label>
+        <label>{ja ? "名前" : "Name"}</label>
         <br />
         <input
           type="text"
           value={name}
+          placeholder={ja ? "できごとの名前を入力してください" : "Enter event name"}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
@@ -243,7 +247,7 @@ export function EventDetailScreen({
       <br />
 
       <div>
-        <label>Description</label>
+        <label>{ja ? "説明" : "Description"}</label>
         <br />
         <textarea
           rows={5}
@@ -254,11 +258,11 @@ export function EventDetailScreen({
       <br />
 
       <div>
-        <label>Related Entities</label>
+        <label>{ja ? "関連エンティティ" : "Related Entities"}</label>
 
         <div className="related-list">
           {relatedEntities.length === 0 ? (
-            <p style={{ color: "#666", margin: 0 }}>No related entities.</p>
+            <p style={{ color: "#666", margin: 0 }}>{ja ? "関連Entityはありません。" : "No related entities."}</p>
           ) : (
             relatedEntities.map((entity) => (
               <div
@@ -284,7 +288,7 @@ export function EventDetailScreen({
                           onSelectEntity(entity.id);
                         }}
                       >
-                        Edit Entity
+                        {ja ? "Entityを編集" : "Edit Entity"}
                       </button>
                       <button
                         type="button"
@@ -294,7 +298,7 @@ export function EventDetailScreen({
                           setEntityPendingRemoval(entity);
                         }}
                       >
-                        Remove Association
+                        {ja ? "関連付けを解除" : "Remove Association"}
                       </button>
                     </div>
                   )}
@@ -310,7 +314,7 @@ export function EventDetailScreen({
             onClick={handleSaveAndAddEntity}
             disabled={historyDateValidationError !== null}
           >
-            Save and Add Related Entity
+            {ja ? "保存して関連エンティティを追加" : "Save and Add Related Entity"}
           </button>
         </div>
       </div>
@@ -323,7 +327,7 @@ export function EventDetailScreen({
           type="button"
           onClick={() => onCancel(event.id, isDraft)}
         >
-          Cancel
+          {ja ? "キャンセル" : "Cancel"}
         </button>
 
         <button
@@ -331,7 +335,7 @@ export function EventDetailScreen({
           onClick={handleSave}
           disabled={historyDateValidationError !== null}
         >
-          Save Event
+          {ja ? "できごとを保存" : "Save Event"}
         </button>
 
       </div>
@@ -342,7 +346,7 @@ export function EventDetailScreen({
           className="danger-action"
           onClick={() => setIsDeleteConfirmationOpen(true)}
         >
-          Delete Event
+          {ja ? "できごとを削除" : "Delete Event"}
         </button>
       </div>
 
@@ -351,24 +355,21 @@ export function EventDetailScreen({
           ariaLabelledby="delete-event-heading"
           onDismiss={() => setIsDeleteConfirmationOpen(false)}
         >
-          <h2 id="delete-event-heading">Delete Event?</h2>
-          <p>
-            This permanently removes the Event and its connected Relations.
-            Unsaved edits will also be discarded.
-          </p>
+          <h2 id="delete-event-heading">{ja ? "できごとを削除しますか？" : "Delete Event?"}</h2>
+          <p>{ja ? "このできごとと関連するRelationを完全に削除します。保存していない編集も破棄されます。" : "This permanently removes the Event and its connected Relations. Unsaved edits will also be discarded."}</p>
           <div className="modal-actions">
             <button
               type="button"
               onClick={() => setIsDeleteConfirmationOpen(false)}
             >
-              Keep Event
+              {ja ? "できごとを残す" : "Keep Event"}
             </button>
             <button
               type="button"
               className="danger-action"
               onClick={() => onDeleteEvent(event.id)}
             >
-              Delete Event
+              {ja ? "できごとを削除" : "Delete Event"}
             </button>
           </div>
         </ModalDialog>
@@ -379,18 +380,14 @@ export function EventDetailScreen({
           ariaLabelledby="remove-entity-heading"
           onDismiss={() => setEntityPendingRemoval(null)}
         >
-          <h2 id="remove-entity-heading">Remove Entity Association?</h2>
-          <p>
-            This removes every direct Relation between this Event and
-            {` ${entityPendingRemoval.name ?? "(Unnamed Entity)"}`}. The
-            Entity itself will remain in the Dataset.
-          </p>
+          <h2 id="remove-entity-heading">{ja ? "エンティティの関連付けを解除しますか？" : "Remove Entity Association?"}</h2>
+          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? "（名前なしのエンティティ）"}の直接のRelationをすべて解除します。エンティティ自体はDatasetに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? "(Unnamed Entity)"}. The Entity itself will remain in the Dataset.`}</p>
           <div className="modal-actions">
             <button
               type="button"
               onClick={() => setEntityPendingRemoval(null)}
             >
-              Keep Association
+              {ja ? "関連付けを残す" : "Keep Association"}
             </button>
             <button
               type="button"
@@ -401,7 +398,7 @@ export function EventDetailScreen({
                 setEntityPendingRemoval(null);
               }}
             >
-              Remove Association
+              {ja ? "関連付けを解除" : "Remove Association"}
             </button>
           </div>
         </ModalDialog>

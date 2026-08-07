@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type EntityDetailScreenProps = {
   dataset: Dataset;
@@ -22,6 +23,8 @@ export function EntityDetailScreen({
   onSelectEvent,
   onBackToTimeline,
 }: EntityDetailScreenProps) {
+  const { language } = useLanguage();
+  const ja = language === "ja";
   const entity =
     dataset.entities.find((entity) => entity.id === selectedEntity) ?? null;
   const [name, setName] = useState(entity?.name ?? "");
@@ -33,7 +36,7 @@ export function EntityDetailScreen({
     useState(false);
 
   if (!entity) {
-    return <p>Entity not found.</p>;
+    return <p>{ja ? "Entityが見つかりません。" : "Entity not found."}</p>;
   }
 
   const handleSave = () => {
@@ -61,18 +64,19 @@ export function EntityDetailScreen({
   return (
     <div className="detail-screen">
       <div className="detail-header">
-        <h1>Entity Detail</h1>
+        <h1>{ja ? "エンティティの詳細" : "Entity Detail"}</h1>
         <p>
           {entity.name || "(Unnamed Entity)"}
         </p>
       </div>
 
       <div>
-        <label>Name</label>
+        <label>{ja ? "名前" : "Name"}</label>
         <br />
         <input
           type="text"
           value={name}
+          placeholder={ja ? "人物・組織・場所などを入力してください" : "Enter a person, organization, place, or other entity"}
           onChange={(event) => setName(event.target.value)}
         />
       </div>
@@ -80,7 +84,7 @@ export function EntityDetailScreen({
       <br />
 
       <div>
-        <label>Description</label>
+        <label>{ja ? "説明" : "Description"}</label>
         <br />
         <textarea
           rows={5}
@@ -92,11 +96,11 @@ export function EntityDetailScreen({
       <br />
 
       <div>
-        <label>Related Events</label>
+        <label>{ja ? "関連するできごと" : "Related Events"}</label>
 
         <div className="related-list">
           {relatedEvents.length === 0 ? (
-            <p style={{ color: "#666", margin: 0 }}>No related events.</p>
+            <p style={{ color: "#666", margin: 0 }}>{ja ? "関連Eventはありません。" : "No related events."}</p>
           ) : (
             relatedEvents.map((event) => (
               <div
@@ -120,7 +124,7 @@ export function EntityDetailScreen({
                         onSelectEvent(event.id);
                       }}
                     >
-                      Edit Event
+                      {ja ? "できごとを編集" : "Edit Event"}
                     </button>
                   )}
                 </div>
@@ -140,10 +144,10 @@ export function EntityDetailScreen({
 
       <div className="detail-primary-actions">
         <button type="button" onClick={onBackToTimeline}>
-          Cancel
+          {ja ? "キャンセル" : "Cancel"}
         </button>
         <button type="button" onClick={handleSave}>
-          Save Entity
+          {ja ? "エンティティを保存" : "Save Entity"}
         </button>
       </div>
 
@@ -153,7 +157,7 @@ export function EntityDetailScreen({
           className="danger-action"
           onClick={() => setIsDeleteConfirmationOpen(true)}
         >
-          Delete Entity
+          {ja ? "エンティティを削除" : "Delete Entity"}
         </button>
       </div>
 

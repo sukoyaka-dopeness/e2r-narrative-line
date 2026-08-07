@@ -486,8 +486,8 @@ button:disabled {
   position: fixed;
   right: 0;
   left: 0;
-  bottom: 64px;
-  z-index: 10;
+  bottom: 0;
+  z-index: 20;
   padding: 12px 0;
   background: var(--bg);
   border-top: 1px solid var(--border);

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Dataset } from "../models/Dataset";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type EntityPickerScreenProps = {
   dataset: Dataset;
@@ -16,6 +17,8 @@ export function EntityPickerScreen({
   onCreateEntity,
   onCancel,
 }: EntityPickerScreenProps) {
+  const { language } = useLanguage();
+  const ja = language === "ja";
   const [newEntityName, setNewEntityName] = useState("");
   const normalizedNewEntityName = newEntityName.trim();
   const relatedEntityIds = new Set(
@@ -35,14 +38,14 @@ export function EntityPickerScreen({
   return (
     <div className="detail-screen">
       <div className="detail-header">
-        <h1>Add Related Entity</h1>
+        <h1>{ja ? "関連エンティティを追加" : "Add Related Entity"}</h1>
         <p>
-          Select an Entity to associate with this Event.
+          {ja ? "このできごとに関連付けるエンティティを選択してください。" : "Select an Entity to associate with this Event."}
         </p>
       </div>
 
       {dataset.entities.length === 0 ? (
-        <p>No Entities are available in this Dataset.</p>
+        <p>{ja ? "このDatasetにエンティティはありません。" : "No Entities are available in this Dataset."}</p>
       ) : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
           {dataset.entities.map((entity) => {
@@ -67,7 +70,7 @@ export function EntityPickerScreen({
                     onClick={() => onSelectEntity(entity.id)}
                     disabled={isRelated}
                   >
-                    {isRelated ? "Already Related" : "Add Entity"}
+                    {isRelated ? (ja ? "関連付け済み" : "Already Related") : (ja ? "関連付けを追加" : "Add Entity")}
                   </button>
                 </div>
               </div>
@@ -77,31 +80,30 @@ export function EntityPickerScreen({
       )}
 
       <div style={{ marginTop: "1rem" }}>
-        <h2>Create New Entity</h2>
+        <h2>{ja ? "新しいエンティティを作成" : "Create New Entity"}</h2>
         <p style={{ color: "#666" }}>
-          Entities may share the same name. A new Entity will not be merged with
-          an existing one automatically.
+          {ja ? "エンティティは同じ名前を持てます。新しいエンティティは既存のエンティティと自動的に統合されません。" : "Entities may share the same name. A new Entity will not be merged with an existing one automatically."}
         </p>
         <div className="entity-picker-create">
           <input
             type="text"
             value={newEntityName}
             onChange={(event) => setNewEntityName(event.target.value)}
-            placeholder="Entity name"
+            placeholder={ja ? "関連する人物や組織、場所などを入力してください" : "Entity name"}
           />
           <button
             type="button"
             onClick={() => onCreateEntity?.(normalizedNewEntityName)}
             disabled={!onCreateEntity || normalizedNewEntityName.length === 0}
           >
-            Create and Add
+            {ja ? "作成して追加" : "Create and Add"}
           </button>
         </div>
       </div>
 
       <div style={{ marginTop: "1rem" }}>
         <button type="button" onClick={onCancel}>
-          Cancel
+          {ja ? "キャンセル" : "Cancel"}
         </button>
       </div>
     </div>

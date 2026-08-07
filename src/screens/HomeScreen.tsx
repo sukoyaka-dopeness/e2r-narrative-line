@@ -3,6 +3,7 @@ import type {
   DatasetImportIssue,
   DatasetImportResult,
 } from "../services/DatasetService";
+import { useLanguage } from "../i18n/LanguageContext";
 
 type Props = {
   onOpenTimeline: () => void;
@@ -29,6 +30,8 @@ export function HomeScreen({
   onResumeDataset,
   hasResumeDataset = false,
 }: Props) {
+  const { language } = useLanguage();
+  const ja = language === "ja";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importIssues, setImportIssues] = useState<DatasetImportIssue[]>([]);
@@ -75,7 +78,7 @@ export function HomeScreen({
         padding: "1rem",
       }}
     >
-      <h1>Get Started</h1>
+      <h1>{ja ? "はじめる" : "Get Started"}</h1>
 
       <input
         ref={fileInputRef}
@@ -88,7 +91,7 @@ export function HomeScreen({
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%" }}>
         {hasResumeDataset && (
           <button type="button" onClick={onResumeDataset} style={{ width: "100%" }}>
-            Open Editing Dataset
+            {ja ? "編集中のDatasetを開く" : "Open Editing Dataset"}
           </button>
         )}
         <button
@@ -97,7 +100,7 @@ export function HomeScreen({
           disabled={!onCreateDataset}
           style={{ width: "100%" }}
         >
-          Create Dataset
+          {ja ? "Datasetを新規作成" : "Create Dataset"}
         </button>
 
         <button
@@ -106,21 +109,29 @@ export function HomeScreen({
           disabled={isImporting}
           style={{ width: "100%" }}
         >
-          {isImporting ? "Importing..." : "Import E2R JSON"}
+          {isImporting ? (ja ? "読み込み中…" : "Importing…") : (ja ? "E2R JSONを読み込む" : "Import E2R JSON")}
         </button>
 
         <div style={{ marginTop: "0.75rem" }}>
           <button type="button" onClick={onOpenTimeline} style={{ width: "100%" }}>
-            Open Sample Dataset
+           {ja ? "サンプルDatasetを開く" : "Open Sample Dataset"}
           </button>
         </div>
       </div>
+
+      <a
+        href="https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/user-guide-ja.md"
+        target="_blank"
+        rel="noreferrer"
+      >
+        {ja ? "日本語ユーザーガイド" : "Japanese user guide"}
+      </a>
 
       {fileReadError && <p role="alert">{fileReadError}</p>}
 
       {importIssues.length > 0 && (
         <section aria-labelledby="import-errors-heading">
-          <h2 id="import-errors-heading">Import failed</h2>
+        <h2 id="import-errors-heading">{ja ? "読み込みに失敗しました" : "Import failed"}</h2>
           <ul>
             {importIssues.map((issue, index) => (
               <li key={`${issue.code}-${issue.path}-${index}`}>
