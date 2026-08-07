@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HomeScreen } from "./screens/HomeScreen";
 import { TimelineScreen } from "./screens/TimelineScreen";
 import { EventDetailScreen } from "./screens/EventDetailScreen";
@@ -27,6 +27,14 @@ import { addEntity, deleteEntity, updateEntity } from "./services/EntityService"
 import type { HistoryDate } from "./services/HistoryService";
 
 function App() {
+  const storedDataset = (() => {
+    try {
+      const source = window.localStorage.getItem("narrativeline.lastDataset");
+      return source ? importDatasetJson(source).dataset : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
   const [state, setState] = useState<AppState>({
     currentScreen: "home",
     currentDialog: null,
@@ -35,7 +43,14 @@ function App() {
     draftEventId: null,
   });
 
-  const [dataset, setDataset] = useState<Dataset>(sampleDataset);
+  const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sampleDataset);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "narrativeline.lastDataset",
+      JSON.stringify(dataset),
+    );
+  }, [dataset]);
 
   const handleOpenDataset = (nextDataset: Dataset) => {
     setDataset(nextDataset);
@@ -233,6 +248,8 @@ function App() {
       <AppFrame>
         <HomeScreen
           onOpenTimeline={() => handleOpenDataset(sampleDataset)}
+          onResumeDataset={() => handleOpenDataset(dataset)}
+          hasResumeDataset={storedDataset !== undefined}
           onCreateDataset={() => handleOpenDataset(createDataset())}
           onImportDataset={handleImportDataset}
         />

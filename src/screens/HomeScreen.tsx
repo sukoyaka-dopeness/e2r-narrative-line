@@ -8,6 +8,8 @@ type Props = {
   onOpenTimeline: () => void;
   onCreateDataset?: () => void;
   onImportDataset: (source: string) => DatasetImportResult;
+  onResumeDataset?: () => void;
+  hasResumeDataset?: boolean;
 };
 
 function formatImportIssue(issue: DatasetImportIssue): string {
@@ -24,6 +26,8 @@ export function HomeScreen({
   onOpenTimeline,
   onCreateDataset,
   onImportDataset,
+  onResumeDataset,
+  hasResumeDataset = false,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -82,6 +86,11 @@ export function HomeScreen({
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%" }}>
+        {hasResumeDataset && (
+          <button type="button" onClick={onResumeDataset} style={{ width: "100%" }}>
+            Open Editing Dataset
+          </button>
+        )}
         <button
           type="button"
           onClick={onCreateDataset}
