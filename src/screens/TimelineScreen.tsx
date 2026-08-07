@@ -87,13 +87,12 @@ export function TimelineScreen({
     <main className="timeline-screen" style={{ padding: "1rem" }}>
       <h1>Timeline</h1>
 
-      <label className="dataset-title-editor">
-        Dataset title
+      <div className="dataset-title-editor">
         <input
           type="text"
           value={titleDraft}
           onChange={(event) => setTitleDraft(event.target.value)}
-          placeholder="Untitled Dataset"
+          placeholder="Enter dataset title"
           aria-label="Dataset title"
         />
         <button
@@ -103,7 +102,7 @@ export function TimelineScreen({
         >
           Apply title
         </button>
-      </label>
+      </div>
 
       <div
         style={{
