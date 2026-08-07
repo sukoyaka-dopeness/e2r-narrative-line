@@ -2,6 +2,8 @@
 
 NarrativeLine is an application for editing E2R Datasets as a timeline of Events.
 
+For an introduction to E2R, see the [E2R Overview](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/e2r-overview-en.md).
+
 ## Starting a Dataset
 
 From the Home screen you can create a Dataset, import E2R JSON, open the sample Dataset, or resume the Dataset you were editing.
@@ -29,4 +31,3 @@ Choose **Export E2R JSON**. A title is used for the filename; without a title, t
 ## Validation messages
 
 Errors prevent a Dataset from opening. Warnings allow it to open but should be reviewed. Diagnostics include a stable code and a JSON Pointer location.
-
