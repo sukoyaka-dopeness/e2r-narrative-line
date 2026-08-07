@@ -8,6 +8,7 @@ import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
 } from "../services/HistoryService";
+import type { CoreDatasetValidationIssue } from "../services/ValidationService";
 
 type TimelineScreenProps = {
   dataset: Dataset;
@@ -17,6 +18,7 @@ type TimelineScreenProps = {
   onAddEvent: () => void;
   onExportDataset: () => DatasetExportResult;
   onBackToHome: () => void;
+  importWarnings?: CoreDatasetValidationIssue[];
 };
 
 function formatExportIssue(issue: DatasetExportIssue): string {
@@ -37,6 +39,7 @@ export function TimelineScreen({
   onAddEvent,
   onExportDataset,
   onBackToHome,
+  importWarnings = [],
 }: TimelineScreenProps) {
   const selectedEventRef = useRef<HTMLLIElement>(null);
   const [exportIssues, setExportIssues] = useState<DatasetExportIssue[]>([]);
@@ -94,6 +97,26 @@ export function TimelineScreen({
       </div>
 
       {downloadError && <p role="alert">{downloadError}</p>}
+
+      {importWarnings.length > 0 && (
+        <section aria-labelledby="import-warnings-heading">
+          <h2 id="import-warnings-heading">Import warnings</h2>
+          <ul>
+            {importWarnings.map((issue, index) => {
+              const location = issue.path === "" ? "the document" : issue.path;
+              const relatedIds = issue.relatedIds?.length
+                ? ` (${issue.relatedIds.join(", ")})`
+                : "";
+
+              return (
+                <li key={`${issue.code}-${issue.path}-${index}`}>
+                  {issue.code} at {location}{relatedIds}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {exportIssues.length > 0 && (
         <section aria-labelledby="export-errors-heading">

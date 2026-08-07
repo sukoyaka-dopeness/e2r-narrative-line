@@ -38,7 +38,13 @@ test("accepts a valid Core Dataset and preserves unknown data", () => {
   const result = validateCoreDataset(dataset);
 
   assert.equal(result.isValid, true);
-  assert.equal(result.issues.length, 0);
+  assert.deepEqual(result.issues, [
+    {
+      code: "unknown_extension",
+      path: "/extensions/experimental.example",
+      severity: "warning",
+    },
+  ]);
   assert.equal(result.dataset, dataset);
 });
 

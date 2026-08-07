@@ -6,6 +6,7 @@ export type CoreDatasetValidationCode = string;
 export interface CoreDatasetValidationIssue {
   code: CoreDatasetValidationCode;
   path: string;
+  severity?: "warning";
   relatedIds?: string[];
 }
 
@@ -18,10 +19,10 @@ export interface CoreDatasetValidationResult {
 export function validateCoreDataset(value: unknown): CoreDatasetValidationResult {
   const result = validateDataset(value);
   const issues = result.diagnostics
-    .filter((item) => item.severity === "error")
-    .map(({ code, path, relatedIds }) => ({
+    .map(({ severity, code, path, relatedIds }) => ({
       code,
       path,
+      ...(severity === "warning" ? { severity } : {}),
       ...(relatedIds ? { relatedIds } : {}),
     }));
 

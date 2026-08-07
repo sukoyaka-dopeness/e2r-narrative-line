@@ -13,6 +13,7 @@ import {
   createDataset,
   exportDatasetJson,
   importDatasetJson,
+  type DatasetImportIssue,
   type DatasetExportResult,
   type DatasetImportResult,
 } from "./services/DatasetService";
@@ -25,6 +26,7 @@ import {
 } from "./services/EventService";
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
 import type { HistoryDate } from "./services/HistoryService";
+import type { CoreDatasetValidationIssue } from "./services/ValidationService";
 
 function App() {
   const storedDataset = (() => {
@@ -44,6 +46,7 @@ function App() {
   });
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sampleDataset);
+  const [importWarnings, setImportWarnings] = useState<CoreDatasetValidationIssue[]>([]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -52,8 +55,12 @@ function App() {
     );
   }, [dataset]);
 
-  const handleOpenDataset = (nextDataset: Dataset) => {
+  const handleOpenDataset = (
+    nextDataset: Dataset,
+    warnings: CoreDatasetValidationIssue[] = [],
+  ) => {
     setDataset(nextDataset);
+    setImportWarnings(warnings);
     setState((currentState) =>
       navigate(
         {
@@ -71,7 +78,11 @@ function App() {
     const result = importDatasetJson(source);
 
     if (result.dataset) {
-      handleOpenDataset(result.dataset);
+      const warnings = result.issues.filter(
+        (issue): issue is DatasetImportIssue & { severity: "warning" } =>
+          "severity" in issue && issue.severity === "warning",
+      );
+      handleOpenDataset(result.dataset, warnings);
     }
 
     return result;
@@ -306,6 +317,7 @@ function App() {
     <AppFrame>
       <TimelineScreen
         dataset={dataset}
+        importWarnings={importWarnings}
         selectedEvent={state.selectedEvent}
         onSelectEvent={handleSelectEvent}
         onEditEvent={handleEditEvent}
