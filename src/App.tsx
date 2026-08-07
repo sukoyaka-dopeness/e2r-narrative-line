@@ -12,6 +12,7 @@ import type { Dataset } from "./models/Dataset";
 import {
   createDataset,
   exportDatasetJson,
+  updateDatasetTitle,
   importDatasetJson,
   type DatasetImportIssue,
   type DatasetExportResult,
@@ -90,6 +91,10 @@ function App() {
 
   const handleExportDataset = (): DatasetExportResult =>
     exportDatasetJson(dataset);
+
+  const handleUpdateDatasetTitle = (title: string) => {
+    setDataset((currentDataset) => updateDatasetTitle(currentDataset, title));
+  };
 
   const handleUpdateEvent = (
     eventId: string,
@@ -318,6 +323,7 @@ function App() {
       <TimelineScreen
         dataset={dataset}
         importWarnings={importWarnings}
+        onUpdateDatasetTitle={handleUpdateDatasetTitle}
         selectedEvent={state.selectedEvent}
         onSelectEvent={handleSelectEvent}
         onEditEvent={handleEditEvent}

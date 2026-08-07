@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   exportDatasetJson,
+  getDatasetExportFilename,
   importDatasetJson,
+  updateDatasetTitle,
 } from "../src/services/DatasetService.ts";
 import { deleteEntity } from "../src/services/EntityService.ts";
 import {
@@ -137,6 +139,37 @@ test("imports valid JSON without assigning a Dataset ID", () => {
   assert.equal(result.isValid, true);
   assert.deepEqual(result.dataset, validDataset());
   assert.equal(result.dataset.extensions, undefined);
+});
+
+test("updates the optional Dataset title without discarding metadata", () => {
+  const dataset = {
+    ...validDataset(),
+    extensions: { metadata: { datasetId: "dataset-1", source: "test" } },
+  };
+
+  const titled = updateDatasetTitle(dataset, "  My Dataset  ");
+  assert.deepEqual(titled.extensions.metadata, {
+    datasetId: "dataset-1",
+    source: "test",
+    title: "My Dataset",
+  });
+
+  const untitled = updateDatasetTitle(titled, " ");
+  assert.deepEqual(untitled.extensions.metadata, {
+    datasetId: "dataset-1",
+    source: "test",
+  });
+});
+
+test("uses a safe Dataset title for export filenames", () => {
+  assert.equal(
+    getDatasetExportFilename({
+      ...validDataset(),
+      extensions: { metadata: { title: "A: Dataset/Title?" } },
+    }),
+    "A- Dataset-Title.e2r.json",
+  );
+  assert.equal(getDatasetExportFilename(validDataset()), "e2r-dataset.e2r.json");
 });
 
 test("reports JSON syntax errors separately from Core validation errors", () => {

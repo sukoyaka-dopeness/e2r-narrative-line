@@ -4,6 +4,7 @@ import type {
   DatasetExportIssue,
   DatasetExportResult,
 } from "../services/DatasetService";
+import { getDatasetExportFilename } from "../services/DatasetService";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
@@ -19,6 +20,7 @@ type TimelineScreenProps = {
   onExportDataset: () => DatasetExportResult;
   onBackToHome: () => void;
   importWarnings?: CoreDatasetValidationIssue[];
+  onUpdateDatasetTitle: (title: string) => void;
 };
 
 function formatExportIssue(issue: DatasetExportIssue): string {
@@ -40,10 +42,14 @@ export function TimelineScreen({
   onExportDataset,
   onBackToHome,
   importWarnings = [],
+  onUpdateDatasetTitle,
 }: TimelineScreenProps) {
   const selectedEventRef = useRef<HTMLLIElement>(null);
   const [exportIssues, setExportIssues] = useState<DatasetExportIssue[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [titleDraft, setTitleDraft] = useState(
+    dataset.extensions?.metadata?.title ?? "",
+  );
 
   useEffect(() => {
     selectedEventRef.current?.focus();
@@ -70,7 +76,7 @@ export function TimelineScreen({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "e2r-dataset.e2r.json";
+    anchor.download = getDatasetExportFilename(dataset);
     document.body.append(anchor);
     anchor.click();
     anchor.remove();
@@ -80,6 +86,24 @@ export function TimelineScreen({
   return (
     <main className="timeline-screen" style={{ padding: "1rem" }}>
       <h1>Timeline</h1>
+
+      <label className="dataset-title-editor">
+        Dataset title
+        <input
+          type="text"
+          value={titleDraft}
+          onChange={(event) => setTitleDraft(event.target.value)}
+          placeholder="Untitled Dataset"
+          aria-label="Dataset title"
+        />
+        <button
+          type="button"
+          onClick={() => onUpdateDatasetTitle(titleDraft)}
+          disabled={titleDraft === (dataset.extensions?.metadata?.title ?? "")}
+        >
+          Apply title
+        </button>
+      </label>
 
       <div
         style={{
