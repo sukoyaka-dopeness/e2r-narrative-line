@@ -59,6 +59,16 @@ function App() {
     );
   }, [dataset]);
 
+  useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, [state.currentScreen]);
+
   const handleOpenDataset = (
     nextDataset: Dataset,
     warnings: CoreDatasetValidationIssue[] = [],
