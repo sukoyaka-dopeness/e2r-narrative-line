@@ -57,7 +57,7 @@ export function TimelineScreen({
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       selectedEventRef.current?.focus();
-      selectedEventRef.current?.scrollIntoView({ block: "nearest" });
+      selectedEventRef.current?.scrollIntoView({ block: "center" });
     });
 
     return () => window.cancelAnimationFrame(frame);
