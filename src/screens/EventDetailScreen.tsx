@@ -288,7 +288,7 @@ export function EventDetailScreen({
                           onSelectEntity(entity.id);
                         }}
                       >
-                        {ja ? "Entityを編集" : "Edit Entity"}
+                        {ja ? "エンティティを編集" : "Edit Entity"}
                       </button>
                       <button
                         type="button"
