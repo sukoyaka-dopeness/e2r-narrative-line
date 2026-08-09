@@ -381,7 +381,7 @@ export function EventDetailScreen({
           onDismiss={() => setEntityPendingRemoval(null)}
         >
           <h2 id="remove-entity-heading">{ja ? "エンティティの関連付けを解除しますか？" : "Remove Entity Association?"}</h2>
-          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? "（名前なしのエンティティ）"}の直接の関係をすべて解除します。エンティティ自体はDatasetに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? "(Unnamed Entity)"}. The Entity itself will remain in the Dataset.`}</p>
+          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? "（名前なしのエンティティ）"}の直接の関係をすべて解除します。エンティティ自体はデータセットに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? "(Unnamed Entity)"}. The Entity itself will remain in the Dataset.`}</p>
           <div className="modal-actions">
             <button
               type="button"
