@@ -11,5 +11,6 @@ export interface AppState {
   selectedEvent: string | null;
   selectedEntity: string | null;
   returnEventId: string | null;
+  returnEntityId: string | null;
   draftEventId: string | null;
 }

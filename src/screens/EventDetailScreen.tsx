@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
@@ -41,6 +41,7 @@ function historyDatesEqual(
 type EventDetailScreenProps = {
   dataset: Dataset;
   selectedEvent: string | null;
+  focusedRelatedEntityId: string | null;
   onUpdateEvent: (
     eventId: string,
     updates: {
@@ -67,6 +68,7 @@ type EventDetailScreenProps = {
 export function EventDetailScreen({
   dataset,
   selectedEvent,
+  focusedRelatedEntityId,
   onUpdateEvent,
   onDeleteEvent,
   onSelectEntity,
@@ -113,14 +115,24 @@ export function EventDetailScreen({
   );
   const [name, setName] = useState(event?.name ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
-  const [selectedRelatedEntity, setSelectedRelatedEntity] = useState<
-    string | null
-  >(null);
+  const [selectedRelatedEntity, setSelectedRelatedEntity] = useState<string | null>(
+    focusedRelatedEntityId,
+  );
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
   const [entityPendingRemoval, setEntityPendingRemoval] = useState<Entity | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!focusedRelatedEntityId) return;
+    const frame = window.requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-related-entity-id="${focusedRelatedEntityId}"]`)
+        ?.scrollIntoView({ block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusedRelatedEntityId]);
 
   if (!event) {
     return <p>{ja ? "Eventが見つかりません。" : "Event not found."}</p>;
@@ -267,6 +279,7 @@ export function EventDetailScreen({
             relatedEntities.map((entity) => (
               <div
                 key={entity.id}
+                data-related-entity-id={entity.id}
                 onClick={() => setSelectedRelatedEntity(entity.id)}
                 className={`related-card${
                   selectedRelatedEntity === entity.id

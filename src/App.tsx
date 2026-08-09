@@ -47,6 +47,7 @@ function App() {
     selectedEvent: null,
     selectedEntity: null,
     returnEventId: null,
+    returnEntityId: null,
     draftEventId: null,
   });
 
@@ -83,6 +84,7 @@ function App() {
           selectedEvent: null,
           selectedEntity: null,
           returnEventId: null,
+          returnEntityId: null,
           draftEventId: null,
         },
         "timeline",
@@ -176,6 +178,8 @@ function App() {
           selectedEntity: entityId,
           returnEventId:
             state.currentScreen === "eventDetail" ? state.selectedEvent : null,
+          returnEntityId:
+            state.currentScreen === "eventDetail" ? entityId : null,
         },
         "entityDetail",
       ),
@@ -321,6 +325,7 @@ function App() {
         <EventDetailScreen
           dataset={dataset}
           selectedEvent={state.selectedEvent}
+          focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
           onDeleteEvent={handleDeleteEvent}
           onSelectEntity={handleSelectEntity}
