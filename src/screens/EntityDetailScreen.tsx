@@ -171,7 +171,7 @@ export function EntityDetailScreen({
           </h2>
           <p>
             {ja
-              ? "このエンティティと接続されているすべてのRelationを完全に削除します。保存していない編集も破棄されます。"
+              ? "このエンティティと接続されているすべての関係を完全に削除します。保存していない編集も破棄されます。"
               : "This permanently removes the Entity and all of its connected Relations. Unsaved edits will also be discarded."}
           </p>
           <div className="modal-actions">

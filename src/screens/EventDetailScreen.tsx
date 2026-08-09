@@ -167,7 +167,7 @@ export function EventDetailScreen({
       </div>
 
       <div>
-        <label>{ja ? "日付" : "Date"}</label>
+        <label>{ja ? "グレゴリオ暦" : "Date"}</label>
         <div className="date-fields">
           <label>
             {ja ? "年" : "Year"}
@@ -262,7 +262,7 @@ export function EventDetailScreen({
 
         <div className="related-list">
           {relatedEntities.length === 0 ? (
-            <p style={{ color: "#666", margin: 0 }}>{ja ? "関連Entityはありません。" : "No related entities."}</p>
+            <p style={{ color: "#666", margin: 0 }}>{ja ? "関連するエンティティはありません。" : "No related entities."}</p>
           ) : (
             relatedEntities.map((entity) => (
               <div
@@ -356,7 +356,7 @@ export function EventDetailScreen({
           onDismiss={() => setIsDeleteConfirmationOpen(false)}
         >
           <h2 id="delete-event-heading">{ja ? "できごとを削除しますか？" : "Delete Event?"}</h2>
-          <p>{ja ? "このできごとと関連するRelationを完全に削除します。保存していない編集も破棄されます。" : "This permanently removes the Event and its connected Relations. Unsaved edits will also be discarded."}</p>
+          <p>{ja ? "このできごとと関連する関係を完全に削除します。保存していない編集も破棄されます。" : "This permanently removes the Event and its connected Relations. Unsaved edits will also be discarded."}</p>
           <div className="modal-actions">
             <button
               type="button"
@@ -381,7 +381,7 @@ export function EventDetailScreen({
           onDismiss={() => setEntityPendingRemoval(null)}
         >
           <h2 id="remove-entity-heading">{ja ? "エンティティの関連付けを解除しますか？" : "Remove Entity Association?"}</h2>
-          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? "（名前なしのエンティティ）"}の直接のRelationをすべて解除します。エンティティ自体はDatasetに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? "(Unnamed Entity)"}. The Entity itself will remain in the Dataset.`}</p>
+          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? "（名前なしのエンティティ）"}の直接の関係をすべて解除します。エンティティ自体はDatasetに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? "(Unnamed Entity)"}. The Entity itself will remain in the Dataset.`}</p>
           <div className="modal-actions">
             <button
               type="button"
