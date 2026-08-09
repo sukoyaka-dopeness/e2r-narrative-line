@@ -10,5 +10,6 @@ export interface AppState {
   currentDialog: string | null;
   selectedEvent: string | null;
   selectedEntity: string | null;
+  returnEventId: string | null;
   draftEventId: string | null;
 }

@@ -12,7 +12,7 @@ type EntityDetailScreenProps = {
   ) => void;
   onDeleteEntity: (entityId: string) => void;
   onSelectEvent: (eventId: string) => void;
-  onBackToTimeline: () => void;
+  onBack: () => void;
 };
 
 export function EntityDetailScreen({
@@ -21,7 +21,7 @@ export function EntityDetailScreen({
   onUpdateEntity,
   onDeleteEntity,
   onSelectEvent,
-  onBackToTimeline,
+  onBack,
 }: EntityDetailScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
@@ -41,7 +41,7 @@ export function EntityDetailScreen({
 
   const handleSave = () => {
     onUpdateEntity(entity.id, { name, description });
-    onBackToTimeline();
+    onBack();
   };
 
   const relatedEventIds = new Set(
@@ -143,7 +143,7 @@ export function EntityDetailScreen({
       <br />
 
       <div className="detail-primary-actions">
-        <button type="button" onClick={onBackToTimeline}>
+        <button type="button" onClick={onBack}>
           {ja ? "キャンセル" : "Cancel"}
         </button>
         <button type="button" onClick={handleSave}>

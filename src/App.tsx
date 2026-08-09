@@ -46,6 +46,7 @@ function App() {
     currentDialog: null,
     selectedEvent: null,
     selectedEntity: null,
+    returnEventId: null,
     draftEventId: null,
   });
 
@@ -81,6 +82,7 @@ function App() {
           ...currentState,
           selectedEvent: null,
           selectedEntity: null,
+          returnEventId: null,
           draftEventId: null,
         },
         "timeline",
@@ -172,6 +174,8 @@ function App() {
         {
           ...state,
           selectedEntity: entityId,
+          returnEventId:
+            state.currentScreen === "eventDetail" ? state.selectedEvent : null,
         },
         "entityDetail",
       ),
@@ -294,7 +298,19 @@ function App() {
           onUpdateEntity={handleUpdateEntity}
           onDeleteEntity={handleDeleteEntity}
           onSelectEvent={handleEditEvent}
-          onBackToTimeline={() => setState(navigate(state, "timeline"))}
+          onBack={() => {
+            if (state.returnEventId) {
+              setState(
+                navigate(
+                  { ...state, selectedEvent: state.returnEventId },
+                  "eventDetail",
+                ),
+              );
+              return;
+            }
+
+            setState(navigate(state, "timeline"));
+          }}
         />
       </AppFrame>
     );
