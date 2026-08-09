@@ -9,7 +9,7 @@ type AddEventResult = {
   eventId: string;
 };
 
-export function addEvent(dataset: Dataset): AddEventResult {
+export function addEvent(dataset: Dataset, language: "en" | "ja" = "en"): AddEventResult {
   const eventId = createCoreObjectId(dataset);
 
   return {
@@ -19,7 +19,7 @@ export function addEvent(dataset: Dataset): AddEventResult {
         ...dataset.events,
         {
           id: eventId,
-          name: "New Event",
+          name: language === "ja" ? "新しいできごと" : "New Event",
           description: "",
         },
       ],

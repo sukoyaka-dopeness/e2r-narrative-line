@@ -247,7 +247,7 @@ function App() {
   };
 
   const handleAddEvent = () => {
-    const result = addEvent(dataset);
+    const result = addEvent(dataset, language);
 
     setDataset(result.dataset);
     setState((currentState) =>
