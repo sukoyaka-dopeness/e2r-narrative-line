@@ -166,24 +166,27 @@ export function EntityDetailScreen({
           ariaLabelledby="delete-entity-heading"
           onDismiss={() => setIsDeleteConfirmationOpen(false)}
         >
-          <h2 id="delete-entity-heading">Delete Entity?</h2>
+          <h2 id="delete-entity-heading">
+            {ja ? "エンティティを削除しますか？" : "Delete Entity?"}
+          </h2>
           <p>
-            This permanently removes the Entity and all of its connected
-            Relations. Unsaved edits will also be discarded.
+            {ja
+              ? "このエンティティと接続されているすべてのRelationを完全に削除します。保存していない編集も破棄されます。"
+              : "This permanently removes the Entity and all of its connected Relations. Unsaved edits will also be discarded."}
           </p>
           <div className="modal-actions">
             <button
               type="button"
               onClick={() => setIsDeleteConfirmationOpen(false)}
             >
-              Keep Entity
+              {ja ? "エンティティを残す" : "Keep Entity"}
             </button>
             <button
               type="button"
               className="danger-action"
               onClick={() => onDeleteEntity(entity.id)}
             >
-              Delete Entity
+              {ja ? "エンティティを削除" : "Delete Entity"}
             </button>
           </div>
         </ModalDialog>

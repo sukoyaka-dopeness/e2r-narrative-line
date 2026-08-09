@@ -196,6 +196,13 @@ button {
   cursor: pointer;
 }
 
+input,
+textarea,
+select {
+  font: inherit;
+  font-size: max(16px, 1em);
+}
+
 button:hover:not(:disabled) {
   border-color: var(--accent-border);
   background: var(--button-hover-bg);
@@ -354,6 +361,10 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.detail-header p {
+  overflow-wrap: anywhere;
 }
 
 .timeline-event-name,
@@ -563,6 +574,14 @@ button:disabled {
   .related-card__header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .related-card__name,
+  .entity-picker-card__name {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .related-card__actions {
