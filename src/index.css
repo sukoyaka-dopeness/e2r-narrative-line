@@ -296,9 +296,8 @@ button:disabled {
   max-width: 100%;
   margin-top: 8px;
   line-height: 145%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .date-fields {

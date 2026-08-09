@@ -167,7 +167,7 @@ export function EventDetailScreen({
       </div>
 
       <div>
-        <label>{ja ? "グレゴリオ暦" : "Date"}</label>
+        <label>{ja ? "グレゴリオ暦" : "Gregorian Calendar"}</label>
         <div className="date-fields">
           <label>
             {ja ? "年" : "Year"}
