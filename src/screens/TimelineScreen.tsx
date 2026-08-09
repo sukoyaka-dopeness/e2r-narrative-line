@@ -55,8 +55,12 @@ export function TimelineScreen({
   );
 
   useEffect(() => {
-    selectedEventRef.current?.focus();
-    selectedEventRef.current?.scrollIntoView({ block: "nearest" });
+    const frame = window.requestAnimationFrame(() => {
+      selectedEventRef.current?.focus();
+      selectedEventRef.current?.scrollIntoView({ block: "nearest" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [selectedEvent, dataset.events.length]);
 
   const timelineEvents = [...dataset.events].sort(compareEventsByHistoryDate);
