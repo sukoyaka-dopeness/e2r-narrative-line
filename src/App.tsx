@@ -284,7 +284,7 @@ function App() {
 
   if (state.currentScreen === "home") {
     return (
-      <AppFrame>
+      <AppFrame showFooter>
         <HomeScreen
           onOpenTimeline={() => handleOpenDataset(sample)}
           onResumeDataset={() => handleOpenDataset(dataset)}

@@ -5,9 +5,10 @@ import { ModalDialog } from "./ModalDialog";
 
 type AppFrameProps = {
   children: ReactNode;
+  showFooter?: boolean;
 };
 
-export function AppFrame({ children }: AppFrameProps) {
+export function AppFrame({ children, showFooter = false }: AppFrameProps) {
   const { language, setLanguage } = useLanguage();
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const ja = language === "ja";
@@ -22,19 +23,21 @@ export function AppFrame({ children }: AppFrameProps) {
 
       <div className="app-content">{children}</div>
 
-      <footer className="app-footer">
-        <small>{ja ? "E2R\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u30a8\u30c7\u30a3\u30bf\u30fc" : "E2R timeline editor"}</small>
-        <button type="button" onClick={() => setLanguage(ja ? "en" : "ja")}>
-          {ja ? "English" : "\u65e5\u672c\u8a9e"}
-        </button>
-        <button
-          type="button"
-          className="credits-button"
-          onClick={() => setIsCreditsOpen(true)}
-        >
-          {ja ? "\u30af\u30ec\u30b8\u30c3\u30c8" : "Credits"}
-        </button>
-      </footer>
+      {showFooter && (
+        <footer className="app-footer">
+          <small>{ja ? "E2R\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u30a8\u30c7\u30a3\u30bf\u30fc" : "E2R timeline editor"}</small>
+          <button type="button" onClick={() => setLanguage(ja ? "en" : "ja")}>
+            {ja ? "English" : "\u65e5\u672c\u8a9e"}
+          </button>
+          <button
+            type="button"
+            className="credits-button"
+            onClick={() => setIsCreditsOpen(true)}
+          >
+            {ja ? "\u30af\u30ec\u30b8\u30c3\u30c8" : "Credits"}
+          </button>
+        </footer>
+      )}
 
       {isCreditsOpen && (
         <ModalDialog

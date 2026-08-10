@@ -695,9 +695,8 @@ button:disabled {
   }
 
   .related-card__header {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 4px 8px;
   }
 
   .related-card { padding-bottom: 3px; }
@@ -710,12 +709,19 @@ button:disabled {
     overflow-wrap: anywhere;
   }
 
+  .related-card__name {
+    flex: 1 1 10rem;
+    width: auto;
+  }
+
   .related-card__actions {
+    flex: 0 1 auto;
     justify-content: flex-start;
+    margin-left: auto;
   }
 
   .related-card__actions button {
-    flex: 1 1 10rem;
+    flex: 0 1 auto;
   }
 
   .danger-zone button {
