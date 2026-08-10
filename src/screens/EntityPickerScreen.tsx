@@ -47,7 +47,7 @@ export function EntityPickerScreen({
       {dataset.entities.length === 0 ? (
         <p>{ja ? "このDatasetにエンティティはありません。" : "No Entities are available in this Dataset."}</p>
       ) : (
-        <div style={{ display: "grid", gap: "0.5rem" }}>
+        <div className="entity-picker-list">
           {dataset.entities.map((entity) => {
             const isRelated = relatedEntityIds.has(entity.id);
 
@@ -81,7 +81,7 @@ export function EntityPickerScreen({
 
       <div className="entity-picker-create">
         <button type="button" onClick={onCancel}>
-          {ja ? "できごとの詳細に戻る" : "Back to Event Detail"}
+          {ja ? "戻る" : "Back"}
         </button>
         <div className="entity-picker-create__form">
           <div>

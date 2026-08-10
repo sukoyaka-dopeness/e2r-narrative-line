@@ -508,9 +508,14 @@ button:disabled {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
-  padding: 12px;
+  padding: 6px 8px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
+}
+
+.entity-picker-list {
+  display: grid;
+  gap: 4px;
 }
 
 .entity-picker-card__footer {
@@ -536,6 +541,9 @@ button:disabled {
   display: grid;
   flex: 0 1 44rem;
   gap: 4px;
+  margin-left: auto;
+  padding-left: 24px;
+  border-left: 1px solid var(--border);
 }
 
 .entity-picker-create__form p {
@@ -627,6 +635,12 @@ button:disabled {
   .entity-picker-create__form,
   .entity-picker-create__controls {
     width: 100%;
+  }
+
+  .entity-picker-create__form {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
   }
 
   .entity-picker-create__controls {
