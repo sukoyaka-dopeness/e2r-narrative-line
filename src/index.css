@@ -223,7 +223,7 @@ button:disabled {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 32px !important;
+  padding: 32px 32px 88px !important;
 }
 
 .dataset-title-editor {
@@ -263,13 +263,20 @@ button:disabled {
 }
 
 .timeline-actions {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 20;
   display: flex;
   box-sizing: border-box;
+  width: min(1126px, 100%);
   justify-content: space-between;
   gap: 12px;
-  margin-top: auto;
-  padding: 16px 0 0;
+  margin-top: 0;
+  padding: 8px 32px;
+  border-top: 1px solid var(--border);
   background: var(--bg);
+  transform: translateX(-50%);
 }
 
 .detail-screen > * {
@@ -529,6 +536,8 @@ button:disabled {
 
 .app-frame:has(.detail-screen) .app-footer { border-top: 0; }
 
+.app-frame:has(.timeline-screen) .app-footer { border-top: 0; }
+
 .entity-picker-create input {
   box-sizing: border-box;
   flex: 1 1 12rem;
@@ -546,10 +555,15 @@ button:disabled {
   }
 
   .timeline-screen {
-    padding: 20px 16px !important;
+    padding: 20px 16px 88px !important;
   }
 
   .detail-primary-actions {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .timeline-actions {
     padding-right: 16px;
     padding-left: 16px;
   }
