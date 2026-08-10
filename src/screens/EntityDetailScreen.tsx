@@ -144,7 +144,7 @@ export function EntityDetailScreen({
 
       <div className="detail-primary-actions">
         <button type="button" onClick={onBack}>
-          {ja ? "キャンセル" : "Cancel"}
+          {ja ? "戻る" : "Back"}
         </button>
         <button type="button" onClick={handleSave}>
           {ja ? "エンティティを保存" : "Save Entity"}

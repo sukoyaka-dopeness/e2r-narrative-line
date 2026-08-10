@@ -36,7 +36,7 @@ export function EntityPickerScreen({
   );
 
   return (
-    <div className="detail-screen">
+    <div className="detail-screen entity-picker-screen">
       <div className="detail-header">
         <h1>{ja ? "関連エンティティを追加" : "Add Related Entity"}</h1>
         <p>
@@ -79,15 +79,18 @@ export function EntityPickerScreen({
         </div>
       )}
 
-      <div style={{ marginTop: "1rem" }}>
-        <h2>{ja ? "新しいエンティティを作成" : "Create New Entity"}</h2>
-        <p style={{ color: "#666" }}>
-          {ja ? "エンティティは同じ名前を持てます。新しいエンティティは既存のエンティティと自動的に統合されません。" : "Entities may share the same name. A new Entity will not be merged with an existing one automatically."}
-        </p>
-        <div className="entity-picker-create">
-          <button type="button" onClick={onCancel}>
-            {ja ? "キャンセル" : "Cancel"}
-          </button>
+      <div className="entity-picker-create">
+        <button type="button" onClick={onCancel}>
+          {ja ? "できごとの詳細に戻る" : "Back to Event Detail"}
+        </button>
+        <div className="entity-picker-create__form">
+          <div>
+            <strong>{ja ? "新しいエンティティを作成" : "Create New Entity"}</strong>
+            <p>
+              {ja ? "同じ名前のエンティティも作成できます。" : "Entities may share the same name."}
+            </p>
+          </div>
+          <div className="entity-picker-create__controls">
           <input
             type="text"
             value={newEntityName}
@@ -101,6 +104,7 @@ export function EntityPickerScreen({
           >
             {ja ? "作成して追加" : "Create and Add"}
           </button>
+          </div>
         </div>
       </div>
 

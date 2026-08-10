@@ -340,7 +340,7 @@ export function EventDetailScreen({
           type="button"
           onClick={() => onCancel(event.id, isDraft)}
         >
-          {ja ? "キャンセル" : "Cancel"}
+          {ja ? "タイムラインに戻る" : "Back to Timeline"}
         </button>
 
         <button

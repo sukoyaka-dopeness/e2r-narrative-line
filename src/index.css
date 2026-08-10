@@ -518,7 +518,7 @@ button:disabled {
 }
 
 .entity-picker-create {
-  align-items: stretch;
+  align-items: center;
   position: fixed;
   left: 50%;
   bottom: 0;
@@ -530,6 +530,22 @@ button:disabled {
   border-top: 1px solid var(--border);
   justify-content: space-between;
   transform: translateX(-50%);
+}
+
+.entity-picker-create__form {
+  display: grid;
+  flex: 0 1 44rem;
+  gap: 4px;
+}
+
+.entity-picker-create__form p {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.entity-picker-create__controls {
+  display: flex;
+  gap: 8px;
 }
 
 .entity-picker-create input { flex: 1 1 auto; }
@@ -602,6 +618,19 @@ button:disabled {
   .entity-picker-create {
     padding-right: 16px;
     padding-left: 16px;
+  }
+
+  .entity-picker-screen {
+    padding-bottom: 224px;
+  }
+
+  .entity-picker-create__form,
+  .entity-picker-create__controls {
+    width: 100%;
+  }
+
+  .entity-picker-create__controls {
+    flex-direction: column;
   }
 
   .related-card__header {
