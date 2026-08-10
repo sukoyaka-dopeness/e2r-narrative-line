@@ -171,15 +171,7 @@ export function TimelineScreen({
               ref={isSelected ? selectedEventRef : null}
               tabIndex={-1}
               onClick={() => onSelectEvent(event.id)}
-              className="timeline-card"
-              style={{
-                marginBottom: "0.75rem",
-                padding: "0.75rem",
-                border: "1px solid #ccc",
-                borderRadius: "6px",
-                backgroundColor: isSelected ? "#eef6ff" : "#fff",
-                cursor: "pointer",
-              }}
+              className={`timeline-card${isSelected ? " timeline-card--selected" : ""}`}
             >
               <div className="timeline-card__row">
                 <div

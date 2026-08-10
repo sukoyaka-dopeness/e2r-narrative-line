@@ -88,17 +88,7 @@ export function ModalDialog({
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        display: "grid",
-        placeItems: "center",
-        padding: "1rem",
-        backgroundColor: "rgb(0 0 0 / 35%)",
-      }}
-    >
+    <div className="modal-backdrop">
       <section
         ref={dialogRef}
         role="alertdialog"
@@ -106,14 +96,7 @@ export function ModalDialog({
         aria-labelledby={ariaLabelledby}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        style={{
-          width: "min(100%, 28rem)",
-          padding: "1rem",
-          border: "1px solid var(--border)",
-          borderRadius: "6px",
-          color: "var(--text)",
-          backgroundColor: "var(--bg)",
-        }}
+        className="modal-dialog"
       >
         {children}
       </section>

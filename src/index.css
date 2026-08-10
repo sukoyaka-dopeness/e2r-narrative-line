@@ -319,24 +319,48 @@ button:disabled {
 
 .related-list {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   margin-top: 8px;
 }
 
-.related-card {
+.related-card,
+.timeline-card {
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
-  padding: 12px;
+  padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   background: var(--bg);
 }
 
-.related-card--selected {
+.timeline-card { margin-bottom: 12px; }
+
+.related-card--selected,
+.timeline-card--selected {
   border-color: var(--accent-border);
   background: var(--accent-bg);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background-color: rgb(0 0 0 / 35%);
+}
+
+.modal-dialog {
+  box-sizing: border-box;
+  width: min(100%, 28rem);
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background-color: var(--bg);
 }
 
 .related-card__header,
