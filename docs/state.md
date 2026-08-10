@@ -90,6 +90,7 @@ Possible values include:
 - Timeline
 - EventDetail
 - EntityPicker
+- EntityCreate
 - EntityDetail
 
 Example:
@@ -163,7 +164,7 @@ App updates this state as part of navigation and selection callbacks.
 The identifier of an Event created through Add Event that has not yet been
 saved. This is application state only and is never written to the Dataset.
 
-Canceling Event Detail for this Event removes it and its connected Relations.
+Choosing `Back` in Event Detail for this Event removes it and its connected Relations.
 Saving it, using Save and Add Related Entity, deleting it, or opening another
 Dataset clears `draftEventId`.
 

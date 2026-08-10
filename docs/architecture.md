@@ -27,16 +27,17 @@ App
 └── AppFrame
     ├── Header
     ├── HomeScreen / TimelineScreen / EventDetailScreen /
-    │   EntityPickerScreen / EntityDetailScreen
-    └── Footer
+    │   EntityPickerScreen / EntityCreateScreen / EntityDetailScreen
+    └── Footer (Home only)
 ```
 
 App.tsx is responsible for application state and screen navigation.
 
 Individual screens are responsible only for presentation and user interaction.
 
-AppFrame provides the shared NarrativeLine Header and Footer around the current
-screen. It owns no Dataset, navigation, selection, or editing state.
+AppFrame provides the shared NarrativeLine Header around the current screen and
+the application Footer on Home only. It owns no Dataset, navigation, selection,
+or editing state.
 
 ---
 
@@ -99,9 +100,21 @@ Displays Entities from the Dataset containing the edited Event.
 Responsibilities:
 
 * Select an existing Entity
-* Create a new Entity
+* Open Entity Create
 * Associate the selected Entity with the Event
-* Return to Event Detail without modifying the Dataset when canceled
+* Return to Event Detail without modifying the Dataset
+
+---
+
+## EntityCreateScreen
+
+Creates a new Entity in the context of the selected Event.
+
+Responsibilities:
+
+* Edit the new Entity name and description
+* Create the Entity and associate it with the selected Event
+* Return to Entity Picker without modifying the Dataset
 
 ---
 

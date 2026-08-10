@@ -57,12 +57,13 @@ restoration, and prevention of unintended interaction with the background.
 
 # Primary Views
 
-The MVP consists of five primary views.
+The MVP consists of six primary views.
 
 - Home
 - Timeline View
 - Event Detail
 - Entity Picker
+- Entity Create
 - Entity Detail
 
 ---
@@ -70,12 +71,14 @@ The MVP consists of five primary views.
 # Shared Application Frame
 
 Every primary view is displayed inside the same application frame. The Header
-displays the `NarrativeLine` brand, and the Footer identifies the application as
-an `E2R timeline editor`. The Footer also provides a `Credits` action.
+displays the `NarrativeLine` brand. On Home only, the Footer identifies the
+application as an `E2R timeline editor` and provides language and `Credits`
+actions. Working screens omit this shared Footer so that it does not compete
+with their navigation and editing action bars.
 
 The shared frame does not change navigation or editing state. Screen-specific
-titles and actions remain in the screen content. Header and Footer padding is
-reduced at viewport widths of 600 px or less.
+titles and actions remain in the screen content. Header padding and the Home
+Footer padding are reduced at viewport widths of 600 px or less.
 
 The Credits modal displays the public application version, creator name,
 release date, AI acknowledgement, and links to both the NarrativeLine and E2R
@@ -159,23 +162,24 @@ Event Detail keeps field edits locally until the user invokes `Save Event` or
 The Detail heading uses a compact size and keeps visible spacing between the
 screen title and the current Event name.
 
-The current Event name beneath the Event Detail heading is a single-line
-ellipsis preview. The complete name remains available in the Name field.
+The current Event name beneath the Event Detail heading wraps when needed so
+that the complete name remains available in the Detail view.
 
 Each related Entity is displayed as an individually bordered card. Selecting a
 card applies the shared accent border and background and exposes its contextual
 actions. `Remove Association` uses destructive styling without being presented
 as Entity deletion.
 
-`Cancel` discards unsaved local edits and returns to Timeline for an existing
+`Back` discards unsaved local edits and returns to Timeline for an existing
 Event. It does not undo an edit already saved through `Save Event` or `Save and
-Add Related Entity`. For a new Event before its first save, `Cancel` removes
+Add Related Entity`. For a new Event before its first save, `Back` removes
 the draft Event.
 
 Saving the dataset is a separate operation.
 
-`Cancel` and `Save Event` form the primary action group. `Delete Event` is
-placed in a separate Danger Zone below that group.
+`Back` is placed on the left of the fixed primary action bar. `Save and Add
+Related Entity` and `Save Event` form the primary action group on the right.
+`Delete Event` is placed in a separate Danger Zone outside that group.
 
 ---
 
@@ -240,18 +244,17 @@ does not lose them when returning from the picker.
 automatically. An Entity already associated with the Event is labeled `Already
 Related` and cannot be added again.
 
-`Create and Add` creates a new Entity and associates it with the Event.
+`Create New Entity` opens the separate Entity Create screen. Entity Create
+places the name and optional description fields near the top of the screen.
+`Create and Associate` creates a new Entity, creates the required Relation, and
+returns to Event Detail. `Back` returns to Entity Picker.
 
-Entity Picker displays each existing Entity as an individually bordered card.
-Its card footer and creation controls wrap as needed and stack vertically at
-viewport widths of 600 px or less. Long button labels may wrap within their
-buttons.
+Entity Picker displays each existing Entity as a compact, individually bordered
+row. The Entity preview occupies the left side and the association action the
+right side. Entity Picker does not embed creation fields below the list.
 
 Entity names and descriptions in the picker use single-line ellipsis previews;
 the stored Entity values are not shortened.
-
-When the creation controls stack, the Entity name input keeps its normal control
-height rather than inheriting the desktop horizontal flex basis as height.
 
 Core Object IDs are not displayed in Entity Picker. They remain part of the
 Dataset but are not needed to choose an Entity in this workflow.
@@ -316,9 +319,9 @@ Saved changes are reflected in Timeline.
 
 Timeline ordering updates automatically when a saved temporal value changes.
 
-Canceling an existing Event discards only unsaved local edits. Canceling a new
-Event before its first save removes the draft Event instead of leaving an empty
-Timeline entry.
+Choosing `Back` for an existing Event discards only unsaved local edits.
+Choosing `Back` for a new Event before its first save removes the draft Event
+instead of leaving an empty Timeline entry.
 
 ---
 
@@ -348,7 +351,7 @@ A selected related Event uses the same first-line, single-line description
 preview as Timeline. This keeps Event description presentation consistent and
 prevents long text from expanding or overflowing the card.
 
-`Cancel` and `Save Entity` form the primary action group. `Delete Entity` is
+`Back` and `Save Entity` form the primary action group. `Delete Entity` is
 placed in a separate Danger Zone below that group.
 
 Selecting `Delete Entity` in Entity Detail opens a confirmation. Confirming

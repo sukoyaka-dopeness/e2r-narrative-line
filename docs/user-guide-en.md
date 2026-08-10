@@ -18,11 +18,46 @@ Enter a title at the top of the Timeline and choose **Apply title**. The title i
 
 ## Editing Events
 
-Select an Event on the Timeline and choose **Edit**. You can edit its name, description, and date.
+Select an Event on the Timeline and choose **Edit**. You can edit its name, description, and Gregorian calendar date. **Save Event** returns to the Timeline. **Save and Add Related Entity** saves valid edits and opens the Entity Picker.
+
+## Screen navigation
+
+NarrativeLine uses the Timeline as its central workspace.
+
+```text
+Home
+  ↓ Open a Dataset
+Timeline
+  ↓ Add or edit an Event
+Event Detail
+  ├─ Save → Timeline
+  ├─ Edit a related Entity → Entity Detail
+  │                            └─ Save or Back → originating Event Detail
+  └─ Save and Add Related Entity → Entity Picker
+                                      ├─ Associate an existing Entity → Event Detail
+                                      └─ Create New Entity
+                                           ├─ Create and Associate → Event Detail
+                                           └─ Back → Entity Picker
+```
+
+Working screens place **Back** on the left side of the bottom action bar and their save or creation actions on the right. Delete actions remain separate from this primary action group.
 
 ## Associating Entities
 
-From Event Detail, choose an Entity or use **Add Related Entity** to create one. The required Relation is created automatically.
+From Event Detail, choose **Save and Add Related Entity**. The Entity Picker lists existing Entities separately from new Entity creation.
+
+- Choose **Add Entity** to associate an existing Entity.
+- Choose **Create New Entity** to open a separate creation screen.
+- Enter a name and optional description, then choose **Create and Associate**.
+- Entities may share the same name and are not merged automatically by name.
+
+The required Relation is created automatically.
+
+## Editing Entities
+
+Select a related Entity in Event Detail and choose **Edit Entity**. Saving or going back returns to the originating Event Detail and restores the related Entity context.
+
+Removing an association does not delete the Entity. Entity deletion is a separate destructive action in Entity Detail.
 
 ## Exporting a Dataset
 

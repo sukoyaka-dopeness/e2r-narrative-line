@@ -235,6 +235,7 @@ The current implementation consists of the following primary views.
 - Timeline View
 - Event Detail
 - Entity Picker
+- Entity Create
 - Entity Detail
 
 Additional views may be introduced in later versions.
@@ -298,14 +299,15 @@ The current MVP focuses on validating the core editing workflow of E2R datasets.
 - Preserve valid Event edits before opening Entity Picker
 - Discard a newly created Event when it is canceled before its first save
 - Select an existing Entity for an Event
-- Create a new Entity from Entity Picker
+- Open Entity Create from Entity Picker and create a new Entity there
 - Remove an Entity association from an Event
 - Automatic Event-to-Entity Relation generation
 - Preserve existing Relations and avoid generating duplicate structural Relations
 - Relation-based lookup in either direction
 - UI-independent Core Dataset validation with stable error codes and paths
 - Preserve omitted optional Event fields when they have not been edited
-- Navigation between Home, Timeline, Event Detail, Entity Picker, and Entity Detail
+- Navigation between Home, Timeline, Event Detail, Entity Picker, Entity Create,
+  and Entity Detail
 - In-memory dataset editing
 
 ### Deferred
@@ -331,13 +333,14 @@ The MVP intentionally separates selection and editing.
 - Selecting an Event highlights it in the Timeline.
 - Editing is started explicitly by pressing the Edit button.
 - Detail screens are editing screens rather than read-only viewers.
-- Canceling an existing Event Detail discards only unsaved local edits.
-- Canceling a new Event Detail before its first save removes the draft Event.
+- Choosing Back in an existing Event Detail discards only unsaved local edits.
+- Choosing Back in a new Event Detail before its first save removes the draft Event.
 - Navigation should preserve editing context whenever possible.
 
 Target navigation flow:
 
-Home → Timeline → Event Detail → Entity Picker or Entity Detail
+Home → Timeline → Event Detail → Entity Picker → Entity Create
+                              ↘ Entity Detail
 
 Back navigation is expected to return to the previous editing context rather than always returning to the Timeline.
 

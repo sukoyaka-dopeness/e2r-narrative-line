@@ -138,8 +138,8 @@ An Event may reference zero or more Entities.
 
 Opening Entity Picker from Event Detail uses the `Save and Add Related Entity`
 action. It validates and saves the Event's current name, description, and
-date-only History value before navigation. Canceling Entity Picker does not undo
-those saved Event edits, and it does not create an Entity or Relation.
+date-only History value before navigation. Returning from Entity Picker does
+not undo those saved Event edits, and it does not create an Entity or Relation.
 
 When an Entity is associated with an Event:
 
@@ -148,7 +148,8 @@ When an Entity is associated with an Event:
 
 If the Entity already exists, it is reused.
 
-If a new Entity is created, it is added to the dataset before the Relation is generated.
+Creating a new Entity uses the separate Entity Create screen opened from Entity
+Picker. The Entity is added to the dataset before the Relation is generated.
 
 Entity names are not identifiers. Multiple Entities may have the same name,
 and NarrativeLine does not merge Entities automatically based on name equality.

@@ -16,6 +16,7 @@ The MVP consists of the following views.
 - Timeline View
 - Event Detail
 - Entity Picker
+- Entity Create
 - Entity Detail
 
 ---
@@ -26,8 +27,12 @@ The MVP consists of the following views.
 Home
   └── Create Dataset / Import E2R JSON / Open Sample Dataset → Timeline View
         ├── Add Event or Edit selected Event → Event Detail
-        │     ├── Save and Add Related Entity → Entity Picker → Event Detail
-        │     └── Edit a related Entity → Entity Detail
+        │     ├── Save and Add Related Entity → Entity Picker
+        │     │     ├── Add existing Entity → Event Detail
+        │     │     └── Create New Entity → Entity Create
+        │     │                                  ├── Create and Associate → Event Detail
+        │     │                                  └── Back → Entity Picker
+        │     └── Edit a related Entity → Entity Detail → Event Detail
         └── Back to Home
 ```
 
@@ -82,9 +87,9 @@ Users can edit:
 
 Saving an Event returns focus to Timeline View.
 
-Canceling an existing Event discards unsaved local changes and returns to
-Timeline. Canceling a newly created Event before its first save removes the
-draft Event.
+Choosing `Back` for an existing Event discards unsaved local changes and returns
+to Timeline. Choosing `Back` for a newly created Event before its first save
+removes the draft Event.
 
 Deleting an Event requires a confirmation in Event Detail. Confirming deletion
 returns to Timeline; canceling the confirmation keeps Event Detail open.
@@ -95,12 +100,23 @@ returns to Timeline; canceling the confirmation keeps Event Detail open.
 
 Entity Picker allows users to:
 
-- Select existing Entities.
-- Create a new Entity.
+- Select an existing Entity.
+- Open the separate Entity Create screen.
 
 The required Relation is generated automatically.
 
 Closing Entity Picker returns to Event Detail.
+
+---
+
+# Entity Create
+
+Entity Create accepts a new Entity name and optional description. It is opened
+from Entity Picker rather than being embedded below the existing Entity list.
+
+`Create and Associate` creates the Entity, creates the required Relation, and
+returns to Event Detail. `Back` returns to Entity Picker without creating an
+Entity.
 
 ---
 
