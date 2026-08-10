@@ -489,6 +489,14 @@ button:disabled {
   margin-top: 24px;
 }
 
+.detail-primary-actions__primary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .danger-zone {
   display: flex;
   justify-content: flex-end;
@@ -617,6 +625,12 @@ button:disabled {
     padding-left: 16px;
   }
 
+  .detail-primary-actions__primary {
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0;
+  }
+
   .timeline-actions {
     padding-right: 16px;
     padding-left: 16px;
@@ -670,8 +684,6 @@ button:disabled {
   }
 
   .entity-picker-screen { display: flex; flex-direction: column; }
-
-  .entity-picker-screen { padding-bottom: 20px; }
 
   .entity-picker-back--inline {
     display: inline-flex;

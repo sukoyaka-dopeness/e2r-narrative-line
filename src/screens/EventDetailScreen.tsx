@@ -321,15 +321,6 @@ export function EventDetailScreen({
           )}
         </div>
 
-        <div style={{ marginTop: "0.5rem" }}>
-          <button
-            type="button"
-            onClick={handleSaveAndAddEntity}
-            disabled={historyDateValidationError !== null}
-          >
-            {ja ? "保存して関連エンティティを追加" : "Save and Add Related Entity"}
-          </button>
-        </div>
       </div>
 
       <br />
@@ -343,13 +334,22 @@ export function EventDetailScreen({
           {ja ? "戻る" : "Back"}
         </button>
 
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={historyDateValidationError !== null}
-        >
-          {ja ? "できごとを保存" : "Save Event"}
-        </button>
+        <div className="detail-primary-actions__primary">
+          <button
+            type="button"
+            onClick={handleSaveAndAddEntity}
+            disabled={historyDateValidationError !== null}
+          >
+            {ja ? "保存して関連エンティティを追加" : "Save and Add Related Entity"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={historyDateValidationError !== null}
+          >
+            {ja ? "できごとを保存" : "Save Event"}
+          </button>
+        </div>
 
       </div>
 
