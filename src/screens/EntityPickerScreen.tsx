@@ -52,6 +52,24 @@ export function EntityPickerScreen({
         {ja ? "戻る" : "Back"}
       </button>
 
+      <div className="entity-picker-create entity-picker-create--mobile">
+        <button type="button" className="entity-picker-back entity-picker-back--bar" onClick={onCancel}>
+          {ja ? "戻る" : "Back"}
+        </button>
+        <div className="entity-picker-create__form">
+          <div>
+            <strong>{ja ? "新しいエンティティを作成" : "Create New Entity"}</strong>
+            <p>{ja ? "同じ名前のエンティティも作成できます。" : "Entities may share the same name."}</p>
+          </div>
+          <div className="entity-picker-create__controls">
+            <input type="text" value={newEntityName} onChange={(event) => setNewEntityName(event.target.value)} placeholder={ja ? "関連する人物や組織、場所などを入力してください" : "Entity name"} />
+            <button type="button" onClick={() => onCreateEntity?.(normalizedNewEntityName)} disabled={!onCreateEntity || normalizedNewEntityName.length === 0}>
+              {ja ? "作成して追加" : "Create and Add"}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {dataset.entities.length === 0 ? (
         <p>{ja ? "このDatasetにエンティティはありません。" : "No Entities are available in this Dataset."}</p>
       ) : (
@@ -87,7 +105,8 @@ export function EntityPickerScreen({
         </div>
       )}
 
-      <div className="entity-picker-create">
+      {/* Create controls are positioned above the list in document order so mobile can show them without a fixed overlay. */}
+      <div className="entity-picker-create entity-picker-create--desktop-only">
         <button
           type="button"
           className="entity-picker-back entity-picker-back--bar"

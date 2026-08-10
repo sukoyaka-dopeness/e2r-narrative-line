@@ -570,6 +570,8 @@ button:disabled {
   min-width: 0;
 }
 
+.entity-picker-create--mobile { display: none; }
+
 @media (max-width: 600px) {
   .app-header,
   .app-footer {
@@ -630,11 +632,20 @@ button:disabled {
     padding-left: 16px;
   }
 
-  .entity-picker-screen {
-    padding-bottom: 176px;
-  }
-
   .entity-picker-back--bar { display: none; }
+
+  .entity-picker-create--desktop-only { display: none; }
+
+  .entity-picker-create--mobile {
+    position: static;
+    display: flex;
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 0 0 16px;
+    transform: none;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+  }
 
   .entity-picker-back--inline {
     display: inline-flex;
@@ -651,8 +662,6 @@ button:disabled {
     padding-left: 0;
     border-left: 0;
   }
-
-  .entity-picker-create__form p { display: none; }
 
   .entity-picker-create__controls {
     flex-direction: column;
