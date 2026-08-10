@@ -44,6 +44,14 @@ export function EntityPickerScreen({
         </p>
       </div>
 
+      <button
+        type="button"
+        className="entity-picker-back entity-picker-back--inline"
+        onClick={onCancel}
+      >
+        {ja ? "戻る" : "Back"}
+      </button>
+
       {dataset.entities.length === 0 ? (
         <p>{ja ? "このDatasetにエンティティはありません。" : "No Entities are available in this Dataset."}</p>
       ) : (
@@ -80,7 +88,11 @@ export function EntityPickerScreen({
       )}
 
       <div className="entity-picker-create">
-        <button type="button" onClick={onCancel}>
+        <button
+          type="button"
+          className="entity-picker-back entity-picker-back--bar"
+          onClick={onCancel}
+        >
           {ja ? "戻る" : "Back"}
         </button>
         <div className="entity-picker-create__form">

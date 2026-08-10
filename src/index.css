@@ -551,6 +551,8 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.entity-picker-back--inline { display: none; }
+
 .entity-picker-create__controls {
   display: flex;
   gap: 8px;
@@ -629,7 +631,14 @@ button:disabled {
   }
 
   .entity-picker-screen {
-    padding-bottom: 224px;
+    padding-bottom: 176px;
+  }
+
+  .entity-picker-back--bar { display: none; }
+
+  .entity-picker-back--inline {
+    display: inline-flex;
+    margin-bottom: 16px;
   }
 
   .entity-picker-create__form,
@@ -642,6 +651,8 @@ button:disabled {
     padding-left: 0;
     border-left: 0;
   }
+
+  .entity-picker-create__form p { display: none; }
 
   .entity-picker-create__controls {
     flex-direction: column;
