@@ -504,6 +504,10 @@ button:disabled {
 }
 
 .entity-picker-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 8px;
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
@@ -519,7 +523,9 @@ button:disabled {
 }
 
 .entity-picker-card__footer {
-  margin-top: 8px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin-top: 0;
 }
 
 .entity-picker-create {
@@ -542,8 +548,8 @@ button:disabled {
   flex: 0 1 44rem;
   gap: 4px;
   margin-left: auto;
-  padding-left: 24px;
-  border-left: 1px solid var(--border);
+  padding-left: 0;
+  border-left: 0;
 }
 
 .entity-picker-create__form p {
@@ -615,7 +621,6 @@ button:disabled {
   .date-fields,
   .detail-primary-actions,
   .modal-actions,
-  .entity-picker-card__footer,
   .entity-picker-create {
     align-items: stretch;
     flex-direction: column;
@@ -624,7 +629,6 @@ button:disabled {
   .date-fields label,
   .detail-primary-actions button,
   .modal-actions button,
-  .entity-picker-card__footer button,
   .entity-picker-create button {
     width: 100%;
   }
@@ -658,6 +662,8 @@ button:disabled {
   }
 
   .entity-picker-screen { display: flex; flex-direction: column; }
+
+  .entity-picker-screen { padding-bottom: 20px; }
 
   .entity-picker-back--inline {
     display: inline-flex;
