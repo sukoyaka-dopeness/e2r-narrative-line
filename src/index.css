@@ -220,7 +220,10 @@ button:disabled {
 }
 
 .timeline-screen {
-  padding-bottom: 88px !important;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 32px !important;
 }
 
 .dataset-title-editor {
@@ -260,17 +263,12 @@ button:disabled {
 }
 
 .timeline-actions {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 20;
-  box-sizing: border-box;
   display: flex;
+  box-sizing: border-box;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 32px;
-  border-top: 1px solid var(--border);
+  margin-top: auto;
+  padding: 16px 0 0;
   background: var(--bg);
 }
 
@@ -328,7 +326,7 @@ button:disabled {
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
-  padding: 8px;
+  padding: 6px 8px;
   border: 1px solid var(--border);
   border-radius: 0;
   cursor: pointer;
@@ -546,9 +544,8 @@ button:disabled {
     padding: 20px 16px 152px;
   }
 
-  .timeline-actions {
-    padding-right: 16px;
-    padding-left: 16px;
+  .timeline-screen {
+    padding: 20px 16px !important;
   }
 
   .detail-primary-actions {

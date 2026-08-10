@@ -91,7 +91,7 @@ export function TimelineScreen({
   };
 
   return (
-    <main className="timeline-screen" style={{ padding: "1rem" }}>
+    <main className="timeline-screen">
       <h1>{ja ? "タイムライン" : "Timeline"}</h1>
 
       <div className="dataset-title-editor">
@@ -220,14 +220,7 @@ export function TimelineScreen({
         })}
       </ul>
 
-      <div
-        className="timeline-actions"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "1rem",
-        }}
-      >
+      <div className="timeline-actions">
         <button onClick={onBackToHome}>{ja ? "ホーム" : "Home"}</button>
 
         <button onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
