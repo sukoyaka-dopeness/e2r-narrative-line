@@ -85,6 +85,9 @@ export function EntityPickerScreen({
           {ja ? "エンティティは同じ名前を持てます。新しいエンティティは既存のエンティティと自動的に統合されません。" : "Entities may share the same name. A new Entity will not be merged with an existing one automatically."}
         </p>
         <div className="entity-picker-create">
+          <button type="button" onClick={onCancel}>
+            {ja ? "キャンセル" : "Cancel"}
+          </button>
           <input
             type="text"
             value={newEntityName}
@@ -101,11 +104,6 @@ export function EntityPickerScreen({
         </div>
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
-        <button type="button" onClick={onCancel}>
-          {ja ? "キャンセル" : "Cancel"}
-        </button>
-      </div>
     </div>
   );
 }

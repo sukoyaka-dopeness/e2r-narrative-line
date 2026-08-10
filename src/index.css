@@ -126,9 +126,9 @@ body {
 }
 
 .credits-button {
-  min-height: 32px;
-  padding: 4px 8px;
-  font-size: 0.85rem;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: inherit;
 }
 
 :focus-visible {
@@ -469,17 +469,14 @@ button:disabled {
 
 .detail-primary-actions {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 50%;
   bottom: 0;
   z-index: 20;
   box-sizing: border-box;
-  padding: 12px 0;
-  justify-content: center;
-  margin-right: 0;
-  margin-left: 0;
-  padding-right: 32px;
-  padding-left: 32px;
+  width: min(1126px, 100%);
+  padding: 8px 32px;
+  justify-content: space-between;
+  transform: translateX(-50%);
   border-top: 1px solid var(--border);
   background: var(--bg);
   margin-top: 24px;
@@ -516,17 +513,21 @@ button:disabled {
 .entity-picker-create {
   align-items: stretch;
   position: fixed;
-  right: 0;
-  left: 0;
+  left: 50%;
   bottom: 0;
   z-index: 20;
-  padding: 12px 0;
+  box-sizing: border-box;
+  width: min(1126px, 100%);
+  padding: 8px 32px;
   background: var(--bg);
   border-top: 1px solid var(--border);
-  padding-right: 32px;
-  padding-left: 32px;
-  justify-content: center;
+  justify-content: space-between;
+  transform: translateX(-50%);
 }
+
+.entity-picker-create input { flex: 1 1 auto; }
+
+.app-frame:has(.detail-screen) .app-footer { border-top: 0; }
 
 .entity-picker-create input {
   box-sizing: border-box;
@@ -585,8 +586,6 @@ button:disabled {
   }
 
   .entity-picker-create {
-    right: 0;
-    left: 0;
     padding-right: 16px;
     padding-left: 16px;
   }
