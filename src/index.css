@@ -570,7 +570,6 @@ button:disabled {
   min-width: 0;
 }
 
-.entity-picker-create--mobile { display: none; }
 
 @media (max-width: 600px) {
   .app-header,
@@ -647,9 +646,7 @@ button:disabled {
 
   .entity-picker-back--bar { display: none; }
 
-  .entity-picker-create--desktop-only { display: none; }
-
-  .entity-picker-create--mobile {
+  .entity-picker-create {
     position: static;
     display: flex;
     width: 100%;
@@ -658,12 +655,9 @@ button:disabled {
     transform: none;
     border: 0;
     border-bottom: 1px solid var(--border);
-    order: 3;
   }
 
   .entity-picker-screen { display: flex; flex-direction: column; }
-
-  .entity-picker-list { order: 2; }
 
   .entity-picker-back--inline {
     display: inline-flex;
