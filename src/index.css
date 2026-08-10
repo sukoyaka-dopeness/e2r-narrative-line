@@ -650,7 +650,10 @@ button:disabled {
   .related-card__header {
     align-items: stretch;
     flex-direction: column;
+    gap: 4px;
   }
+
+  .related-card { padding-bottom: 3px; }
 
   .related-card__name,
   .entity-picker-card__name {

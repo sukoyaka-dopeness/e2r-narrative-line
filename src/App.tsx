@@ -138,6 +138,7 @@ function App() {
       navigate(
         {
           ...currentState,
+          selectedEvent: eventId,
           draftEventId: null,
         },
         "entityPicker",
