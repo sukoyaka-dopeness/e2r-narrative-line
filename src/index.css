@@ -645,7 +645,12 @@ button:disabled {
     transform: none;
     border: 0;
     border-bottom: 1px solid var(--border);
+    order: 3;
   }
+
+  .entity-picker-screen { display: flex; flex-direction: column; }
+
+  .entity-picker-list { order: 2; }
 
   .entity-picker-back--inline {
     display: inline-flex;
