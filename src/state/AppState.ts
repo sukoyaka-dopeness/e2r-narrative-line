@@ -3,6 +3,7 @@ export type Screen =
   | "timeline"
   | "eventDetail"
   | "entityPicker"
+  | "entityCreate"
   | "entityDetail";
 
 export interface AppState {

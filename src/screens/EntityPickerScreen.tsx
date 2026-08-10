@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -6,7 +5,7 @@ type EntityPickerScreenProps = {
   dataset: Dataset;
   eventId: string;
   onSelectEntity: (entityId: string) => void;
-  onCreateEntity?: (name: string) => void;
+  onOpenCreateEntity: () => void;
   onCancel: () => void;
 };
 
@@ -14,13 +13,11 @@ export function EntityPickerScreen({
   dataset,
   eventId,
   onSelectEntity,
-  onCreateEntity,
+  onOpenCreateEntity,
   onCancel,
 }: EntityPickerScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
-  const [newEntityName, setNewEntityName] = useState("");
-  const normalizedNewEntityName = newEntityName.trim();
   const relatedEntityIds = new Set(
     dataset.relations.flatMap((relation) => {
       if (relation.sourceId === eventId) {
@@ -44,13 +41,14 @@ export function EntityPickerScreen({
         </p>
       </div>
 
-      <button
-        type="button"
-        className="entity-picker-back entity-picker-back--inline"
-        onClick={onCancel}
-      >
-        {ja ? "戻る" : "Back"}
-      </button>
+      <div className="entity-picker-navigation">
+        <button type="button" onClick={onCancel}>
+          {ja ? "戻る" : "Back"}
+        </button>
+        <button type="button" onClick={onOpenCreateEntity}>
+          {ja ? "新しいエンティティを作成" : "Create New Entity"}
+        </button>
+      </div>
 
       {dataset.entities.length === 0 ? (
         <p>{ja ? "このDatasetにエンティティはありません。" : "No Entities are available in this Dataset."}</p>
@@ -86,39 +84,6 @@ export function EntityPickerScreen({
           })}
         </div>
       )}
-
-      <div className="entity-picker-create">
-        <button
-          type="button"
-          className="entity-picker-back entity-picker-back--bar"
-          onClick={onCancel}
-        >
-          {ja ? "戻る" : "Back"}
-        </button>
-        <div className="entity-picker-create__form">
-          <div>
-            <strong>{ja ? "新しいエンティティを作成" : "Create New Entity"}</strong>
-            <p>
-              {ja ? "同じ名前のエンティティも作成できます。" : "Entities may share the same name."}
-            </p>
-          </div>
-          <div className="entity-picker-create__controls">
-          <input
-            type="text"
-            value={newEntityName}
-            onChange={(event) => setNewEntityName(event.target.value)}
-            placeholder={ja ? "関連する人物や組織、場所などを入力してください" : "Entity name"}
-          />
-          <button
-            type="button"
-            onClick={() => onCreateEntity?.(normalizedNewEntityName)}
-            disabled={!onCreateEntity || normalizedNewEntityName.length === 0}
-          >
-            {ja ? "作成して追加" : "Create and Add"}
-          </button>
-          </div>
-        </div>
-      </div>
 
     </div>
   );

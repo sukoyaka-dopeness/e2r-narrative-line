@@ -522,6 +522,14 @@ button:disabled {
   gap: 4px;
 }
 
+.entity-picker-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .entity-picker-card__footer {
   grid-column: 2;
   grid-row: 1 / span 2;

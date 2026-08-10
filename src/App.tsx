@@ -4,6 +4,7 @@ import { TimelineScreen } from "./screens/TimelineScreen";
 import { EventDetailScreen } from "./screens/EventDetailScreen";
 import { EntityDetailScreen } from "./screens/EntityDetailScreen";
 import { EntityPickerScreen } from "./screens/EntityPickerScreen";
+import { EntityCreateScreen } from "./screens/EntityCreateScreen";
 import { AppFrame } from "./components/AppFrame";
 import { navigate } from "./services/NavigationService";
 import { sampleDataset, sampleDatasetEn } from "./sample/sampleDataset";
@@ -202,14 +203,14 @@ function App() {
       removeEventEntityRelations(currentDataset, eventId, entityId),
     );
   };
-  const handleCreateAndAssociateEntity = (name: string) => {
+  const handleCreateAndAssociateEntity = (name: string, description: string) => {
     if (!state.selectedEvent) {
       return;
     }
 
     const eventId = state.selectedEvent;
     setDataset((currentDataset) => {
-      const result = addEntity(currentDataset, name);
+      const result = addEntity(currentDataset, name, description);
 
       return addEventEntityRelation(result.dataset, eventId, result.entityId);
     });
@@ -345,9 +346,23 @@ function App() {
           dataset={dataset}
           eventId={state.selectedEvent}
           onSelectEntity={handleAssociateEntity}
-          onCreateEntity={handleCreateAndAssociateEntity}
+          onOpenCreateEntity={() =>
+            setState((currentState) => navigate(currentState, "entityCreate"))
+          }
           onCancel={() =>
             setState((currentState) => navigate(currentState, "eventDetail"))
+          }
+        />
+      </AppFrame>
+    );
+  }
+  if (state.currentScreen === "entityCreate" && state.selectedEvent) {
+    return (
+      <AppFrame>
+        <EntityCreateScreen
+          onCreate={handleCreateAndAssociateEntity}
+          onCancel={() =>
+            setState((currentState) => navigate(currentState, "entityPicker"))
           }
         />
       </AppFrame>

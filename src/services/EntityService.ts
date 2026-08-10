@@ -6,7 +6,11 @@ type AddEntityResult = {
   entityId: string;
 };
 
-export function addEntity(dataset: Dataset, name: string): AddEntityResult {
+export function addEntity(
+  dataset: Dataset,
+  name: string,
+  description = "",
+): AddEntityResult {
   const entityId = createCoreObjectId(dataset);
 
   return {
@@ -17,7 +21,7 @@ export function addEntity(dataset: Dataset, name: string): AddEntityResult {
         {
           id: entityId,
           name,
-          description: "",
+          description,
         },
       ],
     },
