@@ -319,8 +319,8 @@ button:disabled {
 
 .related-list {
   display: grid;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 4px;
 }
 
 .related-card,
@@ -328,14 +328,14 @@ button:disabled {
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
-  padding: 16px;
+  padding: 8px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   cursor: pointer;
   background: var(--bg);
 }
 
-.timeline-card { margin-bottom: 12px; }
+.timeline-card { margin-bottom: 4px; }
 
 .related-card--selected,
 .timeline-card--selected {
@@ -356,9 +356,9 @@ button:disabled {
 .modal-dialog {
   box-sizing: border-box;
   width: min(100%, 28rem);
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 6px;
   color: var(--text);
   background-color: var(--bg);
 }
