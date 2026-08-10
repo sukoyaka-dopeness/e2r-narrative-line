@@ -4,6 +4,14 @@ NarrativeLine is an application for editing E2R Datasets as a timeline of Events
 
 For an introduction to E2R, see the [E2R Overview](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/e2r-overview-en.md).
 
+## Terms used in this guide
+
+- Dataset: the data for one timeline, including its Events, Entities, and Relations
+- Event: an occurrence or activity at a point in time or over a period, displayed on the Timeline
+- Entity: a person, organization, place, object, or other existence involved in an Event. For example, an Event named “Moon landing” might be related to astronauts, NASA, and the Moon.
+- Association: a connection between an Event and an Entity. It records who, what organization, or what place is involved in the Event.
+- Extension: additional information, such as dates and a title, that can be added to the basic E2R data
+
 ## Starting a Dataset
 
 From the Home screen you can create a Dataset, import E2R JSON, open the sample Dataset, or resume the Dataset you were editing.
@@ -14,7 +22,9 @@ Choose an E2R JSON file with **Import E2R JSON**. Valid files open in the Timeli
 
 ## Dataset title
 
-Enter a title at the top of the Timeline and choose **Apply title**. The title is stored in `extensions.metadata.title`.
+To name the timeline you are creating, enter a title at the top of the Timeline and choose **Apply title**. The title is recorded as extension data in the Dataset and is included in exported JSON files.
+
+Technical note: the storage location is `extensions.metadata.title`.
 
 ## Editing Events
 
