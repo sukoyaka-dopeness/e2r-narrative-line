@@ -4,20 +4,44 @@ import {
   validateCoreDataset,
   type CoreDatasetValidationIssue,
 } from "./ValidationService.ts";
+import {
+  migrateLegacyDataset,
+  type LegacyDatasetMigrationIssue,
+} from "./LegacyDatasetService.ts";
+import { addExportSpecificationDeclaration } from "./SpecificationDeclarationService.ts";
 
 export interface DatasetImportSyntaxIssue {
   code: "json_parse_error";
   path: "";
 }
 
+export interface DatasetImportMigrationNotice {
+  code: "legacy_dataset_migrated";
+  path: "";
+  severity: "warning";
+  profile: string;
+}
+
 export type DatasetImportIssue =
   | DatasetImportSyntaxIssue
+  | DatasetImportMigrationNotice
+  | LegacyDatasetMigrationIssue
   | CoreDatasetValidationIssue;
+
+export type DatasetImportWarning =
+  | DatasetImportMigrationNotice
+  | (CoreDatasetValidationIssue & { severity: "warning" });
+
+export interface DatasetImportMigration {
+  profile: string;
+  originalSource: string;
+}
 
 export interface DatasetImportResult {
   isValid: boolean;
   issues: DatasetImportIssue[];
   dataset?: Dataset;
+  migration?: DatasetImportMigration;
 }
 
 export interface DatasetExportSerializationIssue {
@@ -94,27 +118,66 @@ export function importDatasetJson(source: string): DatasetImportResult {
     };
   }
 
-  const validation = validateCoreDataset(parsedValue);
+  const legacy = migrateLegacyDataset(parsedValue);
+  if (legacy.status === "invalid") {
+    return {
+      isValid: false,
+      issues: [legacy.issue],
+    };
+  }
+
+  const valueToValidate =
+    legacy.status === "migrated" ? legacy.value : parsedValue;
+  const validation = validateCoreDataset(valueToValidate);
+  const migration =
+    legacy.status === "migrated"
+      ? { profile: legacy.profile, originalSource: source }
+      : undefined;
+  const migrationNotice: DatasetImportMigrationNotice[] = migration
+    ? [
+        {
+          code: "legacy_dataset_migrated",
+          path: "",
+          severity: "warning",
+          profile: migration.profile,
+        },
+      ]
+    : [];
 
   return {
     isValid: validation.isValid,
-    issues: validation.issues,
+    issues: [...migrationNotice, ...validation.issues],
     ...(validation.dataset === undefined ? {} : { dataset: validation.dataset }),
+    ...(migration === undefined ? {} : { migration }),
   };
 }
 
 export function exportDatasetJson(dataset: Dataset): DatasetExportResult {
-  const validation = validateCoreDataset(dataset);
+  const sourceValidation = validateCoreDataset(dataset);
 
-  if (!validation.isValid) {
+  if (!sourceValidation.isValid) {
     return {
       isValid: false,
-      issues: validation.issues,
+      issues: sourceValidation.issues,
+    };
+  }
+
+  const prepared = addExportSpecificationDeclaration(dataset);
+  const exportDataset = prepared.dataset;
+  const exportValidation =
+    prepared.status === "added"
+      ? validateCoreDataset(exportDataset)
+      : sourceValidation;
+
+  if (!exportValidation.isValid) {
+    return {
+      isValid: false,
+      issues: exportValidation.issues,
     };
   }
 
   try {
-    const json = JSON.stringify(dataset, null, 2);
+    const json = JSON.stringify(exportDataset, null, 2);
 
     if (json === undefined) {
       return {

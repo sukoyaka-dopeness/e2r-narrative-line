@@ -245,6 +245,12 @@ This means:
 Delete and association-removal confirmations are local screen state rather than
 part of `AppState`.
 
+The Space currently chosen in a Coordinate panel is likewise local screen
+state. It controls only which already-recorded Coordinate is displayed and is
+never written to the Dataset. Draft numeric `x` and `y` input for the bounded
+Entity writer is also local until the user chooses Save Coordinate. Navigating
+away or canceling may reset the choice and draft.
+
 These combinations define the current situation of the application.
 
 ---

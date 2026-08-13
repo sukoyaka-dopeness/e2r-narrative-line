@@ -22,6 +22,8 @@ NarrativeLine aims to:
 - Provide an intuitive editing workflow.
 - Validate the E2R Core through real-world usage.
 - Validate the History Extension through practical implementation.
+- Provide a second interpreter and bounded writer experiment for the
+  experimental Coordinate interoperability prototype.
 
 NarrativeLine intentionally focuses on timeline editing.
 
@@ -61,7 +63,24 @@ The MVP intentionally excludes:
 - Multiple timeline views.
 - Collaboration features.
 
+Post-MVP interoperability work additionally reads Coordinate prototype
+`0.1.0`. Entity and Event Detail display Dataset-defined logical Coordinates;
+an object with multiple Coordinates provides a temporary Space selector.
+Entity Detail can explicitly update only existing `x` and `y` values in the
+exact `linkscape-graph` Space agreed with Linkscape. It does not create Spaces,
+Components, or Coordinates, and all other Coordinate data remains read-only.
+The selected Space is not saved to the Dataset.
+
 See `docs/MVP.md` for the complete MVP definition.
+Post-MVP product priorities and their specification-discussion boundaries are
+tracked in `docs/priority-feature-backlog.md`.
+
+NarrativeLine also has an append-only, fixture-backed compatibility path for
+formats produced by earlier NarrativeLine versions. The first supported
+profile migrates the former Event-level `date` string to History Extension
+time fields during import without overwriting the source file. See
+`docs/legacy-dataset-compatibility.md` for the recognition and preservation
+rules.
 
 ---
 

@@ -15,7 +15,7 @@ import {
   exportDatasetJson,
   updateDatasetTitle,
   importDatasetJson,
-  type DatasetImportIssue,
+  type DatasetImportWarning,
   type DatasetExportResult,
   type DatasetImportResult,
 } from "./services/DatasetService";
@@ -28,7 +28,7 @@ import {
 } from "./services/EventService";
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
 import type { HistoryDate } from "./services/HistoryService";
-import type { CoreDatasetValidationIssue } from "./services/ValidationService";
+import { updateObjectCoordinate } from "./services/CoordinateService";
 import { useLanguage } from "./i18n/LanguageContext";
 
 function App() {
@@ -53,7 +53,7 @@ function App() {
   });
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
-  const [importWarnings, setImportWarnings] = useState<CoreDatasetValidationIssue[]>([]);
+  const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -74,7 +74,7 @@ function App() {
 
   const handleOpenDataset = (
     nextDataset: Dataset,
-    warnings: CoreDatasetValidationIssue[] = [],
+    warnings: DatasetImportWarning[] = [],
   ) => {
     setDataset(nextDataset);
     setImportWarnings(warnings);
@@ -98,7 +98,7 @@ function App() {
 
     if (result.dataset) {
       const warnings = result.issues.filter(
-        (issue): issue is DatasetImportIssue & { severity: "warning" } =>
+        (issue): issue is DatasetImportWarning =>
           "severity" in issue && issue.severity === "warning",
       );
       handleOpenDataset(result.dataset, warnings);
@@ -154,6 +154,17 @@ function App() {
     },
   ) => {
     setDataset(updateEntity(dataset, entityId, updates));
+  };
+  const handleUpdateCoordinate = (
+    objectId: string,
+    spaceId: string,
+    values: Record<string, number>,
+  ) => {
+    const result = updateObjectCoordinate(dataset, objectId, spaceId, values);
+    if (result.status === "updated") {
+      setDataset(result.dataset);
+    }
+    return result.status;
   };
   const handleSelectEvent = (eventId: string) => {
     setState({
@@ -302,6 +313,7 @@ function App() {
           dataset={dataset}
           selectedEntity={state.selectedEntity}
           onUpdateEntity={handleUpdateEntity}
+          onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
           onSelectEvent={handleEditEvent}
           onBack={() => {

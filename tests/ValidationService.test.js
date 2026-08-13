@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   exportDatasetJson,
@@ -11,6 +12,11 @@ import {
   removeEventEntityRelations,
   updateEvent,
 } from "../src/services/EventService.ts";
+import {
+  COORDINATE_EXTENSION_ID,
+  readObjectCoordinates,
+  updateObjectCoordinate,
+} from "../src/services/CoordinateService.ts";
 import { validateCoreDataset } from "../src/services/ValidationService.ts";
 
 function validDataset() {
@@ -141,6 +147,120 @@ test("imports valid JSON without assigning a Dataset ID", () => {
   assert.equal(result.dataset.extensions, undefined);
 });
 
+test("migrates the documented NarrativeLine Event date profile without changing the source", async () => {
+  const source = await readFile(
+    new URL("./fixtures/legacy/narrativeline-event-date-string-v1.e2r.json", import.meta.url),
+    "utf8",
+  );
+  const original = JSON.parse(source);
+
+  const result = importDatasetJson(source);
+
+  assert.equal(result.isValid, true);
+  assert.ok(result.dataset);
+  assert.deepEqual(result.migration, {
+    profile: "narrativeline.event-date-string.v1",
+    originalSource: source,
+  });
+  assert.deepEqual(result.issues, [
+    {
+      code: "legacy_dataset_migrated",
+      path: "",
+      severity: "warning",
+      profile: "narrativeline.event-date-string.v1",
+    },
+    {
+      code: "extension_version_unspecified",
+      path: "/extensions/metadata",
+      severity: "warning",
+    },
+    {
+      code: "extension_version_unspecified",
+      path: "/events/0/extensions/history",
+      severity: "warning",
+    },
+  ]);
+  assert.deepEqual(result.dataset.events[0].extensions.history.time, {
+    year: 1969,
+    month: 7,
+    day: 16,
+  });
+  assert.deepEqual(result.dataset.events[1].extensions.history.time, {
+    year: 1969,
+    month: 7,
+    day: 20,
+  });
+  assert.equal("date" in result.dataset.events[0], false);
+  assert.equal("date" in result.dataset.events[2], false);
+  assert.equal(result.dataset.events[2].extensions, undefined);
+  assert.equal(result.dataset.events[0].legacyNote, original.events[0].legacyNote);
+  assert.equal(result.dataset.entities[0].legacyNote, original.entities[0].legacyNote);
+  assert.equal(result.dataset.legacyNote, original.legacyNote);
+  assert.equal(JSON.parse(source).events[0].date, "1969-07-16");
+
+  const exported = exportDatasetJson(result.dataset);
+  assert.equal(exported.isValid, true);
+  assert.ok(exported.json);
+  const current = JSON.parse(exported.json);
+  assert.equal("date" in current.events[0], false);
+  assert.deepEqual(current.events[0].extensions.history.time, {
+    year: 1969,
+    month: 7,
+    day: 16,
+  });
+  assert.deepEqual(
+    current.extensions["draft.github.sukoyaka-dopeness.specification"],
+    {
+      specVersion: "0.1.0",
+      uses: [
+        { extension: "metadata", version: "1.0.0" },
+        { extension: "history", version: "1.0.0" },
+      ],
+    },
+  );
+  const reimported = importDatasetJson(exported.json);
+  assert.equal(reimported.migration, undefined);
+  assert.deepEqual(reimported.issues, []);
+});
+
+test("rejects invalid or conflicting legacy Event dates instead of guessing", () => {
+  const invalidDate = importDatasetJson(JSON.stringify({
+    ...validDataset(),
+    events: [{ id: "event-1", date: "1969-02-30" }],
+  }));
+  assert.deepEqual(invalidDate.issues, [
+    { code: "legacy_event_date_invalid", path: "/events/0/date" },
+  ]);
+
+  const conflictingDate = importDatasetJson(JSON.stringify({
+    ...validDataset(),
+    events: [{
+      id: "event-1",
+      date: "1969-07-20",
+      extensions: { history: { time: { year: 1969 } } },
+    }],
+  }));
+  assert.deepEqual(conflictingDate.issues, [
+    { code: "legacy_event_date_history_conflict", path: "/events/0" },
+  ]);
+});
+
+test("does not treat a partial unknown date field as the legacy profile", () => {
+  const dataset = {
+    ...validDataset(),
+    events: [
+      { id: "event-1", date: "application-owned-value" },
+      { id: "event-2" },
+    ],
+  };
+
+  const result = importDatasetJson(JSON.stringify(dataset));
+
+  assert.equal(result.isValid, true);
+  assert.deepEqual(result.dataset, dataset);
+  assert.equal(result.migration, undefined);
+});
+
 test("updates the optional Dataset title without discarding metadata", () => {
   const dataset = {
     ...validDataset(),
@@ -194,6 +314,73 @@ test("exports a valid Dataset without modifying it", () => {
   assert.equal(result.isValid, true);
   assert.deepEqual(JSON.parse(result.json), dataset);
   assert.deepEqual(dataset, validDataset());
+});
+
+test("adds complete exact Extension declarations to NarrativeLine output", () => {
+  const dataset = {
+    ...validDataset(),
+    events: [{
+      id: "event-1",
+      extensions: { history: { time: { year: 2026, month: 8, day: 13 } } },
+    }],
+    extensions: { metadata: { datasetId: "dataset-1", title: "Example" } },
+  };
+  const original = structuredClone(dataset);
+
+  const result = exportDatasetJson(dataset);
+
+  assert.equal(result.isValid, true);
+  assert.ok(result.json);
+  const exported = JSON.parse(result.json);
+  assert.deepEqual(
+    exported.extensions["draft.github.sukoyaka-dopeness.specification"],
+    {
+      specVersion: "0.1.0",
+      uses: [
+        { extension: "metadata", version: "1.0.0" },
+        { extension: "history", version: "1.0.0" },
+      ],
+    },
+  );
+  assert.deepEqual(importDatasetJson(result.json).issues, []);
+  assert.deepEqual(dataset, original);
+});
+
+test("does not create an incomplete declaration for an unknown Extension", () => {
+  const dataset = {
+    ...validDataset(),
+    extensions: {
+      metadata: { title: "Preserve unknown Extension" },
+      "vendor.example.unknown": { version: "vendor-owned" },
+    },
+  };
+
+  const result = exportDatasetJson(dataset);
+
+  assert.equal(result.isValid, true);
+  assert.ok(result.json);
+  assert.deepEqual(JSON.parse(result.json), dataset);
+});
+
+test("preserves an existing Specification Extension declaration", () => {
+  const specificationId = "draft.github.sukoyaka-dopeness.specification";
+  const dataset = {
+    ...validDataset(),
+    extensions: {
+      metadata: { title: "Already declared" },
+      [specificationId]: {
+        specVersion: "0.1.0",
+        uses: [{ extension: "metadata", version: "1.0.0" }],
+        writerNote: "preserve this declaration",
+      },
+    },
+  };
+
+  const result = exportDatasetJson(dataset);
+
+  assert.equal(result.isValid, true);
+  assert.ok(result.json);
+  assert.deepEqual(JSON.parse(result.json), dataset);
 });
 
 test("does not export an invalid Dataset", () => {
@@ -276,4 +463,272 @@ test("preserves omitted Event fields when no Event updates are supplied", () => 
 
   assert.deepEqual(result, dataset);
   assert.equal("description" in result.events[0], false);
+});
+
+test("round-trips the Coordinate prototype unchanged while editing supported Event data", async () => {
+  const coordinateId = COORDINATE_EXTENSION_ID;
+  const specificationId = "draft.github.sukoyaka-dopeness.specification";
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/cross-application-demo.json", import.meta.url),
+    "utf8",
+  );
+  const imported = importDatasetJson(source);
+  assert.equal(imported.isValid, true);
+  assert.ok(imported.dataset);
+
+  const originalDatasetCoordinate = structuredClone(imported.dataset.extensions[coordinateId]);
+  const originalSpecification = structuredClone(imported.dataset.extensions[specificationId]);
+  const originalEntityCoordinates = imported.dataset.entities.map((entity) => structuredClone(entity.extensions?.[coordinateId]));
+  const originalEventCoordinates = imported.dataset.events.map((event) => structuredClone(event.extensions?.[coordinateId]));
+
+  const edited = updateEvent(imported.dataset, "event-restoration-start", {
+    description: "Restoration work started after the survey.",
+  });
+  const exported = exportDatasetJson(edited);
+  assert.equal(exported.isValid, true);
+  assert.ok(exported.json);
+
+  const reimported = importDatasetJson(exported.json);
+  assert.equal(reimported.isValid, true);
+  assert.ok(reimported.dataset);
+  assert.equal(reimported.dataset.events.find(({ id }) => id === "event-restoration-start")?.description, "Restoration work started after the survey.");
+  assert.deepEqual(reimported.dataset.extensions[coordinateId], originalDatasetCoordinate);
+  assert.deepEqual(reimported.dataset.extensions[specificationId], originalSpecification);
+  assert.deepEqual(
+    reimported.dataset.entities.map((entity) => entity.extensions?.[coordinateId]),
+    originalEntityCoordinates,
+  );
+  assert.deepEqual(
+    reimported.dataset.events.map((event) => event.extensions?.[coordinateId]),
+    originalEventCoordinates,
+  );
+});
+
+test("interprets Entity and partial Event coordinates from Dataset-defined Spaces", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/cross-application-demo.json", import.meta.url),
+    "utf8",
+  );
+  const imported = importDatasetJson(source);
+  assert.ok(imported.dataset);
+
+  const entity = imported.dataset.entities.find(({ id }) => id === "entity-lighthouse");
+  const event = imported.dataset.events.find(({ id }) => id === "event-restoration-start");
+  assert.ok(entity);
+  assert.ok(event);
+
+  const entityResult = readObjectCoordinates(imported.dataset, entity);
+  assert.equal(entityResult.status, "available");
+  assert.deepEqual(entityResult.coordinates.map(({ spaceId }) => spaceId), [
+    "linkscape-graph",
+    "harbor-site-plan",
+  ]);
+  assert.deepEqual(entityResult.coordinates[0].values.map(({ id, value }) => ({ id, value })), [
+    { id: "x", value: 80 },
+    { id: "y", value: 156 },
+  ]);
+  assert.deepEqual(entityResult.coordinates[1].values.map(({ id, value, unit }) => ({ id, value, unit })), [
+    { id: "east", value: 14.5, unit: "metre" },
+    { id: "north", value: 82, unit: "metre" },
+  ]);
+
+  const eventResult = readObjectCoordinates(imported.dataset, event);
+  assert.equal(eventResult.status, "available");
+  assert.deepEqual(eventResult.coordinates[0].values.map(({ id, value }) => ({ id, value })), [
+    { id: "y", value: 320 },
+  ]);
+  assert.deepEqual(eventResult.coordinates[0].missingComponents.map(({ id }) => id), ["x"]);
+});
+
+test("does not claim interpretation for unsupported or inconsistent Coordinate payloads", () => {
+  const object = {
+    id: "entity-1",
+    extensions: { [COORDINATE_EXTENSION_ID]: { coordinates: [
+      { spaceId: "space-1", values: { x: 1 } },
+    ] } },
+  };
+  const unsupported = {
+    ...validDataset(),
+    entities: [object],
+    extensions: { [COORDINATE_EXTENSION_ID]: { formatVersion: "9.0.0", spaces: [] } },
+  };
+  assert.deepEqual(readObjectCoordinates(unsupported, object), {
+    status: "unsupported",
+    coordinates: [],
+  });
+
+  const inconsistent = {
+    ...unsupported,
+    extensions: { [COORDINATE_EXTENSION_ID]: {
+      formatVersion: "0.1.0",
+      spaces: [{ id: "space-1", components: { y: {} } }],
+    } },
+  };
+  assert.deepEqual(readObjectCoordinates(inconsistent, object), {
+    status: "invalid",
+    coordinates: [],
+  });
+});
+
+test("interprets and preserves an external-reference Coordinate fixture offline", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/coordinate/external-reference.json", import.meta.url),
+    "utf8",
+  );
+  const imported = importDatasetJson(source);
+  assert.equal(imported.isValid, true);
+  assert.ok(imported.dataset);
+  const entity = imported.dataset.entities[0];
+  assert.ok(entity);
+
+  const result = readObjectCoordinates(imported.dataset, entity);
+  assert.equal(result.status, "available");
+  assert.deepEqual(result.coordinates[0].values.map(({ id, value }) => ({ id, value })), [
+    { id: "latitude", value: 35.6812 },
+    { id: "longitude", value: 139.7671 },
+  ]);
+
+  const exported = exportDatasetJson(imported.dataset);
+  assert.equal(exported.isValid, true);
+  assert.deepEqual(JSON.parse(exported.json), JSON.parse(source));
+});
+
+test("declares Coordinate when it coexists with NarrativeLine-owned output", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/coordinate/external-reference.json", import.meta.url),
+    "utf8",
+  );
+  const dataset = JSON.parse(source);
+  dataset.extensions.metadata = { title: "Coordinate export" };
+
+  const exported = exportDatasetJson(dataset);
+
+  assert.equal(exported.isValid, true);
+  assert.ok(exported.json);
+  const result = JSON.parse(exported.json);
+  assert.deepEqual(
+    result.extensions["draft.github.sukoyaka-dopeness.specification"],
+    {
+      specVersion: "0.1.0",
+      uses: [
+        { extension: "metadata", version: "1.0.0" },
+        {
+          extension: "experimental.github.sukoyaka-dopeness.coordinate",
+          version: "0.1.0",
+        },
+      ],
+    },
+  );
+  assert.deepEqual(importDatasetJson(exported.json).issues, []);
+});
+
+test("updates an existing shared Coordinate while preserving other writer data", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/cross-application-demo.json", import.meta.url),
+    "utf8",
+  );
+  const imported = importDatasetJson(source);
+  assert.ok(imported.dataset);
+  const dataset = structuredClone(imported.dataset);
+  const entity = dataset.entities.find(({ id }) => id === "entity-lighthouse");
+  assert.ok(entity);
+  const payload = entity.extensions[COORDINATE_EXTENSION_ID];
+  payload.writerNote = "preserve this payload field";
+  payload.coordinates[0].routeHint = { source: "another-writer" };
+  payload.coordinates[0].values.writerAxis = 7;
+  dataset.extensions[COORDINATE_EXTENSION_ID].spaces[0].components.writerAxis = {
+    unit: "another-writer-unit",
+  };
+
+  const originalDatasetCoordinate = structuredClone(
+    dataset.extensions[COORDINATE_EXTENSION_ID],
+  );
+  const originalOtherCoordinate = structuredClone(payload.coordinates[1]);
+  const result = updateObjectCoordinate(
+    dataset,
+    "entity-lighthouse",
+    "linkscape-graph",
+    { x: 96 },
+  );
+
+  assert.equal(result.status, "updated");
+  assert.notEqual(result.dataset, dataset);
+  const updatedEntity = result.dataset.entities.find(
+    ({ id }) => id === "entity-lighthouse",
+  );
+  assert.deepEqual(
+    updatedEntity.extensions[COORDINATE_EXTENSION_ID].coordinates[0],
+    {
+      spaceId: "linkscape-graph",
+      values: { x: 96, y: 156, writerAxis: 7 },
+      routeHint: { source: "another-writer" },
+    },
+  );
+  assert.equal(
+    updatedEntity.extensions[COORDINATE_EXTENSION_ID].writerNote,
+    "preserve this payload field",
+  );
+  assert.deepEqual(
+    updatedEntity.extensions[COORDINATE_EXTENSION_ID].coordinates[1],
+    originalOtherCoordinate,
+  );
+  assert.deepEqual(
+    result.dataset.extensions[COORDINATE_EXTENSION_ID],
+    originalDatasetCoordinate,
+  );
+});
+
+test("refuses unsafe Coordinate writes without changing the Dataset", () => {
+  const coordinateId = COORDINATE_EXTENSION_ID;
+  const object = {
+    id: "entity-1",
+    extensions: {
+      [coordinateId]: {
+        coordinates: [{ spaceId: "space-1", values: { x: 4 } }],
+      },
+    },
+  };
+  const dataset = {
+    ...validDataset(),
+    entities: [object],
+    extensions: {
+      [coordinateId]: {
+        formatVersion: "0.1.0",
+        spaces: [{
+          id: "space-1",
+          components: { x: { minimum: 0, maximum: 10 } },
+        }],
+      },
+    },
+  };
+
+  for (const [spaceId, values] of [
+    ["space-1", { y: 2 }],
+    ["space-1", { x: 11 }],
+    ["missing-space", { x: 2 }],
+  ]) {
+    const result = updateObjectCoordinate(dataset, "entity-1", spaceId, values);
+    assert.notEqual(result.status, "updated");
+    assert.equal(result.dataset, dataset);
+  }
+
+  const unsupported = structuredClone(dataset);
+  unsupported.extensions[coordinateId].formatVersion = "9.0.0";
+  const unsupportedResult = updateObjectCoordinate(
+    unsupported,
+    "entity-1",
+    "space-1",
+    { x: 5 },
+  );
+  assert.equal(unsupportedResult.status, "unsupported");
+  assert.equal(unsupportedResult.dataset, unsupported);
+
+  const eventResult = updateObjectCoordinate(
+    dataset,
+    "event-1",
+    "space-1",
+    { x: 5 },
+  );
+  assert.equal(eventResult.status, "unsupported");
+  assert.equal(eventResult.dataset, dataset);
 });

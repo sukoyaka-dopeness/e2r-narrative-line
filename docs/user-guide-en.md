@@ -18,7 +18,7 @@ From the Home screen you can create a Dataset, import E2R JSON, open the sample 
 
 ## Importing a Dataset
 
-Choose an E2R JSON file with **Import E2R JSON**. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset.
+Choose an E2R JSON file with **Import E2R JSON**. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset. NarrativeLine's legacy Event date representation is converted to the current History representation during import. The selected source file is not changed, while dates in a newly exported file use the current History representation.
 
 ## Dataset title
 
@@ -69,10 +69,17 @@ Select a related Entity in Event Detail and choose **Edit Entity**. Saving or go
 
 Removing an association does not delete the Entity. Entity deletion is a separate destructive action in Entity Detail.
 
+When an imported Dataset contains the experimental `linkscape-graph`
+Coordinate in the exact format shared with Linkscape, Entity Detail offers
+**Edit Recorded Coordinate**. It changes only the existing numeric `x` and `y`
+values. Other Spaces, missing values, and Event Coordinates remain read-only.
+
 ## Exporting a Dataset
 
 Choose **Export E2R JSON**. A title is used for the filename; without a title, the fallback is `e2r-dataset.e2r.json`.
 
+When every used Extension can be declared exactly, the new file also records those specification versions. NarrativeLine does not guess the version of an unknown Extension or emit an incomplete declaration.
+
 ## Validation messages
 
-Errors prevent a Dataset from opening. Warnings allow it to open but should be reviewed. Diagnostics include a stable code and a JSON Pointer location.
+Errors prevent a Dataset from opening. Import information explains legacy migration and other non-blocking conditions. A legacy Dataset whose Extension specification versions are undeclared can still be read and edited. Exact diagnostic codes and JSON Pointer locations remain available under **Diagnostic details**.

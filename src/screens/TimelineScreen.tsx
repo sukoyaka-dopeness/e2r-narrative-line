@@ -3,13 +3,13 @@ import type { Dataset } from "../models/Dataset";
 import type {
   DatasetExportIssue,
   DatasetExportResult,
+  DatasetImportWarning,
 } from "../services/DatasetService";
 import { getDatasetExportFilename } from "../services/DatasetService";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
 } from "../services/HistoryService";
-import type { CoreDatasetValidationIssue } from "../services/ValidationService";
 import { useLanguage } from "../i18n/LanguageContext";
 
 type TimelineScreenProps = {
@@ -20,7 +20,7 @@ type TimelineScreenProps = {
   onAddEvent: () => void;
   onExportDataset: () => DatasetExportResult;
   onBackToHome: () => void;
-  importWarnings?: CoreDatasetValidationIssue[];
+  importWarnings?: DatasetImportWarning[];
   onUpdateDatasetTitle: (title: string) => void;
 };
 
@@ -32,6 +32,22 @@ function formatExportIssue(issue: DatasetExportIssue): string {
       : "";
 
   return `${issue.code} at ${location}${relatedIds}`;
+}
+
+function formatImportWarning(issue: DatasetImportWarning): string {
+  const location = issue.path === "" ? "the document" : issue.path;
+  const relatedIds =
+    "relatedIds" in issue && issue.relatedIds?.length
+      ? ` (${issue.relatedIds.join(", ")})`
+      : "";
+  const profile = "profile" in issue ? ` (${issue.profile})` : "";
+
+  return `${issue.code}${profile} at ${location}${relatedIds}`;
+}
+
+function getExtensionId(path: string): string | undefined {
+  const match = /\/extensions\/([^/]+)/.exec(path);
+  return match?.[1].replaceAll("~1", "/").replaceAll("~0", "~");
 }
 
 export function TimelineScreen({
@@ -64,6 +80,24 @@ export function TimelineScreen({
   }, [selectedEvent, dataset.events.length]);
 
   const timelineEvents = [...dataset.events].sort(compareEventsByHistoryDate);
+  const migrationWarnings = importWarnings.filter(
+    ({ code }) => code === "legacy_dataset_migrated",
+  );
+  const unspecifiedVersionWarnings = importWarnings.filter(
+    ({ code }) => code === "extension_version_unspecified",
+  );
+  const otherImportWarnings = importWarnings.filter(
+    ({ code }) =>
+      code !== "legacy_dataset_migrated" &&
+      code !== "extension_version_unspecified",
+  );
+  const unspecifiedExtensionIds = [
+    ...new Set(
+      unspecifiedVersionWarnings
+        .map(({ path }) => getExtensionId(path))
+        .filter((value): value is string => value !== undefined),
+    ),
+  ];
 
   const handleExport = () => {
     const result = onExportDataset();
@@ -129,22 +163,57 @@ export function TimelineScreen({
       {downloadError && <p role="alert">{downloadError}</p>}
 
       {importWarnings.length > 0 && (
-        <section aria-labelledby="import-warnings-heading">
-          <h2 id="import-warnings-heading">{ja ? "読み込み時の警告" : "Import warnings"}</h2>
+        <section
+          className="import-information"
+          aria-labelledby="import-information-heading"
+        >
+          <h2 id="import-information-heading">
+            {ja ? "読み込み情報" : "Import information"}
+          </h2>
           <ul>
-            {importWarnings.map((issue, index) => {
-              const location = issue.path === "" ? "the document" : issue.path;
-              const relatedIds = issue.relatedIds?.length
-                ? ` (${issue.relatedIds.join(", ")})`
-                : "";
-
-              return (
-                <li key={`${issue.code}-${issue.path}-${index}`}>
-                  {issue.code} at {location}{relatedIds}
-                </li>
-              );
-            })}
+            {migrationWarnings.length > 0 && (
+              <li>
+                {ja
+                  ? "旧形式の日付を現在のHistory形式へ変換して読み込みました。元のファイルは変更されません。エクスポートする新しいファイルでは、日付が現在のHistory形式で保存され、使用中のExtensionをすべて正確に宣言できる場合はその仕様バージョンも記録されます。"
+                  : "Legacy dates were converted to the current History representation during import. The source file is not changed. In a newly exported file, dates use the current History representation and exact specification versions are recorded when every used Extension can be declared completely."}
+              </li>
+            )}
+            {unspecifiedVersionWarnings.length > 0 && (
+              <li>
+                {ja ? (
+                  <>
+                    {unspecifiedExtensionIds.length > 0 && (
+                      <><code>{unspecifiedExtensionIds.join(", ")}</code> の</>
+                    )}
+                    Extension仕様バージョンが宣言されていません。旧Datasetでは正常な状態で、読み込みと編集を続けられますが、作成時の正確な仕様バージョンは断定できません。
+                  </>
+                ) : (
+                  <>
+                    The Extension specification version
+                    {unspecifiedExtensionIds.length > 0 && (
+                      <> for <code>{unspecifiedExtensionIds.join(", ")}</code></>
+                    )}{" "}
+                    is not declared. This is normal for a legacy Dataset and does not prevent reading or editing it, but the exact specification version used when it was created is unknown.
+                  </>
+                )}
+              </li>
+            )}
+            {otherImportWarnings.map((issue, index) => (
+              <li key={`${issue.code}-${issue.path}-${index}`}>
+                {formatImportWarning(issue)}
+              </li>
+            ))}
           </ul>
+          <details>
+            <summary>{ja ? "診断詳細" : "Diagnostic details"}</summary>
+            <ul>
+              {importWarnings.map((issue, index) => (
+                <li key={`${issue.code}-${issue.path}-${index}`}>
+                  <code>{formatImportWarning(issue)}</code>
+                </li>
+              ))}
+            </ul>
+          </details>
         </section>
       )}
 

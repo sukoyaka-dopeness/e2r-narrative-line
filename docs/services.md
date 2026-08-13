@@ -141,6 +141,49 @@ date follow dated Events.
 
 ---
 
+# CoordinateService
+
+CoordinateService provides UI-independent interpretation and a bounded
+second-writer experiment for Coordinate prototype `0.1.0`.
+
+## Responsibilities
+
+- Recognize the exact authority-qualified experimental identifier and format
+  version
+- Resolve object Coordinates through Dataset-level Space definitions
+- Resolve numeric values by stable Component ID
+- Preserve partial Coordinates and report missing Components without inventing
+  values
+- Distinguish absent, available, unsupported-version, and inconsistent payloads
+- Restrict writing to existing Entity `x` and `y` values in the exact
+  `linkscape-graph` Space definition agreed with Linkscape
+- Refuse unsupported versions, incompatible Space semantics, missing
+  Coordinates, unknown write Components, non-finite values, and bound violations
+- Preserve unknown fields, other Components, other Spaces, and Coordinate order
+
+## Functions
+
+### readObjectCoordinates()
+
+Returns the Coordinates that can be interpreted for one Entity or Event. Each
+result includes its Space identity, optional display metadata, recorded values,
+and unrecorded Components. Unsupported and inconsistent payloads return an
+explicit status rather than best-effort numeric values.
+
+### isCoordinateWriteSupported()
+
+Returns true only for a complete recorded `x`/`y` Coordinate whose Space ID,
+Cartesian kind, units, and positive directions exactly match the shared
+Linkscape experiment. General numeric display does not imply write support.
+
+### updateObjectCoordinate()
+
+Returns an updated Dataset only when an existing supported Coordinate can be
+changed safely. It updates requested `x` or `y` values in place, never creates
+missing structures, and returns a status with the original Dataset on refusal.
+
+---
+
 # EntityService
 
 The EntityService manages Entity objects.
@@ -207,6 +250,7 @@ The DatasetService manages datasets.
 
 - Create datasets
 - Import datasets
+- Migrate exact, fixture-backed NarrativeLine legacy profiles in memory
 - Export datasets
 - Update supported Metadata Extension fields
 
@@ -232,14 +276,23 @@ Returns:
 
 ### importDatasetJson()
 
-Parses a JSON string and validates its E2R Core structure.
+Parses a JSON string, applies an exact recognized legacy migration when
+necessary, and validates the resulting E2R Dataset.
 
 Returns a distinct `json_parse_error` for malformed JSON. For valid JSON
-syntax, it returns the Core validation issues or the loaded Dataset.
+syntax, it returns migration and Validator issues or the loaded Dataset. A
+successful legacy migration adds `legacy_dataset_migrated`, identifies the
+matched profile, and retains the original source string in the import result.
+Invalid or conflicting legacy dates fail explicitly rather than being guessed.
 
 Importing does not assign or regenerate `extensions.metadata.datasetId` merely
 because the field is absent. File selection and reading are UI responsibilities
-that will call this function.
+that will call this function. Opening never overwrites the selected file;
+export uses the current representation.
+
+`LegacyDatasetService` owns profile recognition and pure in-memory conversion.
+The supported profiles and append-only compatibility policy are documented in
+`legacy-dataset-compatibility.md`.
 
 Returns:
 
@@ -250,12 +303,22 @@ Returns:
 
 ### exportDatasetJson()
 
-Validates the current Dataset and serializes it as formatted JSON.
+Validates the current Dataset, prepares application-owned output metadata, and
+serializes the prepared Dataset as formatted JSON.
+
+When Metadata or History is present and every used Extension has an exact
+version known to NarrativeLine, export adds a complete Specification Extension
+draft `0.1.0` declaration. Current supported declarations are Metadata
+`1.0.0`, History `1.0.0`, and Coordinate `0.1.0`. An existing Specification
+Extension is preserved. If an unknown or unsupported Extension is present,
+export does not create a partial declaration or guess its version.
+
+The prepared export value is validated again. Declaration preparation does not
+modify the in-memory Dataset or application state.
 
 The function returns Core validation issues when the Dataset is invalid and a
 distinct `json_serialize_error` when it cannot be represented as JSON. It
-returns JSON only after successful validation and does not modify application
-state.
+returns JSON only after successful validation.
 
 ---
 
@@ -284,6 +347,19 @@ Returns:
 Returns:
 
 - an updated Dataset
+
+---
+
+# SpecificationDeclarationService
+
+The SpecificationDeclarationService prepares exact, complete specification
+version declarations for newly exported NarrativeLine output.
+
+It scans Extension occurrences at Dataset, Entity, Event, and Relation scope.
+It returns a new Dataset only when all declarations can be made exactly. It
+leaves the Dataset unchanged when no NarrativeLine-owned Metadata or History
+output is present, when a declaration already exists, or when any Extension
+version is unknown or unsupported.
 
 ---
 

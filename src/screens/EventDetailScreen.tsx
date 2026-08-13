@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
@@ -267,6 +268,8 @@ export function EventDetailScreen({
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+      <CoordinatePanel key={event.id} dataset={dataset} object={event} />
+
       <br />
 
       <div>

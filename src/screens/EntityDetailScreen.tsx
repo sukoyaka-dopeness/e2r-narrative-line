@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
+import type { CoordinateWriteStatus } from "../services/CoordinateService";
 
 type EntityDetailScreenProps = {
   dataset: Dataset;
@@ -10,6 +12,11 @@ type EntityDetailScreenProps = {
     entityId: string,
     updates: { name?: string; description?: string },
   ) => void;
+  onUpdateCoordinate: (
+    objectId: string,
+    spaceId: string,
+    values: Record<string, number>,
+  ) => CoordinateWriteStatus;
   onDeleteEntity: (entityId: string) => void;
   onSelectEvent: (eventId: string) => void;
   onBack: () => void;
@@ -19,6 +26,7 @@ export function EntityDetailScreen({
   dataset,
   selectedEntity,
   onUpdateEntity,
+  onUpdateCoordinate,
   onDeleteEntity,
   onSelectEvent,
   onBack,
@@ -92,6 +100,15 @@ export function EntityDetailScreen({
           onChange={(event) => setDescription(event.target.value)}
         />
       </div>
+
+      <CoordinatePanel
+        key={entity.id}
+        dataset={dataset}
+        object={entity}
+        onSaveCoordinate={(spaceId, values) =>
+          onUpdateCoordinate(entity.id, spaceId, values)
+        }
+      />
 
       <br />
 

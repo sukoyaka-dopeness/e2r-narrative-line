@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "entity-apollo-11",
+      "name": "Apollo 11",
+      "legacyNote": "preserve this unknown field"
+    }
+  ],
+  "events": [
+    {
+      "id": "event-launch",
+      "name": "Launch",
+      "description": "Apollo 11 launches from Kennedy Space Center.",
+      "date": "1969-07-16",
+      "legacyNote": "preserve this event field"
+    },
+    {
+      "id": "event-moonwalk",
+      "name": "Moonwalk",
+      "date": "1969-07-20"
+    },
+    {
+      "id": "event-undated",
+      "name": "Undated draft",
+      "date": ""
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-apollo-launch",
+      "sourceId": "event-launch",
+      "targetId": "entity-apollo-11"
+    }
+  ],
+  "extensions": {
+    "metadata": {
+      "title": "NarrativeLine legacy date fixture"
+    }
+  },
+  "legacyNote": "preserve this dataset field"
+}

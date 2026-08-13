@@ -85,6 +85,10 @@ Users can edit:
 - Date
 - Related Entities
 
+When the selected Event has a supported experimental Coordinate, Event Detail
+also displays its logical values read-only. Missing Components are shown as
+unrecorded.
+
 Saving an Event returns focus to Timeline View.
 
 Choosing `Back` for an existing Event discards unsaved local changes and returns
@@ -123,8 +127,14 @@ Entity.
 # Entity Detail
 
 Entity Detail allows users to edit an Entity's name and description, inspect
-related Events, and delete the Entity after confirmation. Deleting an Entity
-removes its connected Relations and returns to Timeline; connected Events remain.
+related Events, and delete the Entity after confirmation. It also displays
+supported experimental logical Coordinates and lets the user switch among the
+Entity's recorded Spaces. The exact shared `linkscape-graph` Space exposes an
+explicit numeric editor for already-recorded `x` and `y`; all other Spaces and
+missing values remain read-only. The selected Space and draft values are
+temporary UI state.
+Deleting an Entity removes its connected Relations and returns to Timeline;
+connected Events remain.
 
 ---
 

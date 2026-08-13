@@ -252,6 +252,39 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.import-information {
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+}
+
+.import-information > ul,
+.import-information details ul {
+  margin: 8px 0 0;
+  padding-left: 24px;
+}
+
+.import-information li + li {
+  margin-top: 8px;
+}
+
+.import-information code {
+  display: inline;
+  margin: 0;
+  padding: 2px 5px;
+}
+
+.import-information details {
+  margin-top: 12px;
+}
+
+.import-information summary {
+  cursor: pointer;
+  color: var(--text-h);
+}
+
 @media (max-width: 600px) {
   .dataset-title-editor {
     align-items: stretch;
@@ -320,6 +353,123 @@ button:disabled {
 .date-fields input {
   box-sizing: border-box;
   width: 100%;
+}
+
+.coordinate-panel {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--social-bg);
+}
+
+.coordinate-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.coordinate-panel h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 125%;
+  color: var(--text-h);
+}
+
+.coordinate-panel__header p,
+.coordinate-panel__notice {
+  margin: 4px 0 0;
+}
+
+.coordinate-panel__space-picker,
+.coordinate-panel__space-name {
+  display: grid;
+  flex: 0 1 20rem;
+  gap: 3px;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.coordinate-panel__space-picker select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.coordinate-panel__space-name strong {
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.coordinate-panel__values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.coordinate-panel__values > div {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.coordinate-panel__values dt {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.coordinate-panel__values dd {
+  margin: 2px 0 0;
+  font-weight: 650;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
+
+.coordinate-panel__values input {
+  box-sizing: border-box;
+  width: min(100%, 12rem);
+  min-height: 38px;
+  padding: 6px 8px;
+}
+
+.coordinate-panel__values .coordinate-panel__missing {
+  font-weight: 400;
+  color: var(--text);
+}
+
+.coordinate-panel__values small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.coordinate-panel__identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.coordinate-panel__identity code {
+  color: var(--text-h);
+}
+
+.coordinate-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .related-list {
@@ -641,6 +791,7 @@ button:disabled {
   }
 
   .date-fields,
+  .coordinate-panel__header,
   .detail-primary-actions,
   .modal-actions,
   .entity-picker-create {
@@ -657,6 +808,11 @@ button:disabled {
 
   .date-fields label {
     flex-basis: auto;
+  }
+
+  .coordinate-panel__space-picker,
+  .coordinate-panel__space-name {
+    width: 100%;
   }
 
   .entity-picker-create input {

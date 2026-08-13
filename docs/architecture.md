@@ -165,8 +165,11 @@ NavigationService
 EventService
 EntityService
 DatasetService
+LegacyDatasetService
+SpecificationDeclarationService
 IdentifierService
 HistoryService
+CoordinateService
 ValidationService
 ```
 
@@ -218,6 +221,15 @@ Screens invoke callbacks and never modify Datasets directly.
 
 Dataset manipulation is performed by UI-independent Services that return new
 Dataset values for App to apply.
+
+`CoordinateService` resolves the experimental Coordinate prototype into display
+values. Its bounded writer returns a new Dataset only for an explicit update of
+existing Entity `x` and `y` values in the exact `linkscape-graph` Space shared
+with Linkscape. It neither creates Coordinate structures nor writes unsupported
+Spaces. Entity Detail and Event Detail share `CoordinatePanel` for Space
+selection and value display; only Entity Detail supplies the bounded writer.
+The selected Space and unsaved numeric input remain local React UI state and
+are not Dataset content.
 
 ---
 
@@ -301,6 +313,20 @@ Dataset.
 
 DatasetService currently creates new Datasets using the Core `version`, empty
 Core collections, and `extensions.metadata.datasetId` generated as UUID v7.
+
+Import is a boundary pipeline: JSON parsing, exact legacy-profile recognition,
+pure in-memory migration when matched, and complete validation with the current
+E2R Validator. Legacy representation is never introduced into the current
+in-memory model, and opening a source does not overwrite it. Profile contracts
+and regression fixtures are append-only; see
+`legacy-dataset-compatibility.md`.
+
+Export first validates the in-memory Dataset, then asks
+`SpecificationDeclarationService` to add a complete exact-version declaration
+to a separate output value when possible, and validates that output again.
+Existing declarations are never replaced, and unknown Extension versions
+prevent automatic declaration rather than producing an incomplete `uses`
+list. The in-memory Dataset remains unchanged.
 
 Future Dataset handling will add:
 

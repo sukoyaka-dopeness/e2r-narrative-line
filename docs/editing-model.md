@@ -237,6 +237,21 @@ NarrativeLine supports:
 
 - E2R Core
 - History Extension
+- interpretation and a bounded writer experiment for Coordinate prototype
+  `0.1.0`
+
+Coordinate interpretation resolves Entity and Event values through
+Dataset-level Space and Component definitions. Event Coordinates and general
+Spaces remain read-only. Entity Detail may explicitly update existing `x` and
+`y` values only in the exact `linkscape-graph` Space definition shared with
+Linkscape. The operation does not create a Space, Component, Coordinate, or
+missing value and refuses an incompatible definition. Unknown fields, other
+Components, other Spaces, and Coordinate order are preserved.
+
+Choosing which of an object's Spaces to display, entering draft numeric values,
+and canceling a Coordinate edit are temporary UI state. They are not saved to
+the Dataset. Missing Components remain unrecorded; they are not filled with
+zero.
 
 Unsupported Extensions:
 
