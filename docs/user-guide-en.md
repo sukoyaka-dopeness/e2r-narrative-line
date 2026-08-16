@@ -28,7 +28,7 @@ Technical note: the storage location is `extensions.metadata.title`.
 
 ## Editing Events
 
-Select an Event on the Timeline and choose **Edit**. You can edit its name, description, and Gregorian calendar date. **Save Event** returns to the Timeline. **Save and Add Related Entity** saves valid edits and opens the Entity Picker.
+Select an Event on the Timeline and choose **Edit**. You can edit its name, description, and Gregorian calendar date. Open **Add time (optional)** below the date fields to enter hour, minute, and second. Time is saved only with a recorded date; clearing a time field also clears finer time precision. **Save Event** returns to the Timeline. **Save and Add Related Entity** saves valid edits and opens the Entity Picker.
 
 ## Screen navigation
 

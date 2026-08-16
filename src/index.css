@@ -312,6 +312,13 @@ button:disabled {
   transform: translateX(-50%);
 }
 
+.timeline-event-time {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
 .detail-screen > * {
   min-width: 0;
   max-width: 100%;
@@ -353,6 +360,24 @@ button:disabled {
 .date-fields input {
   box-sizing: border-box;
   width: 100%;
+}
+
+.event-time-fields {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--social-bg);
+}
+
+.event-time-fields summary {
+  cursor: pointer;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.event-time-fields .date-fields {
+  margin-top: 12px;
 }
 
 .coordinate-panel {

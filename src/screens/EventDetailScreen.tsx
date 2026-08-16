@@ -5,7 +5,7 @@ import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
 import { useLanguage } from "../i18n/LanguageContext";
 import {
-  getEventHistoryDate,
+  getEventHistoryTime,
   validateHistoryDate,
   type HistoryDate,
   type HistoryDateValidationError,
@@ -22,6 +22,13 @@ const historyDateValidationMessages: Record<
   day_requires_month: "Day requires a year and month.",
   day_must_be_integer: "Day must be an integer.",
   day_out_of_range: "Day is not valid for the selected year and month.",
+  hour_requires_day: "Hour requires a complete date.",
+  hour_must_be_integer: "Hour must be an integer.",
+  hour_out_of_range: "Hour must be between 0 and 23.",
+  minute_must_be_integer: "Minute must be an integer.",
+  minute_out_of_range: "Minute must be between 0 and 59.",
+  second_must_be_integer: "Second must be an integer.",
+  second_out_of_range: "Second must be between 0 and 59.",
 };
 
 function parseOptionalInteger(value: string): number | undefined {
@@ -35,7 +42,10 @@ function historyDatesEqual(
   return (
     left?.year === right.year &&
     left?.month === right.month &&
-    left?.day === right.day
+    left?.day === right.day &&
+    left?.hour === right.hour &&
+    left?.minute === right.minute &&
+    left?.second === right.second
   );
 }
 
@@ -98,21 +108,35 @@ export function EventDetailScreen({
   const relatedEntities: Entity[] = dataset.entities.filter((entity) =>
     relatedEntityIds.has(entity.id),
   );
-  const storedHistoryDate = event ? getEventHistoryDate(event) : undefined;
+  const storedHistoryTime = event ? getEventHistoryTime(event) : undefined;
   const [year, setYear] = useState(
-    storedHistoryDate?.year === undefined
+    storedHistoryTime?.year === undefined
       ? ""
-      : String(storedHistoryDate.year),
+      : String(storedHistoryTime.year),
   );
   const [month, setMonth] = useState(
-    storedHistoryDate?.month === undefined
+    storedHistoryTime?.month === undefined
       ? ""
-      : String(storedHistoryDate.month),
+      : String(storedHistoryTime.month),
   );
   const [day, setDay] = useState(
-    storedHistoryDate?.day === undefined
+    storedHistoryTime?.day === undefined
       ? ""
-      : String(storedHistoryDate.day),
+      : String(storedHistoryTime.day),
+  );
+  const [hour, setHour] = useState(
+    storedHistoryTime?.hour === undefined ? "" : String(storedHistoryTime.hour),
+  );
+  const [minute, setMinute] = useState(
+    storedHistoryTime?.minute === undefined ? "" : String(storedHistoryTime.minute),
+  );
+  const [second, setSecond] = useState(
+    storedHistoryTime?.second === undefined ? "" : String(storedHistoryTime.second),
+  );
+  const [isTimeOpen, setIsTimeOpen] = useState(
+    storedHistoryTime?.hour !== undefined ||
+      storedHistoryTime?.minute !== undefined ||
+      storedHistoryTime?.second !== undefined,
   );
   const [name, setName] = useState(event?.name ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
@@ -143,10 +167,13 @@ export function EventDetailScreen({
     ...(year.trim() === "" ? {} : { year: parseOptionalInteger(year) }),
     ...(month.trim() === "" ? {} : { month: parseOptionalInteger(month) }),
     ...(day.trim() === "" ? {} : { day: parseOptionalInteger(day) }),
+    ...(hour.trim() === "" ? {} : { hour: parseOptionalInteger(hour) }),
+    ...(minute.trim() === "" ? {} : { minute: parseOptionalInteger(minute) }),
+    ...(second.trim() === "" ? {} : { second: parseOptionalInteger(second) }),
   };
   const historyDateValidationError = validateHistoryDate(editedHistoryDate);
   const getChangedEventUpdates = () => ({
-    ...(historyDatesEqual(storedHistoryDate, editedHistoryDate)
+    ...(historyDatesEqual(storedHistoryTime, editedHistoryDate)
       ? {}
       : { historyDate: editedHistoryDate }),
     ...(name === (event.name ?? "") ? {} : { name }),
@@ -196,6 +223,9 @@ export function EventDetailScreen({
                 if (nextYear.trim() === "") {
                   setMonth("");
                   setDay("");
+                  setHour("");
+                  setMinute("");
+                  setSecond("");
                 }
               }}
             />
@@ -217,6 +247,9 @@ export function EventDetailScreen({
 
                 if (nextMonth.trim() === "") {
                   setDay("");
+                  setHour("");
+                  setMinute("");
+                  setSecond("");
                 }
               }}
             />
@@ -232,7 +265,15 @@ export function EventDetailScreen({
               max="31"
               value={day}
               disabled={year.trim() === "" || month.trim() === ""}
-              onChange={(inputEvent) => setDay(inputEvent.target.value)}
+              onChange={(inputEvent) => {
+                const nextDay = inputEvent.target.value;
+                setDay(nextDay);
+                if (nextDay.trim() === "") {
+                  setHour("");
+                  setMinute("");
+                  setSecond("");
+                }
+              }}
             />
           </label>
         </div>
@@ -242,6 +283,68 @@ export function EventDetailScreen({
             {historyDateValidationMessages[historyDateValidationError]}
           </p>
         )}
+
+        <details
+          className="event-time-fields"
+          open={isTimeOpen}
+          onToggle={(toggleEvent) =>
+            setIsTimeOpen((toggleEvent.currentTarget as HTMLDetailsElement).open)
+          }
+        >
+          <summary>{ja ? "時刻を入力（任意）" : "Add time (optional)"}</summary>
+          <div className="date-fields">
+            <label>
+              {ja ? "時" : "Hour"}
+              <br />
+              <input
+                type="number"
+                min="0"
+                max="23"
+                step="1"
+                value={hour}
+                disabled={day.trim() === ""}
+                onChange={(inputEvent) => {
+                  const nextHour = inputEvent.target.value;
+                  setHour(nextHour);
+                  if (nextHour.trim() === "") {
+                    setMinute("");
+                    setSecond("");
+                  }
+                }}
+              />
+            </label>
+            <label>
+              {ja ? "分" : "Minute"}
+              <br />
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="1"
+                value={minute}
+                disabled={hour.trim() === ""}
+                onChange={(inputEvent) => {
+                  const nextMinute = inputEvent.target.value;
+                  setMinute(nextMinute);
+                  if (nextMinute.trim() === "") setSecond("");
+                }}
+              />
+            </label>
+            <label>
+              {ja ? "秒" : "Second"}
+              <br />
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="1"
+                value={second}
+                disabled={minute.trim() === ""}
+                onChange={(inputEvent) => setSecond(inputEvent.target.value)}
+              />
+            </label>
+          </div>
+        </details>
       </div>
 
       <br />

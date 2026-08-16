@@ -60,12 +60,14 @@ Returns:
 
 ### updateEvent()
 
-Updates the Event name, description, and date-only History information.
+Updates the Event name, description, and contiguous date/time History
+information.
 
-Date information is written to `extensions.history.time`. The service validates
-year, month, and day before writing, preserves unrelated Extensions, removes
-invalid dependent finer fields when precision is reduced, and does not leave an
-empty Time Object. It does not write the legacy top-level `date` field.
+Date and optional time information is written to `extensions.history.time`. The
+service validates year, month, day, hour, minute, and second before writing,
+preserves unrelated Extensions, removes invalid dependent finer fields when
+precision is reduced, and does not leave an empty Time Object. It does not
+write the legacy top-level `date` field.
 
 Returns:
 

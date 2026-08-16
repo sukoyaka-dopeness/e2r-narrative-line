@@ -4,6 +4,9 @@ export interface HistoryDate {
   year?: number;
   month?: number;
   day?: number;
+  hour?: number;
+  minute?: number;
+  second?: number;
 }
 
 export type HistoryDateValidationError =
@@ -13,7 +16,14 @@ export type HistoryDateValidationError =
   | "month_out_of_range"
   | "day_requires_month"
   | "day_must_be_integer"
-  | "day_out_of_range";
+  | "day_out_of_range"
+  | "hour_requires_day"
+  | "hour_must_be_integer"
+  | "hour_out_of_range"
+  | "minute_must_be_integer"
+  | "minute_out_of_range"
+  | "second_must_be_integer"
+  | "second_out_of_range";
 
 function isGregorianLeapYear(year: number): boolean {
   return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
@@ -45,6 +55,23 @@ export function getEventHistoryDate(event: Event): HistoryDate | undefined {
   return undefined;
 }
 
+export function getEventHistoryTime(event: Event): HistoryDate | undefined {
+  const time = event.extensions?.history?.time;
+
+  if (time !== undefined) {
+    return {
+      ...(time.year === undefined ? {} : { year: time.year }),
+      ...(time.month === undefined ? {} : { month: time.month }),
+      ...(time.day === undefined ? {} : { day: time.day }),
+      ...(time.hour === undefined ? {} : { hour: time.hour }),
+      ...(time.minute === undefined ? {} : { minute: time.minute }),
+      ...(time.second === undefined ? {} : { second: time.second }),
+    };
+  }
+
+  return undefined;
+}
+
 export function validateHistoryDate(
   date: HistoryDate | undefined,
 ): HistoryDateValidationError | null {
@@ -52,7 +79,7 @@ export function validateHistoryDate(
     return null;
   }
 
-  const { year, month, day } = date;
+  const { year, month, day, hour, minute, second } = date;
 
   if (year !== undefined && !Number.isInteger(year)) {
     return "year_must_be_integer";
@@ -86,6 +113,48 @@ export function validateHistoryDate(
     }
   }
 
+  if (hour !== undefined) {
+    if (year === undefined || month === undefined || day === undefined) {
+      return "hour_requires_day";
+    }
+
+    if (!Number.isInteger(hour)) {
+      return "hour_must_be_integer";
+    }
+
+    if (hour < 0 || hour > 23) {
+      return "hour_out_of_range";
+    }
+  }
+
+  if (minute !== undefined) {
+    if (hour === undefined) {
+      return "hour_must_be_integer";
+    }
+
+    if (!Number.isInteger(minute)) {
+      return "minute_must_be_integer";
+    }
+
+    if (minute < 0 || minute > 59) {
+      return "minute_out_of_range";
+    }
+  }
+
+  if (second !== undefined) {
+    if (minute === undefined) {
+      return "minute_must_be_integer";
+    }
+
+    if (!Number.isInteger(second)) {
+      return "second_must_be_integer";
+    }
+
+    if (second < 0 || second > 59) {
+      return "second_out_of_range";
+    }
+  }
+
   return null;
 }
 
@@ -108,6 +177,29 @@ export function formatEventHistoryDate(event: Event): string | undefined {
 
   if (date.day !== undefined) {
     formatted += `-${String(date.day).padStart(2, "0")}`;
+  }
+
+  return formatted;
+}
+
+export function formatEventHistoryTime(
+  event: Event,
+  includeSeconds = false,
+): string | undefined {
+  const time = getEventHistoryTime(event);
+
+  if (!time || time.hour === undefined || validateHistoryDate(time) !== null) {
+    return undefined;
+  }
+
+  let formatted = String(time.hour).padStart(2, "0");
+
+  if (time.minute !== undefined) {
+    formatted += `:${String(time.minute).padStart(2, "0")}`;
+  }
+
+  if (includeSeconds && time.second !== undefined) {
+    formatted += `:${String(time.second).padStart(2, "0")}`;
   }
 
   return formatted;
@@ -176,6 +268,15 @@ export function compareEventsByHistoryDate(left: Event, right: Event): number {
 
     if (dayComparison !== 0) {
       return dayComparison;
+    }
+
+    const leftTime = getEventHistoryTime(left);
+    const rightTime = getEventHistoryTime(right);
+    for (const field of ["hour", "minute", "second"] as const) {
+      const timeComparison = compareOptionalNumber(leftTime?.[field], rightTime?.[field]);
+      if (timeComparison !== 0) {
+        return timeComparison;
+      }
     }
   }
 

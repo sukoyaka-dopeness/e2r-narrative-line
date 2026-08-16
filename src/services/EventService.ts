@@ -43,6 +43,9 @@ function setEventHistoryDate(event: Event, historyDate: HistoryDate): Event {
     ...(historyDate.year === undefined ? {} : { year: historyDate.year }),
     ...(historyDate.month === undefined ? {} : { month: historyDate.month }),
     ...(historyDate.day === undefined ? {} : { day: historyDate.day }),
+    ...(historyDate.hour === undefined ? {} : { hour: historyDate.hour }),
+    ...(historyDate.minute === undefined ? {} : { minute: historyDate.minute }),
+    ...(historyDate.second === undefined ? {} : { second: historyDate.second }),
   };
 
   if (historyDate.year === undefined) {
@@ -73,6 +76,15 @@ function setEventHistoryDate(event: Event, historyDate: HistoryDate): Event {
   } else if (historyDate.day === undefined) {
     delete nextTime.hour;
     delete nextTime.minute;
+    delete nextTime.second;
+    delete nextTime.timeZone;
+    delete nextTime.offset;
+  } else if (historyDate.hour === undefined) {
+    delete nextTime.minute;
+    delete nextTime.second;
+    delete nextTime.timeZone;
+    delete nextTime.offset;
+  } else if (historyDate.minute === undefined) {
     delete nextTime.second;
     delete nextTime.timeZone;
     delete nextTime.offset;

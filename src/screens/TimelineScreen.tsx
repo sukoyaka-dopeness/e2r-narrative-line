@@ -9,6 +9,8 @@ import { getDatasetExportFilename } from "../services/DatasetService";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
+  getEventHistoryTime,
+  validateHistoryDate,
 } from "../services/HistoryService";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -48,6 +50,34 @@ function formatImportWarning(issue: DatasetImportWarning): string {
 function getExtensionId(path: string): string | undefined {
   const match = /\/extensions\/([^/]+)/.exec(path);
   return match?.[1].replaceAll("~1", "/").replaceAll("~0", "~");
+}
+
+function formatTimelineEventTime(
+  event: Dataset["events"][number],
+  ja: boolean,
+  includeSeconds: boolean,
+): string | undefined {
+  const time = getEventHistoryTime(event);
+  if (
+    !time ||
+    time.hour === undefined ||
+    validateHistoryDate(time) !== null
+  ) {
+    return undefined;
+  }
+
+  const unit = ja ? ["時", "分", "秒"] : ["h", "m", "s"];
+  const parts = [`${String(time.hour).padStart(2, "0")}${unit[0]}`];
+
+  if (time.minute !== undefined) {
+    parts.push(`${String(time.minute).padStart(2, "0")}${unit[1]}`);
+  }
+
+  if (includeSeconds && time.second !== undefined) {
+    parts.push(`${String(time.second).padStart(2, "0")}${unit[2]}`);
+  }
+
+  return parts.join(ja ? "" : " ");
 }
 
 export function TimelineScreen({
@@ -156,7 +186,7 @@ export function TimelineScreen({
         <p>{dataset.events.length} events</p>
 
         <button type="button" onClick={handleExport}>
-          {ja ? "E2R JSONをエクスポート" : "Export E2R JSON"}
+          {ja ? "E2R JSONを書き出す" : "Export E2R JSON"}
         </button>
       </div>
 
@@ -250,7 +280,12 @@ export function TimelineScreen({
                     fontWeight: "bold",
                   }}
                 >
-                  {formatEventHistoryDate(event) ?? "----/--/--"}
+                  <div>{formatEventHistoryDate(event) ?? "----/--/--"}</div>
+                  {formatTimelineEventTime(event, ja, isSelected) && (
+                    <small className="timeline-event-time">
+                      {formatTimelineEventTime(event, ja, isSelected)}
+                    </small>
+                  )}
                 </div>
 
                 <div className="timeline-event-content">

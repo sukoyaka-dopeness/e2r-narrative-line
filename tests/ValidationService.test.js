@@ -13,6 +13,10 @@ import {
   updateEvent,
 } from "../src/services/EventService.ts";
 import {
+  compareEventsByHistoryDate,
+  formatEventHistoryTime,
+} from "../src/services/HistoryService.ts";
+import {
   COORDINATE_EXTENSION_ID,
   LIAISONSCAPE_SPACE_ID,
   LEGACY_LINKSCAPE_SPACE_ID,
@@ -465,6 +469,118 @@ test("preserves omitted Event fields when no Event updates are supplied", () => 
 
   assert.deepEqual(result, dataset);
   assert.equal("description" in result.events[0], false);
+});
+
+test("saves optional History time fields with contiguous precision", () => {
+  const dataset = validDataset();
+  const result = updateEvent(dataset, "event-1", {
+    historyDate: {
+      year: 2026,
+      month: 8,
+      day: 13,
+      hour: 9,
+      minute: 5,
+      second: 7,
+    },
+  });
+
+  assert.deepEqual(result.events[0].extensions.history.time, {
+    year: 2026,
+    month: 8,
+    day: 13,
+    hour: 9,
+    minute: 5,
+    second: 7,
+  });
+});
+
+test("clearing History date precision also clears dependent time fields", () => {
+  const dataset = {
+    ...validDataset(),
+    events: [{
+      id: "event-1",
+      extensions: {
+        history: {
+          time: {
+            year: 2026,
+            month: 8,
+            day: 13,
+            hour: 9,
+            minute: 5,
+            second: 7,
+          },
+        },
+      },
+    }],
+  };
+
+  const result = updateEvent(dataset, "event-1", {
+    historyDate: { year: 2026, month: 8 },
+  });
+
+  assert.deepEqual(result.events[0].extensions.history.time, {
+    year: 2026,
+    month: 8,
+  });
+});
+
+test("rejects out-of-range History time fields", () => {
+  assert.throws(
+    () => updateEvent(validDataset(), "event-1", {
+      historyDate: {
+        year: 2026,
+        month: 8,
+        day: 13,
+        hour: 24,
+      },
+    }),
+    /hour_out_of_range/,
+  );
+  assert.throws(
+    () => updateEvent(validDataset(), "event-1", {
+      historyDate: {
+        year: 2026,
+        month: 8,
+        day: 13,
+        hour: 9,
+        minute: 60,
+      },
+    }),
+    /minute_out_of_range/,
+  );
+});
+
+test("orders Events with the same date by recorded time precision", () => {
+  const earlier = {
+    id: "event-earlier",
+    extensions: { history: { time: { year: 2026, month: 8, day: 13, hour: 9 } } },
+  };
+  const later = {
+    id: "event-later",
+    extensions: { history: { time: { year: 2026, month: 8, day: 13, hour: 10 } } },
+  };
+
+  assert.equal(compareEventsByHistoryDate(earlier, later) < 0, true);
+  assert.equal(compareEventsByHistoryDate(later, earlier) > 0, true);
+});
+
+test("formats only the recorded time precision and reveals seconds on focus", () => {
+  const event = {
+    id: "event-time",
+    extensions: {
+      history: { time: { year: 2026, month: 8, day: 13, hour: 9, minute: 5, second: 7 } },
+    },
+  };
+
+  assert.equal(formatEventHistoryTime(event), "09:05");
+  assert.equal(formatEventHistoryTime(event, true), "09:05:07");
+  assert.equal(
+    formatEventHistoryTime({
+      id: "event-hour-only",
+      extensions: { history: { time: { year: 2026, month: 8, day: 13, hour: 9 } } },
+    }),
+    "09",
+  );
 });
 
 test("round-trips the Coordinate prototype unchanged while editing supported Event data", async () => {

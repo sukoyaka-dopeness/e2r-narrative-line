@@ -100,7 +100,7 @@ changes.
 
 ---
 
-# Date-only History Editing
+# History Date and Optional Time Editing
 
 NarrativeLine stores Event date information in:
 
@@ -116,11 +116,14 @@ The current editor supports three contiguous Civil Time fields:
 
 Precision may stop after any recorded field. `month` requires `year`, and `day`
 requires both `year` and `month`. Clearing a coarser field also clears the finer
-fields that depend on it.
+fields that depend on it. An optional collapsed section adds contiguous
+`hour`, `minute`, and `second` fields. It opens automatically when an Event
+already has one of those fields.
 
 Unknown finer fields are omitted. A date-only value is not interpreted as
-midnight, and NarrativeLine does not create hour, Time Zone, offset, or derived
-UTC values merely to support application APIs.
+midnight. NarrativeLine does not create Time Zone, offset, or derived UTC
+values merely to support application APIs; existing such fields are preserved
+when the user changes only supported date/time fields.
 
 The `year` field uses astronomical year numbering and accepts zero and negative
 integers. Month lengths and leap years are validated using the proleptic
