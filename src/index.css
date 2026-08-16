@@ -98,9 +98,12 @@ body {
 
 .app-brand {
   color: var(--text-h);
+  font-family: var(--sans);
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.2px;
+  line-height: 145%;
+  text-decoration: none;
 }
 
 .app-content {
@@ -114,6 +117,12 @@ body {
   min-width: 0;
   width: 100%;
 }
+.home-screen { width: min(352px, 100%); max-width: 352px; margin: auto; padding: 16px; }
+.home-screen h1 { margin: 0; font-size: 36px; }
+.home-description { margin: -0.75rem 0 0; color: var(--text); font-family: var(--sans); font-size: 18px; font-weight: 400; line-height: 145%; text-align: center; }
+.home-screen .home-actions { width: 100%; gap: 12px; }
+.home-screen .home-actions button { width: 100%; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--sans); font-size: 16px; font-weight: 400; line-height: 120%; }
+.home-screen .home-actions button:first-child { color: var(--text-h); background: var(--bg); }
 
 .app-footer {
   border-top: 1px solid var(--border);

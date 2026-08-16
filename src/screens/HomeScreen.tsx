@@ -66,6 +66,7 @@ export function HomeScreen({
 
   return (
     <main
+      className="home-screen"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -79,6 +80,7 @@ export function HomeScreen({
       }}
     >
       <h1>{ja ? "はじめる" : "Get Started"}</h1>
+      <p className="home-description">{ja ? "できごとを並べて年表を作ります。" : "Create and edit E2R timelines centered on Events."}</p>
 
       <input
         ref={fileInputRef}
@@ -88,10 +90,10 @@ export function HomeScreen({
         style={{ display: "none" }}
       />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%" }}>
+      <div className="home-actions" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%" }}>
         {hasResumeDataset && (
           <button type="button" onClick={onResumeDataset} style={{ width: "100%" }}>
-            {ja ? "編集中のDatasetを開く" : "Open Editing Dataset"}
+            {ja ? "編集を続ける" : "Continue Editing"}
           </button>
         )}
         <button
@@ -100,7 +102,7 @@ export function HomeScreen({
           disabled={!onCreateDataset}
           style={{ width: "100%" }}
         >
-          {ja ? "Datasetを新規作成" : "Create Dataset"}
+          {ja ? "新しいDataset" : "New Dataset"}
         </button>
 
         <button
@@ -109,7 +111,7 @@ export function HomeScreen({
           disabled={isImporting}
           style={{ width: "100%" }}
         >
-          {isImporting ? (ja ? "読み込み中…" : "Importing…") : (ja ? "E2R JSONを読み込む" : "Import E2R JSON")}
+          {isImporting ? (ja ? "開いています…" : "Opening…") : (ja ? "E2R Datasetを開く" : "Open E2R Dataset")}
         </button>
 
         <div style={{ marginTop: "0.75rem" }}>
