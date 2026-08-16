@@ -199,6 +199,11 @@ Timeline ordering is determined using:
 4. `temporalOrder` when recorded date fields cannot distinguish Events
 5. Event ID
 
+Timeline cards show recorded hour and minute as a secondary value with explicit
+units (`03時05分` in Japanese, `03h 05m` in English). Seconds are shown for the
+selected Event only (`03時05分07秒` / `03h 05m 07s`). Missing minute or second
+precision is not filled with zeroes.
+
 Timeline View sorts a derived copy and does not reorder the Dataset's Event
 collection. NarrativeLine does not generate `temporalOrder` merely to preserve
 presentation order.
@@ -240,14 +245,17 @@ NarrativeLine supports:
 
 - E2R Core
 - History Extension
-- interpretation and a bounded writer experiment for Coordinate prototype
+- interpretation and a bounded writer for the Coordinate interoperability
+  format
   `0.1.0`
 
+Coordinate interoperability is implemented as a bounded application profile.
 Coordinate interpretation resolves Entity and Event values through
 Dataset-level Space and Component definitions. Event Coordinates and general
 Spaces remain read-only. Entity Detail may explicitly update existing `x` and
-`y` values only in the exact `linkscape-graph` Space definition shared with
-Linkscape. The operation does not create a Space, Component, Coordinate, or
+`y` values only in an exact supported graph Space definition (`linkscape-graph`
+legacy or `liaisonscape-graph` canonical). The operation does not create a
+Space, Component, Coordinate, or
 missing value and refuses an incompatible definition. Unknown fields, other
 Components, other Spaces, and Coordinate order are preserved.
 

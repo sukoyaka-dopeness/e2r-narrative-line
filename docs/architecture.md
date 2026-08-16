@@ -222,10 +222,11 @@ Screens invoke callbacks and never modify Datasets directly.
 Dataset manipulation is performed by UI-independent Services that return new
 Dataset values for App to apply.
 
-`CoordinateService` resolves the experimental Coordinate prototype into display
-values. Its bounded writer returns a new Dataset only for an explicit update of
-existing Entity `x` and `y` values in the exact `linkscape-graph` Space shared
-with Linkscape. It neither creates Coordinate structures nor writes unsupported
+`CoordinateService` resolves the unregistered Coordinate interoperability format
+into display values. Its bounded writer returns a new Dataset only for an
+explicit update of existing Entity `x` and `y` values in exact supported graph
+Spaces (`liaisonscape-graph` canonical or `linkscape-graph` legacy). It neither
+creates Coordinate structures nor writes unsupported
 Spaces. Entity Detail and Event Detail share `CoordinatePanel` for Space
 selection and value display; only Entity Detail supplies the bounded writer.
 The selected Space and unsaved numeric input remain local React UI state and

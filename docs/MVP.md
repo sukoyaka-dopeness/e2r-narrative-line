@@ -225,10 +225,10 @@ deferred.
 
 Other Extensions remain untouched unless explicitly supported by future versions.
 
-## Post-MVP Coordinate interoperability experiment
+## Coordinate interoperability support
 
-NarrativeLine now provides interpretation and one bounded writer workflow for
-the unregistered Coordinate interoperability prototype at format `0.1.0`.
+NarrativeLine provides interpretation and one bounded writer workflow for the
+unregistered Coordinate interoperability format `0.1.0`.
 
 - Entity Detail and Event Detail resolve object Coordinates through
   Dataset-level Space and Component definitions.
@@ -237,18 +237,20 @@ the unregistered Coordinate interoperability prototype at format `0.1.0`.
 - When an object has Coordinates in more than one Space, the user may switch
   the displayed Space.
 - Space selection is temporary interface state and is not persisted.
-- Event Coordinates and non-Linkscape Spaces remain read-only.
+- Event Coordinates and non-LiaisonScape Spaces remain read-only.
 - Entity Detail may explicitly edit existing `x` and `y` values only when the
-  `linkscape-graph` Space has the exact Cartesian kind, units, and positive
-  directions supported by both applications.
+  selected Space has the exact Cartesian kind, units, and positive directions
+  supported by both applications. The canonical current Space identifier is
+  `liaisonscape-graph`; legacy `linkscape-graph` data remains supported for
+  compatibility.
 - The writer does not create a Space, Component, Coordinate, or missing value.
   It refuses unsupported or inconsistent payloads and preserves unknown fields,
   Components, other Spaces, and Coordinate array order.
 - Unsupported or inconsistent Coordinate payloads remain preserved and are
   not presented as successfully interpreted.
 
-This post-MVP experiment does not make Coordinate a registered Stable
-Extension and does not turn NarrativeLine into a spatial or graph editor.
+This support does not make Coordinate a registered Stable Extension and does
+not turn NarrativeLine into a spatial or graph editor.
 
 ---
 

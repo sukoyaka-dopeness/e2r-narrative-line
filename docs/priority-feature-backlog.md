@@ -8,22 +8,49 @@ feature that affects interoperable meaning must pass through the appropriate
 E2R research and Extension design process before NarrativeLine writes a shared
 representation.
 
+## Current baseline and research status
+
+- Coordinate interoperability interpretation and bounded Entity position
+  editing are implemented. `liaisonscape-graph` is the canonical current
+  profile identifier; `linkscape-graph` remains a legacy compatibility
+  identifier.
+- Basic History date/time editing and Timeline time display are implemented.
+- Target Reference and Source/Citation work currently provides opaque
+  preservation evidence, not product semantic support or user-facing editing.
+- P1 Names work provides bounded consumer research evidence only. Names
+  product integration, alias semantics, and shared representation remain
+  unresolved.
+
+The remaining sections describe unfinished product or specification work.
+
 ## Requested capabilities
 
-### Object provenance and supporting sources
+### Source/Citation and Object provenance
 
-Users should be able to record which source or sources justify creating an
-Object. The initial scope may include Entity, Event, and Relation, but the
-design must decide whether provenance belongs to a whole Object, an individual
-field, or a more granular factual claim.
+Users should be able to record which identified Source is cited in connection
+with an Event or other supported target. The Gate 3 research baseline is an
+identified Source plus a weak Citation association to the identified target.
+This association does not imply evidential support, derivation, authorship,
+truth, reliability, or confidence.
+
+This is distinct from Provenance. A separate workflow may record that an
+import, person, application, or Source caused an Object record to be created or
+changed. A Citation must not silently become Provenance.
+
+The initial NarrativeLine scope is a research and preservation concern only.
+It must not write a shared representation until the responsible Extension
+boundary and payload are selected.
 
 This must remain distinct from confidence. Existing E2R AI workflow research
 already separates provenance (where a value or Object came from) from evidence
-(what supports a factual claim). Citation identity, embedded versus external
-resources, source excerpts, and offline portability remain open questions.
+(what supports a factual claim). The current Gate 3 review also keeps weak
+Citation separate from Evidence and Claim. Source identity, Citation identity,
+embedded versus external resources, source excerpts, and offline portability
+remain open questions.
 
-Design discussion required: yes. This is a cross-application Extension or
-research candidate rather than a new Core field.
+Design discussion required: responsibility comparison completed; final
+cross-application Extension and payload design remains gated. This is not a new
+Core field.
 
 ### Object confidence
 
@@ -74,20 +101,29 @@ agreed.
 
 ### Ordering undated Events
 
-Users should be able to control the relative temporal order of undated Events.
-The first UI may use accessible move-up and move-down controls; drag and drop is
-a later interaction enhancement.
+Users should be able to control relative chronology involving Events without a
+recorded date. Two requirements must be kept distinct:
+
+- ordering undated Events relative to other undated Events; and
+- placing an undated Event between dated Events when that chronological
+  relationship is known, for example year `n`, undated, year `n+1`.
 
 History Extension `1.0.0` already permits a Time Object containing only
 `temporalOrder` when relative chronology among undated Objects is known.
-NarrativeLine already reads this field when sorting. The next implementation
-step is a writer UI that updates order without inventing dates or reversing
-known chronological values.
+NarrativeLine already reads this field when sorting. However, the recommended
+History comparison places known Civil Time before unknown Civil Time, and
+History `1.0.0` explicitly excludes relative before/after/between relationships
+among Events. `temporalOrder` therefore must not be assumed to encode the
+second requirement without a specification decision.
 
-Design discussion required: no for temporal ordering among undated Events. If
-the requested order is editorial or narrative rather than temporal, it belongs
-to the separately deferred persisted authorial-context responsibility and must
-not be written to `temporalOrder`.
+Existing read-only use of `temporalOrder` is not a new product feature. A
+persisted writer for ordering undated Events may be considered within the
+existing History constraints, but design discussion is required before
+persisting interleaving with dated Events. If the requested order is editorial
+or narrative rather than temporal, it belongs to the separately deferred
+persisted authorial-context responsibility and must not be written to
+`temporalOrder`. Accessible move controls should precede drag and drop once the
+correct persisted responsibility is selected.
 
 ## Recommended discussion split
 
@@ -109,12 +145,14 @@ constraints already exist.
 
 ## Suggested implementation sequence
 
-1. Add accessible ordering controls for undated Events using
-   `extensions.history.time.temporalOrder`.
-2. Prepare and audit the three focused design drafts above.
-3. Select one bounded alias or evidence experiment after its ownership is
+1. Resolve whether relative chronology between dated and undated Events needs
+   a Relative Time model before implementing a persisted ordering UI.
+2. Prepare and audit the focused design drafts above.
+3. Add accessible move controls for the selected temporal model before drag
+   and drop.
+4. Select one bounded alias or evidence experiment after its ownership is
    clear.
-4. Extend the History model only after interval semantics have been agreed at
+5. Extend the History model only after interval semantics have been agreed at
    specification level.
-5. Add drag-and-drop ordering after the non-pointer controls and persistence
+6. Add drag-and-drop ordering after the non-pointer controls and persistence
    behavior are stable.
