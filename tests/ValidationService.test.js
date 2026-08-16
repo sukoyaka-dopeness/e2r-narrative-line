@@ -14,6 +14,8 @@ import {
 } from "../src/services/EventService.ts";
 import {
   COORDINATE_EXTENSION_ID,
+  LIAISONSCAPE_SPACE_ID,
+  LEGACY_LINKSCAPE_SPACE_ID,
   readObjectCoordinates,
   updateObjectCoordinate,
 } from "../src/services/CoordinateService.ts";
@@ -520,7 +522,7 @@ test("interprets Entity and partial Event coordinates from Dataset-defined Space
   const entityResult = readObjectCoordinates(imported.dataset, entity);
   assert.equal(entityResult.status, "available");
   assert.deepEqual(entityResult.coordinates.map(({ spaceId }) => spaceId), [
-    "linkscape-graph",
+    "liaisonscape-graph",
     "harbor-site-plan",
   ]);
   assert.deepEqual(entityResult.coordinates[0].values.map(({ id, value }) => ({ id, value })), [
@@ -538,6 +540,27 @@ test("interprets Entity and partial Event coordinates from Dataset-defined Space
     { id: "y", value: 320 },
   ]);
   assert.deepEqual(eventResult.coordinates[0].missingComponents.map(({ id }) => id), ["x"]);
+});
+
+test("reads and bounded-writes the canonical LiaisonScape graph Space", () => {
+  const dataset = validDataset();
+  dataset.extensions = {
+    [COORDINATE_EXTENSION_ID]: {
+      formatVersion: "0.1.0",
+      spaces: [{ id: LIAISONSCAPE_SPACE_ID, kind: "cartesian-2d", components: {
+        x: { unit: "liaisonscape-user-unit", positiveDirection: "display-right" },
+        y: { unit: "liaisonscape-user-unit", positiveDirection: "display-down" },
+      } }],
+    },
+  };
+  dataset.entities[0].extensions = { [COORDINATE_EXTENSION_ID]: { coordinates: [{ spaceId: LIAISONSCAPE_SPACE_ID, values: { x: 1, y: 2 }, note: "keep" }] } };
+  const read = readObjectCoordinates(dataset, dataset.entities[0]);
+  assert.equal(read.status, "available");
+  const updated = updateObjectCoordinate(dataset, "entity-1", LIAISONSCAPE_SPACE_ID, { x: 3, y: 4 });
+  assert.equal(updated.status, "updated");
+  assert.equal(updated.dataset.entities[0].extensions[COORDINATE_EXTENSION_ID].coordinates[0].spaceId, LIAISONSCAPE_SPACE_ID);
+  assert.equal(updated.dataset.entities[0].extensions[COORDINATE_EXTENSION_ID].coordinates[0].note, "keep");
+  assert.notEqual(LEGACY_LINKSCAPE_SPACE_ID, LIAISONSCAPE_SPACE_ID);
 });
 
 test("does not claim interpretation for unsupported or inconsistent Coordinate payloads", () => {
@@ -647,7 +670,7 @@ test("updates an existing shared Coordinate while preserving other writer data",
   const result = updateObjectCoordinate(
     dataset,
     "entity-lighthouse",
-    "linkscape-graph",
+    "liaisonscape-graph",
     { x: 96 },
   );
 
@@ -659,7 +682,7 @@ test("updates an existing shared Coordinate while preserving other writer data",
   assert.deepEqual(
     updatedEntity.extensions[COORDINATE_EXTENSION_ID].coordinates[0],
     {
-      spaceId: "linkscape-graph",
+      spaceId: "liaisonscape-graph",
       values: { x: 96, y: 156, writerAxis: 7 },
       routeHint: { source: "another-writer" },
     },

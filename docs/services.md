@@ -156,7 +156,7 @@ second-writer experiment for Coordinate prototype `0.1.0`.
   values
 - Distinguish absent, available, unsupported-version, and inconsistent payloads
 - Restrict writing to existing Entity `x` and `y` values in the exact
-  `linkscape-graph` Space definition agreed with Linkscape
+  `linkscape-graph` legacy or `liaisonscape-graph` canonical Space definition
 - Refuse unsupported versions, incompatible Space semantics, missing
   Coordinates, unknown write Components, non-finite values, and bound violations
 - Preserve unknown fields, other Components, other Spaces, and Coordinate order
@@ -174,7 +174,7 @@ explicit status rather than best-effort numeric values.
 
 Returns true only for a complete recorded `x`/`y` Coordinate whose Space ID,
 Cartesian kind, units, and positive directions exactly match the shared
-Linkscape experiment. General numeric display does not imply write support.
+graph-coordinate experiment. General numeric display does not imply write support.
 
 ### updateObjectCoordinate()
 

@@ -70,7 +70,7 @@ Select a related Entity in Event Detail and choose **Edit Entity**. Saving or go
 Removing an association does not delete the Entity. Entity deletion is a separate destructive action in Entity Detail.
 
 When an imported Dataset contains the experimental `linkscape-graph`
-Coordinate in the exact format shared with Linkscape, Entity Detail offers
+Coordinate in an exact supported graph format, Entity Detail offers
 **Edit Recorded Coordinate**. It changes only the existing numeric `x` and `y`
 values. Other Spaces, missing values, and Event Coordinates remain read-only.
 

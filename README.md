@@ -67,7 +67,7 @@ Post-MVP interoperability work additionally reads Coordinate prototype
 `0.1.0`. Entity and Event Detail display Dataset-defined logical Coordinates;
 an object with multiple Coordinates provides a temporary Space selector.
 Entity Detail can explicitly update only existing `x` and `y` values in the
-exact `linkscape-graph` Space agreed with Linkscape. It does not create Spaces,
+exact `linkscape-graph` legacy Space or the canonical `liaisonscape-graph` Space. It does not create Spaces,
 Components, or Coordinates, and all other Coordinate data remains read-only.
 The selected Space is not saved to the Dataset.
 
@@ -120,11 +120,11 @@ Additional documentation will be added as the project evolves.
 ## Related Projects
 
 - E2R Specification
-- LinkScape (planned)
+- LiaisonScape (relationship explorer)
 
 NarrativeLine focuses on timeline editing.
 
-LinkScape will provide graph-based visualization and editing of the same E2R dataset.
+LiaisonScape will provide graph-based visualization and editing of the same E2R dataset.
 
 Both applications are intended to interoperate through the shared E2R data model.
 
@@ -145,7 +145,7 @@ Different applications will provide different views and editing workflows while 
 Examples include:
 
 - NarrativeLine (timeline editor)
-- LinkScape (relationship graph)
+- LiaisonScape (relationship graph)
 - Dataset Explorer
 - Extension Editor
 - LLM-assisted editing tools

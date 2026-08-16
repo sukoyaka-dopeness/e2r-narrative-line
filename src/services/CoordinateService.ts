@@ -4,6 +4,10 @@ import type { Dataset } from "../models/Dataset";
 export const COORDINATE_EXTENSION_ID =
   "experimental.github.sukoyaka-dopeness.coordinate";
 export const COORDINATE_FORMAT_VERSION = "0.1.0";
+export const LIAISONSCAPE_SPACE_ID = "liaisonscape-graph";
+export const LIAISONSCAPE_UNIT = "liaisonscape-user-unit";
+export const LEGACY_LINKSCAPE_SPACE_ID = "linkscape-graph";
+export const LEGACY_LINKSCAPE_UNIT = "linkscape-user-unit";
 
 export type CoordinateReadStatus =
   | "absent"
@@ -54,10 +58,12 @@ export interface CoordinateWriteResult {
 export function isCoordinateWriteSupported(
   coordinate: InterpretedCoordinate,
 ): boolean {
-  if (
-    coordinate.spaceId !== "linkscape-graph" ||
-    coordinate.kind !== "cartesian-2d"
-  ) {
+  const unit = coordinate.spaceId === LIAISONSCAPE_SPACE_ID
+    ? LIAISONSCAPE_UNIT
+    : coordinate.spaceId === LEGACY_LINKSCAPE_SPACE_ID
+      ? LEGACY_LINKSCAPE_UNIT
+      : null;
+  if (!unit || coordinate.kind !== "cartesian-2d") {
     return false;
   }
   const components = new Map(
@@ -71,9 +77,9 @@ export function isCoordinateWriteSupported(
   return (
     coordinate.values.some(({ id }) => id === "x") &&
     coordinate.values.some(({ id }) => id === "y") &&
-    x?.unit === "linkscape-user-unit" &&
+    x?.unit === unit &&
     x.positiveDirection === "display-right" &&
-    y?.unit === "linkscape-user-unit" &&
+    y?.unit === unit &&
     y.positiveDirection === "display-down"
   );
 }

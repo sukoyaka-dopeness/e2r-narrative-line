@@ -136,8 +136,8 @@ export function CoordinatePanel({
           <p>
             {canEdit
               ? ja
-                ? "Linkscapeと共有する記録済みx/yだけを数値で更新できます。SpaceやComponentは作成しません。"
-                : "Existing x/y values shared with Linkscape can be updated numerically. Spaces and Components are not created."
+                ? "対応するgraph Spaceに記録されたx/yだけを数値で更新できます。SpaceやComponentは作成しません。"
+                : "Existing x/y values in a supported graph Space can be updated numerically. Spaces and Components are not created."
               : ja
                 ? "Datasetに保存された論理座標を読み取り専用で表示しています。"
                 : "Read-only logical coordinates stored in the Dataset."}
