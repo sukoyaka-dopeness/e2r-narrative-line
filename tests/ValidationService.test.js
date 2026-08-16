@@ -62,6 +62,24 @@ test("accepts a valid Core Dataset and preserves unknown data", () => {
   assert.equal(result.dataset, dataset);
 });
 
+test("preserves the target-reference research fixture through a save round trip", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/research/target-reference/roundtrip-opaque-record.json", import.meta.url),
+    "utf8",
+  );
+  const original = JSON.parse(source);
+  const imported = importDatasetJson(source);
+
+  assert.equal(imported.isValid, true);
+  assert.ok(imported.dataset);
+  assert.ok(imported.issues.some(({ code }) => code === "unknown_extension"));
+
+  const exported = exportDatasetJson(imported.dataset);
+  assert.equal(exported.isValid, true);
+  assert.ok(exported.json);
+  assert.deepEqual(JSON.parse(exported.json), original);
+});
+
 test("reports missing required Dataset fields with JSON Pointer paths", () => {
   const result = validateCoreDataset({});
 
