@@ -62,6 +62,33 @@ test("accepts a valid Core Dataset and preserves unknown data", () => {
   assert.equal(result.dataset, dataset);
 });
 
+test("recognizes supported Specification and Coordinate Draft Extensions", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/cross-application-demo.json", import.meta.url),
+    "utf8",
+  );
+
+  const result = validateCoreDataset(JSON.parse(source));
+
+  assert.equal(result.isValid, true);
+  assert.deepEqual(result.issues, []);
+});
+
+test("continues reporting a genuinely unknown Extension", () => {
+  const result = validateCoreDataset({
+    ...validDataset(),
+    extensions: { "vendor.example.unknown": { retained: true } },
+  });
+
+  assert.deepEqual(result.issues, [
+    {
+      code: "unknown_extension",
+      path: "/extensions/vendor.example.unknown",
+      severity: "warning",
+    },
+  ]);
+});
+
 test("preserves the target-reference research fixture through a save round trip", async () => {
   const source = await readFile(
     new URL("../../e2r-spec/examples/research/target-reference/roundtrip-opaque-record.json", import.meta.url),
