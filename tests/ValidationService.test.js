@@ -90,19 +90,18 @@ test("continues reporting a genuinely unknown Extension", () => {
   ]);
 });
 
-test("keeps both Apollo 11 samples valid and structurally cross-application friendly", () => {
+test("keeps both Berlin Wall history samples valid and structurally usable", () => {
   for (const sample of [sampleDataset, sampleDatasetEn]) {
     const original = structuredClone(sample);
     const result = validateCoreDataset(sample);
 
     assert.equal(result.isValid, true);
     assert.deepEqual(result.issues, []);
-    assert.equal(sample.entities.length, 6);
-    assert.equal(sample.events.length, 5);
-    assert.equal(sample.relations.length, 14);
-    assert.equal(sample.relations.filter(({ sourceId, targetId }) => sourceId.startsWith("entity-") && targetId.startsWith("entity-")).length, 6);
-    assert.equal(sample.relations.filter(({ sourceId }) => sourceId.startsWith("event-")).length, 8);
-    assert.equal(sample.relations.filter(({ sourceId, targetId }) => sourceId === targetId).length, 1);
+    assert.equal(sample.entities.length, 10);
+    assert.equal(sample.events.length, 16);
+    assert.equal(sample.relations.length, 26);
+    assert.equal(sample.relations.filter(({ sourceId }) => !sample.events.some(({ id }) => id === sourceId)).length, 7);
+    assert.equal(sample.relations.filter(({ sourceId }) => sample.events.some(({ id }) => id === sourceId)).length, 19);
     assert.deepEqual(sample, original);
   }
 });
