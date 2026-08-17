@@ -1,0 +1,28 @@
+{
+  "version":"1.0",
+  "entities":[
+    {"id":"gdr","name":"東ドイツ（GDR）","description":"1980年代から1989年までのドイツ民主共和国。"},{"id":"sed","name":"SED","description":"東ドイツを統治した社会主義統一党。"},{"id":"honecker","name":"エーリッヒ・ホーネッカー","description":"1989年10月までSEDを率いた指導者。"},{"id":"gorbachev","name":"ミハイル・ゴルバチョフ","description":"東欧の政治状況を変えた改革政策を進めたソ連指導者。"},{"id":"neues-forum","name":"ノイエス・フォルム","description":"対話、正義、平和、民主的改革を求めた市民運動。"},{"id":"schabowski","name":"ギュンター・シャボフスキー","description":"1989年11月9日に新しい旅行規則を発表したSED幹部。"},{"id":"jaeger","name":"ハラルト・イェーガー","description":"ボルンホルマー通り検問所で勤務していた国境警備隊員。"},{"id":"bornholmer","name":"ボルンホルマー通り検問所","description":"1989年11月9日の夜に最初に開いたベルリンの検問所。"},{"id":"berlin-wall","name":"ベルリンの壁","description":"1989年の転換点を象徴した強化国境。"}
+  ],
+  "events":[
+    {"id":"gorbachev-elected","name":"ゴルバチョフがソ連指導者に就任","description":"ミハイル・ゴルバチョフがソ連共産党書記長に選出された。","extensions":{"history":{"time":{"year":1985,"month":3,"day":11}}}},
+    {"id":"reagan-speech","name":"レーガンが壁の撤去を求める","description":"ブランデンブルク門での演説が、分断された欧州の象徴として壁への注目を集めた。","extensions":{"history":{"time":{"year":1987,"month":6,"day":12}}}},
+    {"id":"election-protests","name":"地方選挙の結果に抗議","description":"東ドイツの地方選挙の公式結果に対し、市民が正確な開票を求めた。","extensions":{"history":{"time":{"year":1989,"month":5,"day":7}}}},
+    {"id":"pan-european-picnic","name":"汎ヨーロッパ・ピクニック","description":"ショプロン近郊の国境集会を通じ、東ドイツ市民が西側へ脱出した。","extensions":{"history":{"time":{"year":1989,"month":8,"day":19}}}},
+    {"id":"first-leipzig-monday","name":"最初のライプツィヒ月曜デモ","description":"平和の祈りの後の月曜デモが、平和的な市民運動の初期の表現となった。","extensions":{"history":{"time":{"year":1989,"month":9,"day":4}}}},
+    {"id":"hungary-border","name":"ハンガリーが西側国境を開放","description":"ハンガリーがオーストリアとの国境を開き、西側への移動が加速した。","extensions":{"history":{"time":{"year":1989,"month":9,"day":11}}}},
+    {"id":"neues-forum-founded","name":"ノイエス・フォルムが公認を申請","description":"ノイエス・フォルムが東ドイツで政治団体としての公認を申請した。","extensions":{"history":{"time":{"year":1989,"month":9,"day":19}}}},
+    {"id":"fortieth-anniversary","name":"ゴルバチョフが東ドイツを訪問","description":"東ドイツ建国40周年にゴルバチョフが東ベルリンを訪れ、改革を促した。","extensions":{"history":{"time":{"year":1989,"month":10,"day":7}}}},
+    {"id":"leipzig-seventy-thousand","name":"ライプツィヒのデモが7万人に達する","description":"大規模な平和的デモが、運動を抑えられないことを示した。","extensions":{"history":{"time":{"year":1989,"month":10,"day":9}}}},
+    {"id":"honecker-resigns","name":"ホーネッカーが辞任","description":"エーリッヒ・ホーネッカーがSED書記長を辞任し、エゴン・クレンツが後任となった。","extensions":{"history":{"time":{"year":1989,"month":10,"day":18}}}},
+    {"id":"alexanderplatz","name":"アレクサンダー広場のデモ","description":"東ベルリンに市民が集まり、表現の自由と政治変革を求めた。","extensions":{"history":{"time":{"year":1989,"month":11,"day":4}}}},
+    {"id":"travel-announcement","name":"シャボフスキーが新旅行規則を発表","description":"記者会見で新しい旅行規則を発表し、即時発効と答えた。","extensions":{"history":{"time":{"year":1989,"month":11,"day":9,"hour":18,"minute":53,"timeZone":"Europe/Berlin","offset":"+01:00"}}}},
+    {"id":"ard-report","name":"ARDのTagesschauが国境開放を報道","description":"20時のTagesschauが東ドイツの国境開放をトップで報じ、ニュースが広がった。","extensions":{"history":{"time":{"year":1989,"month":11,"day":9,"hour":20,"minute":0,"timeZone":"Europe/Berlin","offset":"+01:00"}}}},
+    {"id":"first-crossing","name":"ボルンホルマー通りで最初の限定的通過","description":"群衆の圧力を受け、当局が最初の東ベルリン市民の通過を許可した。後の全面開放とは区別される。","extensions":{"history":{"time":{"year":1989,"month":11,"day":9,"hour":21,"minute":20,"timeZone":"Europe/Berlin","offset":"+01:00"}}}},
+    {"id":"other-crossings","name":"ベルリン各地の検問所が開く","description":"夜が進むにつれ他の検問所も開き、壁の開放がベルリン全体へ広がった。","extensions":{"history":{"time":{"year":1989,"month":11,"day":10}}}}
+  ],
+  "relations":[
+    {"id":"sed-gdr","name":"統治する","sourceId":"sed","targetId":"gdr"},{"id":"sed-honecker","name":"率いる","sourceId":"sed","targetId":"honecker"},{"id":"gorbachev-gdr","name":"訪問する","sourceId":"gorbachev","targetId":"gdr"},{"id":"neues-forum-gdr","name":"組織する","sourceId":"neues-forum","targetId":"gdr"},{"id":"gdr-wall","name":"維持する","sourceId":"gdr","targetId":"berlin-wall"},{"id":"jaeger-bornholmer","name":"勤務する","sourceId":"jaeger","targetId":"bornholmer"},{"id":"bornholmer-wall","name":"通過する","sourceId":"bornholmer","targetId":"berlin-wall"},
+    {"id":"event-1-gorbachev","sourceId":"gorbachev-elected","targetId":"gorbachev"},{"id":"event-2-wall","sourceId":"reagan-speech","targetId":"berlin-wall"},{"id":"event-3-sed","sourceId":"election-protests","targetId":"sed"},{"id":"event-4-gdr","sourceId":"pan-european-picnic","targetId":"gdr"},{"id":"event-5-gdr","sourceId":"first-leipzig-monday","targetId":"gdr"},{"id":"event-6-gdr","sourceId":"hungary-border","targetId":"gdr"},{"id":"event-7-neues","sourceId":"neues-forum-founded","targetId":"neues-forum"},{"id":"event-8-gorbachev","sourceId":"fortieth-anniversary","targetId":"gorbachev"},{"id":"event-9-sed","sourceId":"leipzig-seventy-thousand","targetId":"sed"},{"id":"event-10-honecker","sourceId":"honecker-resigns","targetId":"honecker"},{"id":"event-11-gdr","sourceId":"alexanderplatz","targetId":"gdr"},{"id":"event-12-schabowski","sourceId":"travel-announcement","targetId":"schabowski"},{"id":"event-13-gdr","sourceId":"ard-report","targetId":"gdr"},{"id":"event-14-jaeger","sourceId":"first-crossing","targetId":"jaeger"},{"id":"event-14-bornholmer","sourceId":"first-crossing","targetId":"bornholmer"},{"id":"event-15-wall","sourceId":"other-crossings","targetId":"berlin-wall"}
+  ],
+  "extensions":{"metadata":{"datasetId":"example-berlin-wall-history-ja","title":"ベルリンの壁開放への道"},"draft.github.sukoyaka-dopeness.specification":{"specVersion":"0.1.0","uses":[{"extension":"metadata","version":"1.0.0"},{"extension":"history","version":"1.0.0"}]}}
+}

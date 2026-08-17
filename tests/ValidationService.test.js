@@ -97,11 +97,11 @@ test("keeps both Berlin Wall history samples valid and structurally usable", () 
 
     assert.equal(result.isValid, true);
     assert.deepEqual(result.issues, []);
-    assert.equal(sample.entities.length, 10);
-    assert.equal(sample.events.length, 16);
-    assert.equal(sample.relations.length, 26);
+    assert.equal(sample.entities.length, 9);
+    assert.equal(sample.events.length, 15);
+    assert.equal(sample.relations.length, 23);
     assert.equal(sample.relations.filter(({ sourceId }) => !sample.events.some(({ id }) => id === sourceId)).length, 7);
-    assert.equal(sample.relations.filter(({ sourceId }) => sample.events.some(({ id }) => id === sourceId)).length, 19);
+    assert.equal(sample.relations.filter(({ sourceId }) => sample.events.some(({ id }) => id === sourceId)).length, 16);
     assert.deepEqual(sample, original);
   }
 });
