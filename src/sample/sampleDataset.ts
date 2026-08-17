@@ -1,99 +1,33 @@
 import type { Dataset } from "../models/Dataset";
 
-export const sampleDataset: Dataset = {
-  version: "1.0",
-  extensions: {
-    metadata: {
-      datasetId: "019c2f9a-7c31-7a8e-8c4b-1d2e3f4a5b6c",
-      title: "織田信長の歩み",
-    },
-  },
-  events: [
-    {
-      id: "event-001",
-      name: "桶狭間の戦い",
-      description: "織田信長が今川義元を破り、飛躍のきっかけをつかんだ。",
-      extensions: { history: { time: { year: 1560, month: 6, day: 12 } } },
-    },
-    {
-      id: "event-003",
-      name: "清洲同盟",
-      description: "織田信長と徳川家康が同盟を結んだ。",
-      extensions: { history: { time: { year: 1562 } } },
-    },
-    {
-      id: "event-004",
-      name: "美濃攻略",
-      description: "織田信長が美濃を攻略し、岐阜を拠点とした。",
-      extensions: { history: { time: { year: 1567 } } },
-    },
-    {
-      id: "event-005",
-      name: "上洛",
-      description: "織田信長が足利義昭を奉じて京都へ入った。",
-      extensions: { history: { time: { year: 1568, month: 10 } } },
-    },
-    {
-      id: "event-006",
-      name: "長篠の戦い",
-      description: "織田・徳川連合軍が武田軍を破った。",
-      extensions: { history: { time: { year: 1575, month: 6, day: 29 } } },
-    },
-    {
-      id: "event-007",
-      name: "本能寺の変",
-      description: "明智光秀の謀反により、織田信長が本能寺で倒れた。",
-      extensions: { history: { time: { year: 1582, month: 6, day: 21 } } },
-    },
-  ],
-  entities: [
-    { id: "entity-003", name: "織田信長", description: "戦国時代から安土桃山時代の武将。" },
-    { id: "entity-004", name: "徳川家康", description: "織田信長と同盟を結んだ武将。" },
-    { id: "entity-005", name: "今川義元", description: "桶狭間の戦いで織田信長と戦った大名。" },
-    { id: "entity-006", name: "明智光秀", description: "本能寺の変を起こした武将。" },
-    { id: "entity-007", name: "武田勝頼", description: "長篠の戦いで織田・徳川連合軍と戦った武将。" },
-    { id: "entity-008", name: "足利義昭", description: "織田信長に奉じられて上洛した室町幕府の将軍。" },
-  ],
-  relations: [
-    { id: "relation-003", sourceId: "event-001", targetId: "entity-003" },
-    { id: "relation-004", sourceId: "event-001", targetId: "entity-005" },
-    { id: "relation-005", sourceId: "event-003", targetId: "entity-003" },
-    { id: "relation-006", sourceId: "event-003", targetId: "entity-004" },
-    { id: "relation-007", sourceId: "event-004", targetId: "entity-003" },
-    { id: "relation-008", sourceId: "event-005", targetId: "entity-003" },
-    { id: "relation-009", sourceId: "event-005", targetId: "entity-008" },
-    { id: "relation-010", sourceId: "event-006", targetId: "entity-003" },
-    { id: "relation-011", sourceId: "event-006", targetId: "entity-004" },
-    { id: "relation-012", sourceId: "event-006", targetId: "entity-007" },
-    { id: "relation-013", sourceId: "event-007", targetId: "entity-003" },
-    { id: "relation-014", sourceId: "event-007", targetId: "entity-006" },
-  ],
-};
+const points = [[400, 250], [150, 120], [250, 400], [550, 400], [650, 120], [650, 250]] as const;
+const coordinate = (x: number, y: number) => ({ extensions: { "draft.github.sukoyaka-dopeness.coordinate": { coordinates: [{ spaceId: "liaisonscape-graph", values: { x, y } }] } } });
+const declaration = { "draft.github.sukoyaka-dopeness.specification": { specVersion: "0.1.0", uses: [{ extension: "metadata", version: "1.0.0" }, { extension: "history", version: "1.0.0" }, { extension: "draft.github.sukoyaka-dopeness.coordinate", version: "0.1.0" }] } };
 
-export const sampleDatasetEn: Dataset = {
-  version: "1.0",
-  extensions: { metadata: { datasetId: "019c2f9a-7c31-7a8e-8c4b-2d2e3f4a5b6c", title: "Apollo 11 Mission" } },
-  events: [
-    { id: "event-001", name: "Moon Landing", description: "Apollo 11 landed on the Moon.", extensions: { history: { time: { year: 1969, month: 7, day: 20 } } } },
-    { id: "event-003", name: "Apollo 11 Launch", description: "Apollo 11 launched from Kennedy Space Center.", extensions: { history: { time: { year: 1969, month: 7, day: 16 } } } },
-    { id: "event-004", name: "Translunar Injection", description: "Apollo 11 began its journey to the Moon.", extensions: { history: { time: { year: 1969, month: 7, day: 16 } } } },
-    { id: "event-005", name: "Lunar Orbit Insertion", description: "Apollo 11 entered orbit around the Moon.", extensions: { history: { time: { year: 1969, month: 7, day: 19 } } } },
-    { id: "event-006", name: "First Step on the Moon", description: "Neil Armstrong became the first person to step onto the Moon.", extensions: { history: { time: { year: 1969, month: 7, day: 21 } } } },
-    { id: "event-007", name: "Pacific Splashdown", description: "The Apollo 11 crew safely splashed down in the Pacific Ocean.", extensions: { history: { time: { year: 1969, month: 7, day: 24 } } } },
-  ],
-  entities: [
-    { id: "entity-003", name: "Neil Armstrong", description: "Apollo 11 commander." },
-    { id: "entity-004", name: "Buzz Aldrin", description: "Apollo 11 lunar module pilot." },
-    { id: "entity-005", name: "Michael Collins", description: "Apollo 11 command module pilot." },
-    { id: "entity-006", name: "Apollo 11", description: "The first crewed mission to land on the Moon." },
-    { id: "entity-007", name: "NASA", description: "The agency responsible for the Apollo program." },
-    { id: "entity-008", name: "Moon", description: "Earth's natural satellite." },
-  ],
-  relations: [
-    { id: "relation-003", sourceId: "event-001", targetId: "entity-003" }, { id: "relation-004", sourceId: "event-001", targetId: "entity-004" }, { id: "relation-005", sourceId: "event-001", targetId: "entity-008" },
-    { id: "relation-006", sourceId: "event-003", targetId: "entity-006" }, { id: "relation-007", sourceId: "event-003", targetId: "entity-007" },
-    { id: "relation-008", sourceId: "event-004", targetId: "entity-006" }, { id: "relation-009", sourceId: "event-005", targetId: "entity-006" }, { id: "relation-010", sourceId: "event-005", targetId: "entity-008" },
-    { id: "relation-011", sourceId: "event-006", targetId: "entity-003" }, { id: "relation-012", sourceId: "event-006", targetId: "entity-004" }, { id: "relation-013", sourceId: "event-006", targetId: "entity-008" },
-    { id: "relation-014", sourceId: "event-007", targetId: "entity-003" }, { id: "relation-015", sourceId: "event-007", targetId: "entity-004" }, { id: "relation-016", sourceId: "event-007", targetId: "entity-005" },
-  ],
-};
+const content = {
+  en: {
+    title: "Apollo 11 Mission",
+    entities: [["apollo", "Apollo 11", "The first crewed mission to land on the Moon."], ["nasa", "NASA", "The agency that planned and operated the Apollo program."], ["armstrong", "Neil Armstrong", "Apollo 11 commander and first person to walk on the Moon."], ["aldrin", "Buzz Aldrin", "Apollo 11 lunar module pilot."], ["collins", "Michael Collins", "Apollo 11 command module pilot."], ["moon", "Moon", "Earth's natural satellite and the mission's destination."]],
+    events: [["launch", "Apollo 11 launches", "Apollo 11 lifted off from Kennedy Space Center.", { year: 1969, month: 7, day: 16 }], ["orbit", "Lunar orbit insertion", "The crew entered orbit around the Moon.", { year: 1969, month: 7, day: 19 }], ["landing", "The Eagle lands", "The lunar module landed in the Sea of Tranquility.", { year: 1969, month: 7, day: 20 }], ["step", "First step on the Moon", "Armstrong stepped onto the lunar surface, followed by Aldrin.", { year: 1969, month: 7, day: 21 }], ["return", "Pacific splashdown", "The crew returned safely to Earth.", { year: 1969, month: 7, day: 24 }]],
+    names: ["operates", "commands", "flies with", "supports", "orbits", "lands on", "walks on", "returns with"],
+  },
+  ja: {
+    title: "\u30a2\u30dd\u30ed11\u53f7\u306e\u6708\u9762\u7740\u9678",
+    entities: [["apollo", "\u30a2\u30dd\u30ed11\u53f7", "\u4eba\u985e\u3092\u521d\u3081\u3066\u6708\u9762\u3078\u9001\u308a\u5c4a\u3051\u305f\u6709\u4eba\u63a2\u67fb\u30df\u30c3\u30b7\u30e7\u30f3\u3002"], ["nasa", "NASA", "\u30a2\u30dd\u30ed\u8a08\u753b\u3092\u8a08\u753b\u30fb\u904b\u7528\u3057\u305f\u6a5f\u95a2\u3002"], ["armstrong", "\u30cb\u30fc\u30eb\u30fb\u30a2\u30fc\u30e0\u30b9\u30c8\u30ed\u30f3\u30b0", "\u30a2\u30dd\u30ed11\u53f7\u8239\u9577\u3067\u3001\u6708\u9762\u306b\u7acb\u3063\u305f\u6700\u521d\u306e\u4eba\u7269\u3002"], ["aldrin", "\u30d0\u30ba\u30fb\u30aa\u30eb\u30c9\u30ea\u30f3", "\u30a2\u30dd\u30ed11\u53f7\u306e\u6708\u7740\u9678\u8239\u64cd\u7e26\u58eb\u3002"], ["collins", "\u30de\u30a4\u30b1\u30eb\u30fb\u30b3\u30ea\u30f3\u30ba", "\u30a2\u30dd\u30ed11\u53f7\u306e\u53f8\u4ee4\u8239\u64cd\u7e26\u58eb\u3002"], ["moon", "\u6708", "\u5730\u7403\u306e\u885b\u661f\u3067\u3042\u308a\u3001\u30df\u30c3\u30b7\u30e7\u30f3\u306e\u76ee\u7684\u5730\u3002"]],
+    events: [["launch", "\u30a2\u30dd\u30ed11\u53f7\u6253\u3061\u4e0a\u3052", "\u30a2\u30dd\u30ed11\u53f7\u304c\u30b1\u30cd\u30c7\u30a3\u5b87\u5b99\u30bb\u30f3\u30bf\u30fc\u304b\u3089\u6253\u3061\u4e0a\u3052\u3089\u308c\u305f\u3002", { year: 1969, month: 7, day: 16 }], ["orbit", "\u6708\u5468\u56de\u8ecc\u9053\u3078\u6295\u5165", "\u4e57\u7d44\u54e1\u304c\u6708\u306e\u5468\u56de\u8ecc\u9053\u306b\u5165\u3063\u305f\u3002", { year: 1969, month: 7, day: 19 }], ["landing", "\u30a4\u30fc\u30b0\u30eb\u6708\u9762\u7740\u9678", "\u6708\u7740\u9678\u8239\u304c\u9759\u304b\u306e\u6d77\u306b\u7740\u9678\u3057\u305f\u3002", { year: 1969, month: 7, day: 20 }], ["step", "\u6708\u9762\u3078\u306e\u7b2c\u4e00\u6b69", "\u30a2\u30fc\u30e0\u30b9\u30c8\u30ed\u30f3\u30b0\u306b\u7d9a\u3044\u3066\u30aa\u30eb\u30c9\u30ea\u30f3\u304c\u964d\u308a\u7acb\u3063\u305f\u3002", { year: 1969, month: 7, day: 21 }], ["return", "\u592a\u5e73\u6d0b\u3078\u306e\u5e30\u9084", "\u4e57\u7d44\u54e1\u304c\u7121\u4e8b\u306b\u5730\u7403\u3078\u5e30\u9084\u3057\u305f\u3002", { year: 1969, month: 7, day: 24 }]],
+    names: ["\u904b\u7528\u3059\u308b", "\u6307\u63ee\u3059\u308b", "\u5171\u306b\u98db\u884c\u3059\u308b", "\u652f\u63f4\u3059\u308b", "\u5468\u56de\u3059\u308b", "\u7740\u9678\u3059\u308b", "\u6b69\u304f", "\u5171\u306b\u5e30\u9084\u3059\u308b"],
+  },
+} as const;
+
+function createSample(language: "en" | "ja"): Dataset {
+  const value = content[language];
+  const entities = value.entities.map(([id, name, description], index) => ({ id: `entity-${id}`, name, description, ...coordinate(points[index][0], points[index][1]) }));
+  const events = value.events.map(([id, name, description, time]) => ({ id: `event-${id}`, name, description, extensions: { history: { time } } }));
+  const rel = (id: string, name: string, sourceId: string, targetId: string) => ({ id: `relation-${id}`, name, sourceId, targetId });
+  const n = value.names;
+  const relations = [rel("nasa-apollo", n[0], "entity-nasa", "entity-apollo"), rel("apollo-armstrong", n[1], "entity-apollo", "entity-armstrong"), rel("armstrong-aldrin", n[2], "entity-armstrong", "entity-aldrin"), rel("armstrong-collins", n[2], "entity-armstrong", "entity-collins"), rel("apollo-moon", n[3], "entity-apollo", "entity-moon"), rel("nasa-loop", language === "en" ? "mission control loop" : "\u30df\u30c3\u30b7\u30e7\u30f3\u7ba1\u5236\u306e\u5faa\u74b0", "entity-nasa", "entity-nasa"), rel("launch-apollo", n[0], "event-launch", "entity-apollo"), rel("launch-nasa", n[3], "event-launch", "entity-nasa"), rel("orbit-moon", n[4], "event-orbit", "entity-moon"), rel("landing-moon", n[5], "event-landing", "entity-moon"), rel("step-armstrong", n[6], "event-step", "entity-armstrong"), rel("step-aldrin", n[6], "event-step", "entity-aldrin"), rel("return-armstrong", n[7], "event-return", "entity-armstrong"), rel("return-collins", n[7], "event-return", "entity-collins")];
+  return { version: "1.0", entities, events, relations, extensions: { metadata: { datasetId: `example-apollo-11-${language}`, title: value.title }, "draft.github.sukoyaka-dopeness.coordinate": { specVersion: "0.1.0", spaces: [{ id: "liaisonscape-graph", name: "LiaisonScape graph coordinates", kind: "cartesian-2d", components: { x: { unit: "liaisonscape-user-unit", positiveDirection: "display-right" }, y: { unit: "liaisonscape-user-unit", positiveDirection: "display-down" } } }] }, ...declaration } };
+}
+
+export const sampleDataset = createSample("ja");
+export const sampleDatasetEn = createSample("en");
