@@ -4,7 +4,15 @@ import {
   isNarrativeLineHistoryState,
   navigate,
   readNarrativeLineHistoryState,
+  reconcileRestoredNavigationState,
 } from "../src/services/NavigationService.ts";
+
+const dataset = {
+  version: "1.0",
+  entities: [{ id: "entity-1" }],
+  events: [{ id: "event-1" }],
+  relations: [],
+};
 
 const ownedState = {
   narrativeLineView: {
@@ -43,4 +51,22 @@ test("navigation calculation is side-effect free and same-screen updates stay in
 
   assert.deepEqual(navigate(state, "timeline"), state);
   assert.equal(navigate(state, "eventDetail").currentScreen, "eventDetail");
+});
+
+test("restored stale detail state falls back to the current Dataset timeline", () => {
+  const restored = reconcileRestoredNavigationState({
+    currentScreen: "eventDetail", selectedEvent: "old-event", selectedEntity: null,
+    returnEventId: null, returnEntityId: null, draftEventId: null,
+  }, dataset);
+  assert.equal(restored.currentScreen, "timeline");
+  assert.equal(restored.selectedEvent, null);
+});
+
+test("restored valid detail state remains available in the current Dataset", () => {
+  const restored = reconcileRestoredNavigationState({
+    currentScreen: "eventDetail", selectedEvent: "event-1", selectedEntity: null,
+    returnEventId: null, returnEntityId: null, draftEventId: null,
+  }, dataset);
+  assert.equal(restored.currentScreen, "eventDetail");
+  assert.equal(restored.selectedEvent, "event-1");
 });

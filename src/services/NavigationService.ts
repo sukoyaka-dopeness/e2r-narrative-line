@@ -1,4 +1,5 @@
 import type { AppState, Screen } from "../state/AppState";
+import type { Dataset } from "../models/Dataset";
 
 export const NARRATIVE_LINE_HISTORY_KEY = "narrativeLineView";
 
@@ -48,6 +49,31 @@ export function readNarrativeLineHistoryState(
   return isNarrativeLineHistoryState(value)
     ? value[NARRATIVE_LINE_HISTORY_KEY]
     : undefined;
+}
+
+export function reconcileRestoredNavigationState(
+  state: NarrativeLineHistoryState,
+  dataset: Dataset,
+): NarrativeLineHistoryState {
+  const eventExists = (id: string | null) =>
+    id !== null && dataset.events.some((event) => event.id === id);
+  const entityExists = (id: string | null) =>
+    id !== null && dataset.entities.some((entity) => entity.id === id);
+  const selectedEvent = eventExists(state.selectedEvent) ? state.selectedEvent : null;
+  const selectedEntity = entityExists(state.selectedEntity) ? state.selectedEntity : null;
+  const returnEventId = eventExists(state.returnEventId) ? state.returnEventId : null;
+  const returnEntityId = entityExists(state.returnEntityId) ? state.returnEntityId : null;
+  const draftEventId = eventExists(state.draftEventId) ? state.draftEventId : null;
+
+  if (
+    (state.currentScreen === "eventDetail" && selectedEvent === null) ||
+    ((state.currentScreen === "entityPicker" || state.currentScreen === "entityCreate") && selectedEvent === null) ||
+    (state.currentScreen === "entityDetail" && selectedEntity === null)
+  ) {
+    return { ...state, currentScreen: "timeline", selectedEvent: null, selectedEntity: null, returnEventId: null, returnEntityId: null, draftEventId: null };
+  }
+
+  return { ...state, selectedEvent, selectedEntity, returnEventId, returnEntityId, draftEventId };
 }
 
 export function replaceInitialHistoryEntry(state: AppState): void {

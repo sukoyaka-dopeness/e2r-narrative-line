@@ -11,6 +11,7 @@ import {
   pushNavigationHistoryEntry,
   replaceCurrentNavigationEntry,
   readNarrativeLineHistoryState,
+  reconcileRestoredNavigationState,
   replaceInitialHistoryEntry,
 } from "./services/NavigationService";
 import { sampleDataset, sampleDatasetEn } from "./sample/sampleDataset";
@@ -119,7 +120,7 @@ function App() {
       restoringHistoryRef.current = true;
       setState((currentState) => ({
         ...currentState,
-        ...restored,
+        ...reconcileRestoredNavigationState(restored, datasetRef.current),
       }));
     };
 
@@ -195,7 +196,7 @@ function App() {
   const handleImportDataset = (source: string): DatasetImportResult => {
     const result = importDatasetJson(source);
 
-    if (result.dataset) {
+    if (result.isValid && result.dataset) {
       const warnings = result.issues.filter(
         (issue): issue is DatasetImportWarning =>
           "severity" in issue && issue.severity === "warning",
