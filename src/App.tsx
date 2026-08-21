@@ -207,6 +207,23 @@ function App() {
     return result;
   };
 
+  const handleResumeDataset = () => {
+    setImportWarnings([]);
+    setState((currentState) =>
+      navigate(
+        {
+          ...currentState,
+          selectedEvent: null,
+          selectedEntity: null,
+          returnEventId: null,
+          returnEntityId: null,
+          draftEventId: null,
+        },
+        "timeline",
+      ),
+    );
+  };
+
   const handleExportDataset = (): DatasetExportResult => {
     const result = exportDatasetJson(dataset);
     if (result.json !== undefined) {
@@ -411,7 +428,7 @@ function App() {
       <AppFrame showFooter>
         <HomeScreen
           onOpenTimeline={() => handleOpenDataset(sample, [], "sample")}
-          onResumeDataset={() => handleOpenDataset(dataset, [], "resume")}
+          onResumeDataset={handleResumeDataset}
           hasResumeDataset={storedDataset !== undefined}
           onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
           onImportDataset={handleImportDataset}
