@@ -42,7 +42,11 @@ import {
   isDatasetModified,
   serializeDatasetBaseline,
 } from "./services/DatasetBaselineService";
-import { hasPendingUserWork } from "./services/PendingWorkService";
+import {
+  hasLossRisk,
+  hasPendingUserWork,
+  registerBeforeUnloadProtection,
+} from "./services/PendingWorkService";
 import {
   acceptDatasetCandidate,
   clearDatasetCandidate,
@@ -141,6 +145,14 @@ function App() {
     document.documentElement.dataset.pendingUserWork = pendingUserWork ? "true" : "false";
     return () => { delete document.documentElement.dataset.pendingUserWork; };
   }, [pendingUserWork]);
+
+  useEffect(
+    () => registerBeforeUnloadProtection(
+      window,
+      hasLossRisk(datasetModified, pendingUserWork),
+    ),
+    [datasetModified, pendingUserWork],
+  );
   const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
   const restoringHistoryRef = useRef(false);
   const historyInitializedRef = useRef(false);
