@@ -232,7 +232,7 @@ button:disabled {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 32px 32px 88px !important;
+  padding: 32px 32px 0 !important;
 }
 
 .dataset-title-editor {
@@ -799,7 +799,7 @@ button:disabled {
   }
 
   .timeline-screen {
-    padding: 20px 16px 88px !important;
+    padding: 20px 16px 0 !important;
   }
 
   .detail-primary-actions {
