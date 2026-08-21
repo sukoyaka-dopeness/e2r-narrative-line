@@ -6,7 +6,11 @@ import { EntityDetailScreen } from "./screens/EntityDetailScreen";
 import { EntityPickerScreen } from "./screens/EntityPickerScreen";
 import { EntityCreateScreen } from "./screens/EntityCreateScreen";
 import { AppFrame } from "./components/AppFrame";
-import { navigate } from "./services/NavigationService";
+import {
+  navigate,
+  readNarrativeLineHistoryState,
+  replaceInitialHistoryEntry,
+} from "./services/NavigationService";
 import { sampleDataset, sampleDatasetEn } from "./sample/sampleDataset";
 import type { AppState } from "./state/AppState";
 import type { Dataset } from "./models/Dataset";
@@ -54,6 +58,26 @@ function App() {
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
   const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
+
+  useEffect(() => {
+    replaceInitialHistoryEntry(state);
+
+    const handlePopState = (event: PopStateEvent) => {
+      const restored = readNarrativeLineHistoryState(event.state);
+      if (restored === undefined) return;
+
+      setState((currentState) => ({
+        ...currentState,
+        ...restored,
+      }));
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+    // The listener belongs to the application lifetime. Navigation entries
+    // are written by NavigationService, not by every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     window.localStorage.setItem(
