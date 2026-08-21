@@ -40,6 +40,13 @@ import {
   serializeDatasetBaseline,
 } from "./services/DatasetBaselineService";
 import { hasPendingUserWork } from "./services/PendingWorkService";
+import {
+  acceptDatasetCandidate,
+  clearDatasetCandidate,
+  stageDatasetCandidate,
+  type DatasetCandidate,
+  type DatasetCandidateSource,
+} from "./services/DatasetCandidateService";
 import { useLanguage } from "./i18n/LanguageContext";
 
 function App() {
@@ -71,6 +78,7 @@ function App() {
   const [acceptedDatasetBaseline, setAcceptedDatasetBaseline] = useState(() =>
     serializeDatasetBaseline(storedDataset ?? sample),
   );
+  const [, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
   const [pendingSources, setPendingSources] = useState<Record<string, boolean>>({});
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const pendingUserWork = hasPendingUserWork(pendingSources);
@@ -160,9 +168,14 @@ function App() {
   const handleOpenDataset = (
     nextDataset: Dataset,
     warnings: DatasetImportWarning[] = [],
+    source: DatasetCandidateSource = "local",
   ) => {
-    setDataset(nextDataset);
-    setAcceptedDatasetBaseline(serializeDatasetBaseline(nextDataset));
+    const candidate = stageDatasetCandidate(nextDataset, source);
+    setDatasetCandidate(candidate);
+    const acceptedDataset = acceptDatasetCandidate(candidate);
+    setDataset(acceptedDataset);
+    setAcceptedDatasetBaseline(serializeDatasetBaseline(acceptedDataset));
+    setDatasetCandidate(clearDatasetCandidate());
     setImportWarnings(warnings);
     setState((currentState) =>
       navigate(
@@ -187,7 +200,7 @@ function App() {
         (issue): issue is DatasetImportWarning =>
           "severity" in issue && issue.severity === "warning",
       );
-      handleOpenDataset(result.dataset, warnings);
+      handleOpenDataset(result.dataset, warnings, "local");
     }
 
     return result;
@@ -396,10 +409,10 @@ function App() {
     return (
       <AppFrame showFooter>
         <HomeScreen
-          onOpenTimeline={() => handleOpenDataset(sample)}
-          onResumeDataset={() => handleOpenDataset(dataset)}
+          onOpenTimeline={() => handleOpenDataset(sample, [], "sample")}
+          onResumeDataset={() => handleOpenDataset(dataset, [], "resume")}
           hasResumeDataset={storedDataset !== undefined}
-          onCreateDataset={() => handleOpenDataset(createDataset())}
+          onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
           onImportDataset={handleImportDataset}
         />
       </AppFrame>
