@@ -247,11 +247,13 @@ function App() {
     spaceId: string,
     values: Record<string, number>,
   ) => {
-    const result = updateObjectCoordinate(dataset, objectId, spaceId, values);
-    if (result.status === "updated") {
-      setDataset(result.dataset);
-    }
-    return result.status;
+    let status: ReturnType<typeof updateObjectCoordinate>["status"] = "invalid";
+    setDataset((currentDataset) => {
+      const result = updateObjectCoordinate(currentDataset, objectId, spaceId, values);
+      status = result.status;
+      return result.status === "updated" ? result.dataset : currentDataset;
+    });
+    return status;
   };
   const handleSelectEvent = (eventId: string) => {
     const nextState = {
