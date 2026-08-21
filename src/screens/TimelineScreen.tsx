@@ -5,7 +5,7 @@ import type {
   DatasetExportResult,
   DatasetImportWarning,
 } from "../services/DatasetService";
-import { getDatasetExportFilename } from "../services/DatasetService";
+import { downloadDatasetExport } from "../services/DatasetService";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
@@ -145,15 +145,7 @@ export function TimelineScreen({
     setExportIssues([]);
     setDownloadError(null);
 
-    const blob = new Blob([result.json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = getDatasetExportFilename(dataset);
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    downloadDatasetExport(dataset, result);
   };
 
   return (

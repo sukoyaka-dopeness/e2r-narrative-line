@@ -198,3 +198,21 @@ export function exportDatasetJson(dataset: Dataset): DatasetExportResult {
     };
   }
 }
+
+export function downloadDatasetExport(
+  dataset: Dataset,
+  result: DatasetExportResult,
+): boolean {
+  if (result.json === undefined) return false;
+
+  const blob = new Blob([result.json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = getDatasetExportFilename(dataset);
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  return true;
+}

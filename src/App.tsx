@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HomeScreen } from "./screens/HomeScreen";
 import { TimelineScreen } from "./screens/TimelineScreen";
-import { EventDetailScreen } from "./screens/EventDetailScreen";
-import { EntityDetailScreen } from "./screens/EntityDetailScreen";
+import { EventDetailScreen, type EventDetailDraft } from "./screens/EventDetailScreen";
+import { EntityDetailScreen, type EntityDetailDraft } from "./screens/EntityDetailScreen";
 import { EntityPickerScreen } from "./screens/EntityPickerScreen";
-import { EntityCreateScreen } from "./screens/EntityCreateScreen";
+import { EntityCreateScreen, type EntityCreateDraft } from "./screens/EntityCreateScreen";
 import { AppFrame } from "./components/AppFrame";
+import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import {
   navigate,
   pushNavigationHistoryEntry,
@@ -20,6 +21,7 @@ import type { Dataset } from "./models/Dataset";
 import {
   createDataset,
   exportDatasetJson,
+  downloadDatasetExport,
   updateDatasetTitle,
   importDatasetJson,
   type DatasetImportWarning,
@@ -79,8 +81,16 @@ function App() {
   const [acceptedDatasetBaseline, setAcceptedDatasetBaseline] = useState(() =>
     serializeDatasetBaseline(storedDataset ?? sample),
   );
-  const [, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
+  const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
+  const [replacementError, setReplacementError] = useState<string | null>(null);
   const [pendingSources, setPendingSources] = useState<Record<string, boolean>>({});
+  const [eventDraft, setEventDraft] = useState<
+    { eventId: string; draft: EventDetailDraft } | undefined
+  >();
+  const [entityDraft, setEntityDraft] = useState<
+    { entityId: string; draft: EntityDetailDraft } | undefined
+  >();
+  const [entityCreateDraft, setEntityCreateDraft] = useState<EntityCreateDraft>();
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const pendingUserWork = hasPendingUserWork(pendingSources);
   const setPendingSource = useCallback((source: string, pending: boolean) => {
@@ -92,6 +102,32 @@ function App() {
     (pending: boolean) => setPendingSource("eventDetail", pending),
     [setPendingSource],
   );
+  const handleEventDraftChange = useCallback(
+    (eventId: string, draft: EventDetailDraft) => {
+      setEventDraft({ eventId, draft });
+    },
+    [],
+  );
+  const handleClearEventDraft = useCallback((eventId: string) => {
+    setEventDraft((current) =>
+      current?.eventId === eventId ? undefined : current,
+    );
+    setPendingSource("eventDetail", false);
+  }, [setPendingSource]);
+  const handleEntityDraftChange = useCallback((entityId: string, draft: EntityDetailDraft) => {
+    setEntityDraft({ entityId, draft });
+  }, []);
+  const handleClearEntityDraft = useCallback((entityId: string) => {
+    setEntityDraft((current) => current?.entityId === entityId ? undefined : current);
+    setPendingSource("entityDetail", false);
+  }, [setPendingSource]);
+  const handleEntityCreateDraftChange = useCallback((draft: EntityCreateDraft) => {
+    setEntityCreateDraft(draft);
+  }, []);
+  const handleClearEntityCreateDraft = useCallback(() => {
+    setEntityCreateDraft(undefined);
+    setPendingSource("entityCreate", false);
+  }, [setPendingSource]);
   const handleEntityPendingWork = useCallback(
     (pending: boolean) => setPendingSource("entityDetail", pending),
     [setPendingSource],
@@ -166,18 +202,18 @@ function App() {
     };
   }, [state.currentScreen]);
 
-  const handleOpenDataset = (
-    nextDataset: Dataset,
-    warnings: DatasetImportWarning[] = [],
-    source: DatasetCandidateSource = "local",
-  ) => {
-    const candidate = stageDatasetCandidate(nextDataset, source);
-    setDatasetCandidate(candidate);
-    const acceptedDataset = acceptDatasetCandidate(candidate);
+  const acceptStagedDataset = (candidateToAccept = datasetCandidate) => {
+    if (!candidateToAccept) return;
+    const acceptedDataset = acceptDatasetCandidate(candidateToAccept);
     setDataset(acceptedDataset);
     setAcceptedDatasetBaseline(serializeDatasetBaseline(acceptedDataset));
     setDatasetCandidate(clearDatasetCandidate());
-    setImportWarnings(warnings);
+    setPendingSources({});
+    setEventDraft(undefined);
+    setEntityDraft(undefined);
+    setEntityCreateDraft(undefined);
+    setReplacementError(null);
+    setImportWarnings([]);
     setState((currentState) =>
       navigate(
         {
@@ -191,6 +227,52 @@ function App() {
         "timeline",
       ),
     );
+  };
+
+  const handleOpenDataset = (
+    nextDataset: Dataset,
+    warnings: DatasetImportWarning[] = [],
+    source: DatasetCandidateSource = "local",
+  ) => {
+    const candidate = stageDatasetCandidate(nextDataset, source);
+    setDatasetCandidate(candidate);
+    setImportWarnings(warnings);
+    setReplacementError(null);
+    if (!datasetModified && !pendingUserWork) {
+      acceptStagedDataset(candidate);
+    }
+
+    if (datasetModified || pendingUserWork) return;
+    return;
+  };
+
+  const handleDiscardReplacement = () => {
+    acceptStagedDataset();
+  };
+
+  const handleCancelReplacement = () => {
+    setDatasetCandidate(clearDatasetCandidate());
+    setReplacementError(null);
+  };
+
+  const handleExportAndContinue = () => {
+    const result = exportDatasetJson(dataset);
+    if (!downloadDatasetExport(dataset, result)) {
+      setReplacementError("The current Dataset could not be exported. The replacement was not performed.");
+      return;
+    }
+    setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
+    acceptStagedDataset();
+  };
+
+  const handleExportPendingReplacement = () => {
+    const result = exportDatasetJson(dataset);
+    if (!downloadDatasetExport(dataset, result)) {
+      setReplacementError("The current Dataset could not be exported. The replacement was not performed.");
+      return;
+    }
+    setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
+    setReplacementError(null);
   };
 
   const handleImportDataset = (source: string): DatasetImportResult => {
@@ -248,6 +330,8 @@ function App() {
       description?: string;
     },
   ) => {
+    setEventDraft(undefined);
+    setPendingSource("eventDetail", false);
     setDataset(updateEvent(dataset, eventId, updates));
   };
   const handleSaveAndOpenEntityPicker = (
@@ -258,6 +342,8 @@ function App() {
       description?: string;
     },
   ) => {
+    setEventDraft(undefined);
+    setPendingSource("eventDetail", false);
     setDataset((currentDataset) =>
       updateEvent(currentDataset, eventId, updates),
     );
@@ -279,6 +365,7 @@ function App() {
       description?: string;
     },
   ) => {
+    handleClearEntityDraft(entityId);
     setDataset(updateEntity(dataset, entityId, updates));
   };
   const handleUpdateCoordinate = (
@@ -354,6 +441,7 @@ function App() {
     }
 
     const eventId = state.selectedEvent;
+    handleClearEntityCreateDraft();
     setDataset((currentDataset) => {
       const result = addEntity(currentDataset, name, description);
 
@@ -362,6 +450,7 @@ function App() {
     setState((currentState) => navigate(currentState, "eventDetail"));
   };
   const handleDeleteEvent = (eventId: string) => {
+    handleClearEventDraft(eventId);
     setDataset(deleteEvent(dataset, eventId));
 
     setState(
@@ -379,6 +468,7 @@ function App() {
     eventId: string,
     discardDraft: boolean,
   ) => {
+    handleClearEventDraft(eventId);
     if (discardDraft) {
       setDataset((currentDataset) => deleteEvent(currentDataset, eventId));
     }
@@ -398,6 +488,7 @@ function App() {
     );
   };
   const handleDeleteEntity = (entityId: string) => {
+    handleClearEntityDraft(entityId);
     setDataset(deleteEntity(dataset, entityId));
 
     setState(
@@ -437,6 +528,18 @@ function App() {
           onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
           onImportDataset={handleImportDataset}
         />
+        {datasetCandidate && (datasetModified || pendingUserWork) && (
+          <DatasetReplacementDialog
+            datasetModified={datasetModified}
+            pendingUserWork={pendingUserWork}
+            busy={false}
+            onCancel={handleCancelReplacement}
+            onDiscard={handleDiscardReplacement}
+            onExportAndContinue={handleExportAndContinue}
+            onExportDataset={handleExportPendingReplacement}
+          />
+        )}
+        {replacementError && <p role="alert">{replacementError}</p>}
       </AppFrame>
     );
   }
@@ -444,14 +547,21 @@ function App() {
     return (
       <AppFrame onHome={handleNavigateHome}>
         <EntityDetailScreen
+          key={state.selectedEntity}
           dataset={dataset}
           selectedEntity={state.selectedEntity}
           onUpdateEntity={handleUpdateEntity}
           onPendingWorkChange={handleEntityPendingWork}
+          pendingDraft={
+            entityDraft?.entityId === state.selectedEntity ? entityDraft.draft : undefined
+          }
+          onDraftChange={handleEntityDraftChange}
+          onClearDraft={handleClearEntityDraft}
           onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
           onSelectEvent={handleEditEvent}
           onBack={() => {
+            if (state.selectedEntity) handleClearEntityDraft(state.selectedEntity);
             if (state.returnEventId) {
               setState(
                 navigate(
@@ -472,11 +582,19 @@ function App() {
     return (
       <AppFrame onHome={handleNavigateHome}>
         <EventDetailScreen
+          key={state.selectedEvent}
           dataset={dataset}
           selectedEvent={state.selectedEvent}
           focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
           onPendingWorkChange={handleEventPendingWork}
+          pendingDraft={
+            eventDraft?.eventId === state.selectedEvent
+              ? eventDraft.draft
+              : undefined
+          }
+          onDraftChange={handleEventDraftChange}
+          onClearDraft={handleClearEventDraft}
           onDeleteEvent={handleDeleteEvent}
           onSelectEntity={handleSelectEntity}
           onSaveAndOpenEntityPicker={handleSaveAndOpenEntityPicker}
@@ -510,8 +628,13 @@ function App() {
         <EntityCreateScreen
           onCreate={handleCreateAndAssociateEntity}
           onPendingWorkChange={handleEntityCreatePendingWork}
+          pendingDraft={entityCreateDraft}
+          onDraftChange={handleEntityCreateDraftChange}
+          onClearDraft={handleClearEntityCreateDraft}
           onCancel={() =>
+            (handleClearEntityCreateDraft(),
             setState((currentState) => navigate(currentState, "entityPicker"))
+            )
           }
         />
       </AppFrame>

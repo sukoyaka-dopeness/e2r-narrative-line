@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
@@ -13,6 +13,9 @@ type EntityDetailScreenProps = {
     updates: { name?: string; description?: string },
   ) => void;
   onPendingWorkChange: (pending: boolean) => void;
+  pendingDraft?: EntityDetailDraft;
+  onDraftChange: (entityId: string, draft: EntityDetailDraft) => void;
+  onClearDraft: (entityId: string) => void;
   onUpdateCoordinate: (
     objectId: string,
     spaceId: string,
@@ -23,11 +26,16 @@ type EntityDetailScreenProps = {
   onBack: () => void;
 };
 
+export type EntityDetailDraft = { name: string; description: string };
+
 export function EntityDetailScreen({
   dataset,
   selectedEntity,
   onUpdateEntity,
   onPendingWorkChange,
+  pendingDraft,
+  onDraftChange,
+  onClearDraft,
   onUpdateCoordinate,
   onDeleteEntity,
   onSelectEvent,
@@ -37,27 +45,34 @@ export function EntityDetailScreen({
   const ja = language === "ja";
   const entity =
     dataset.entities.find((entity) => entity.id === selectedEntity) ?? null;
-  const [name, setName] = useState(entity?.name ?? "");
-  const [description, setDescription] = useState(entity?.description ?? "");
+  const [name, setName] = useState(pendingDraft?.name ?? entity?.name ?? "");
+  const [description, setDescription] = useState(
+    pendingDraft?.description ?? entity?.description ?? "",
+  );
   const [selectedRelatedEvent, setSelectedRelatedEvent] = useState<
     string | null
   >(null);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
+  const disposingDraftRef = useRef(false);
   const hasPendingEdits =
     entity !== null &&
     (name !== (entity.name ?? "") || description !== (entity.description ?? ""));
 
   useEffect(() => {
     onPendingWorkChange(hasPendingEdits);
-    return () => onPendingWorkChange(false);
-  }, [hasPendingEdits, onPendingWorkChange]);
+    if (!entity) return;
+    if (hasPendingEdits && !disposingDraftRef.current) onDraftChange(entity.id, { name, description });
+    else onClearDraft(entity.id);
+  }, [entity, hasPendingEdits, name, description, onPendingWorkChange, onDraftChange, onClearDraft]);
 
   if (!entity) {
     return <p>{ja ? "Entityが見つかりません。" : "Entity not found."}</p>;
   }
 
   const handleSave = () => {
+    disposingDraftRef.current = true;
+    onClearDraft(entity.id);
     onUpdateEntity(entity.id, { name, description });
     onBack();
   };
@@ -171,7 +186,7 @@ export function EntityDetailScreen({
       <br />
 
       <div className="detail-primary-actions">
-        <button type="button" onClick={onBack}>
+        <button type="button" onClick={() => { disposingDraftRef.current = true; onClearDraft(entity.id); onBack(); }}>
           {ja ? "戻る" : "Back"}
         </button>
         <button type="button" onClick={handleSave}>

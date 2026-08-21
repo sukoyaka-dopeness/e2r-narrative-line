@@ -9,6 +9,8 @@ type ModalDialogProps = {
   ariaLabelledby: string;
   children: ReactNode;
   onDismiss: () => void;
+  onBackdropDismiss?: () => void;
+  className?: string;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -23,6 +25,8 @@ export function ModalDialog({
   ariaLabelledby,
   children,
   onDismiss,
+  onBackdropDismiss,
+  className,
 }: ModalDialogProps) {
   const dialogRef = useRef<HTMLElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -88,7 +92,12 @@ export function ModalDialog({
   };
 
   return (
-    <div className="modal-backdrop">
+    <div
+      className="modal-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onBackdropDismiss?.();
+      }}
+    >
       <section
         ref={dialogRef}
         role="alertdialog"
@@ -96,7 +105,7 @@ export function ModalDialog({
         aria-labelledby={ariaLabelledby}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="modal-dialog"
+        className={className ? `modal-dialog ${className}` : "modal-dialog"}
       >
         {children}
       </section>

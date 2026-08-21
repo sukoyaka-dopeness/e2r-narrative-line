@@ -1,23 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 
 type EntityCreateScreenProps = {
   onCreate: (name: string, description: string) => void;
   onPendingWorkChange: (pending: boolean) => void;
+  pendingDraft?: EntityCreateDraft;
+  onDraftChange: (draft: EntityCreateDraft) => void;
+  onClearDraft: () => void;
   onCancel: () => void;
 };
 
-export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange }: EntityCreateScreenProps) {
+export type EntityCreateDraft = { name: string; description: string };
+
+export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pendingDraft, onDraftChange, onClearDraft }: EntityCreateScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [name, setName] = useState(pendingDraft?.name ?? "");
+  const [description, setDescription] = useState(pendingDraft?.description ?? "");
   const normalizedName = name.trim();
+  const disposingDraftRef = useRef(false);
 
   useEffect(() => {
-    onPendingWorkChange(normalizedName.length > 0 || description.length > 0);
-    return () => onPendingWorkChange(false);
-  }, [normalizedName, description, onPendingWorkChange]);
+    const pending = normalizedName.length > 0 || description.length > 0;
+    onPendingWorkChange(pending);
+    if (pending && !disposingDraftRef.current) onDraftChange({ name, description });
+    else onClearDraft();
+  }, [normalizedName, description, name, onPendingWorkChange, onDraftChange, onClearDraft]);
 
   return (
     <div className="detail-screen">
@@ -46,8 +54,8 @@ export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange }: 
       </div>
 
       <div className="detail-primary-actions">
-        <button type="button" onClick={onCancel}>{ja ? "戻る" : "Back"}</button>
-        <button type="button" disabled={normalizedName.length === 0} onClick={() => onCreate(normalizedName, description)}>
+        <button type="button" onClick={() => { disposingDraftRef.current = true; onClearDraft(); onCancel(); }}>{ja ? "戻る" : "Back"}</button>
+        <button type="button" disabled={normalizedName.length === 0} onClick={() => { disposingDraftRef.current = true; onClearDraft(); onCreate(normalizedName, description); }}>
           {ja ? "作成して関連付ける" : "Create and Associate"}
         </button>
       </div>

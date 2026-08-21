@@ -625,6 +625,46 @@ button:disabled {
   outline-offset: 3px;
 }
 
+.dataset-replacement-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+.dataset-replacement-dialog {
+  width: min(100%, 42rem);
+}
+
+.dataset-replacement-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.dataset-replacement-actions .replacement-cancel {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+}
+
+.button-danger {
+  border-color: #b91c1c;
+  color: #991b1b;
+}
+
+@media (max-width: 700px) {
+  .dataset-replacement-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dataset-replacement-actions button {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .dataset-replacement-actions .replacement-cancel {
+    min-width: 0;
+  }
+}
+
 .timeline-card {
   box-sizing: border-box;
   max-width: 100%;

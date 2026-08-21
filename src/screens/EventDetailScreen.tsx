@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
@@ -62,6 +62,9 @@ type EventDetailScreenProps = {
     },
   ) => void;
   onPendingWorkChange: (pending: boolean) => void;
+  pendingDraft?: EventDetailDraft;
+  onDraftChange: (eventId: string, draft: EventDetailDraft) => void;
+  onClearDraft: (eventId: string) => void;
   isDraft: boolean;
   onCancel: (eventId: string, discardDraft: boolean) => void;
   onSelectEntity: (entityId: string) => void;
@@ -77,12 +80,26 @@ type EventDetailScreenProps = {
   onDeleteEvent: (eventId: string) => void;
 };
 
+export type EventDetailDraft = {
+  name: string;
+  description: string;
+  year: string;
+  month: string;
+  day: string;
+  hour: string;
+  minute: string;
+  second: string;
+};
+
 export function EventDetailScreen({
   dataset,
   selectedEvent,
   focusedRelatedEntityId,
   onUpdateEvent,
   onPendingWorkChange,
+  pendingDraft,
+  onDraftChange,
+  onClearDraft,
   onDeleteEvent,
   onSelectEntity,
   onSaveAndOpenEntityPicker,
@@ -112,36 +129,38 @@ export function EventDetailScreen({
   );
   const storedHistoryTime = event ? getEventHistoryTime(event) : undefined;
   const [year, setYear] = useState(
-    storedHistoryTime?.year === undefined
+    pendingDraft?.year ?? (storedHistoryTime?.year === undefined
       ? ""
-      : String(storedHistoryTime.year),
+      : String(storedHistoryTime.year)),
   );
   const [month, setMonth] = useState(
-    storedHistoryTime?.month === undefined
+    pendingDraft?.month ?? (storedHistoryTime?.month === undefined
       ? ""
-      : String(storedHistoryTime.month),
+      : String(storedHistoryTime.month)),
   );
   const [day, setDay] = useState(
-    storedHistoryTime?.day === undefined
+    pendingDraft?.day ?? (storedHistoryTime?.day === undefined
       ? ""
-      : String(storedHistoryTime.day),
+      : String(storedHistoryTime.day)),
   );
   const [hour, setHour] = useState(
-    storedHistoryTime?.hour === undefined ? "" : String(storedHistoryTime.hour),
+    pendingDraft?.hour ?? (storedHistoryTime?.hour === undefined ? "" : String(storedHistoryTime.hour)),
   );
   const [minute, setMinute] = useState(
-    storedHistoryTime?.minute === undefined ? "" : String(storedHistoryTime.minute),
+    pendingDraft?.minute ?? (storedHistoryTime?.minute === undefined ? "" : String(storedHistoryTime.minute)),
   );
   const [second, setSecond] = useState(
-    storedHistoryTime?.second === undefined ? "" : String(storedHistoryTime.second),
+    pendingDraft?.second ?? (storedHistoryTime?.second === undefined ? "" : String(storedHistoryTime.second)),
   );
   const [isTimeOpen, setIsTimeOpen] = useState(
     storedHistoryTime?.hour !== undefined ||
       storedHistoryTime?.minute !== undefined ||
       storedHistoryTime?.second !== undefined,
   );
-  const [name, setName] = useState(event?.name ?? "");
-  const [description, setDescription] = useState(event?.description ?? "");
+  const [name, setName] = useState(pendingDraft?.name ?? event?.name ?? "");
+  const [description, setDescription] = useState(
+    pendingDraft?.description ?? event?.description ?? "",
+  );
   const [selectedRelatedEntity, setSelectedRelatedEntity] = useState<string | null>(
     focusedRelatedEntityId,
   );
@@ -150,6 +169,7 @@ export function EventDetailScreen({
   const [entityPendingRemoval, setEntityPendingRemoval] = useState<Entity | null>(
     null,
   );
+  const disposingDraftRef = useRef(false);
 
   useEffect(() => {
     if (!focusedRelatedEntityId) return;
@@ -164,7 +184,7 @@ export function EventDetailScreen({
   useEffect(() => {
     if (!event) {
       onPendingWorkChange(false);
-      return () => onPendingWorkChange(false);
+      return;
     }
 
     const pending =
@@ -177,7 +197,22 @@ export function EventDetailScreen({
       minute !== String(storedHistoryTime?.minute ?? "") ||
       second !== String(storedHistoryTime?.second ?? "");
     onPendingWorkChange(pending);
-    return () => onPendingWorkChange(false);
+    if (event) {
+      if (pending && !disposingDraftRef.current) {
+        onDraftChange(event.id, {
+          name,
+          description,
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          second,
+        });
+      } else {
+        onClearDraft(event.id);
+      }
+    }
   }, [
     event,
     name,
@@ -190,6 +225,8 @@ export function EventDetailScreen({
     second,
     storedHistoryTime,
     onPendingWorkChange,
+    onDraftChange,
+    onClearDraft,
   ]);
 
   if (!event) {
@@ -217,6 +254,8 @@ export function EventDetailScreen({
       return;
     }
 
+    disposingDraftRef.current = true;
+    onClearDraft(event.id);
     onUpdateEvent(event.id, getChangedEventUpdates());
 
     onCancel(event.id, false);
@@ -227,6 +266,8 @@ export function EventDetailScreen({
       return;
     }
 
+    disposingDraftRef.current = true;
+    onClearDraft(event.id);
     onSaveAndOpenEntityPicker(event.id, getChangedEventUpdates());
   };
   return (
@@ -467,7 +508,11 @@ export function EventDetailScreen({
       <div className="detail-primary-actions">
         <button
           type="button"
-          onClick={() => onCancel(event.id, isDraft)}
+          onClick={() => {
+            disposingDraftRef.current = true;
+            onClearDraft(event.id);
+            onCancel(event.id, isDraft);
+          }}
         >
           {ja ? "戻る" : "Back"}
         </button>
