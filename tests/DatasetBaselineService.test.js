@@ -70,6 +70,9 @@ test("Coordinate mutation is modified until content is reverted or exported", ()
 
   assert.equal(updated.status, "updated");
   assert.equal(isDatasetModified(updated.dataset, baseline), true);
+  const repeated = updateObjectCoordinate(updated.dataset, "entity-1", LIAISONSCAPE_SPACE_ID, { x: 121 });
+  assert.equal(repeated.status, "unchanged");
+  assert.deepEqual(repeated.dataset, updated.dataset);
   const exported = exportDatasetJson(updated.dataset);
   assert.equal(exported.isValid, true);
   assert.equal(isDatasetModified(updated.dataset, serializeDatasetBaseline(updated.dataset)), false);

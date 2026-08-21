@@ -64,6 +64,10 @@ function App() {
   });
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
+  const datasetRef = useRef(dataset);
+  useEffect(() => {
+    datasetRef.current = dataset;
+  }, [dataset]);
   const [acceptedDatasetBaseline, setAcceptedDatasetBaseline] = useState(() =>
     serializeDatasetBaseline(storedDataset ?? sample),
   );
@@ -247,13 +251,17 @@ function App() {
     spaceId: string,
     values: Record<string, number>,
   ) => {
-    let status: ReturnType<typeof updateObjectCoordinate>["status"] = "invalid";
-    setDataset((currentDataset) => {
-      const result = updateObjectCoordinate(currentDataset, objectId, spaceId, values);
-      status = result.status;
-      return result.status === "updated" ? result.dataset : currentDataset;
-    });
-    return status;
+    const result = updateObjectCoordinate(
+      datasetRef.current,
+      objectId,
+      spaceId,
+      values,
+    );
+    if (result.status === "updated") {
+      datasetRef.current = result.dataset;
+      setDataset(result.dataset);
+    }
+    return result.status;
   };
   const handleSelectEvent = (eventId: string) => {
     const nextState = {
