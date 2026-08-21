@@ -6,9 +6,10 @@ import { ModalDialog } from "./ModalDialog";
 type AppFrameProps = {
   children: ReactNode;
   showFooter?: boolean;
+  onHome?: () => void;
 };
 
-export function AppFrame({ children, showFooter = false }: AppFrameProps) {
+export function AppFrame({ children, showFooter = false, onHome }: AppFrameProps) {
   const { language, setLanguage } = useLanguage();
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const ja = language === "ja";
@@ -16,7 +17,11 @@ export function AppFrame({ children, showFooter = false }: AppFrameProps) {
   return (
     <div className="app-frame">
       <header className="app-header">
-        <a className="app-brand" href={import.meta.env.BASE_URL}>
+        <a
+          className="app-brand"
+          href={import.meta.env.BASE_URL}
+          onClick={onHome ? (event) => { event.preventDefault(); onHome(); } : undefined}
+        >
           NarrativeLine
         </a>
       </header>

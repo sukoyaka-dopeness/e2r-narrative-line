@@ -305,20 +305,18 @@ button:disabled {
 }
 
 .timeline-actions {
-  position: fixed;
-  left: 50%;
+  position: sticky;
   bottom: 0;
   z-index: 20;
   display: flex;
   box-sizing: border-box;
-  width: min(1126px, 100%);
+  width: 100%;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 0;
+  margin-top: auto;
   padding: 8px 32px;
   border-top: 1px solid var(--border);
   background: var(--bg);
-  transform: translateX(-50%);
 }
 
 .timeline-event-time {

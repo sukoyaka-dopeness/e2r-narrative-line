@@ -224,6 +224,10 @@ function App() {
     );
   };
 
+  const handleNavigateHome = () => {
+    setState((currentState) => navigate(currentState, "home"));
+  };
+
   const handleExportDataset = (): DatasetExportResult => {
     const result = exportDatasetJson(dataset);
     if (result.json !== undefined) {
@@ -425,7 +429,7 @@ function App() {
 
   if (state.currentScreen === "home") {
     return (
-      <AppFrame showFooter>
+      <AppFrame showFooter onHome={handleNavigateHome}>
         <HomeScreen
           onOpenTimeline={() => handleOpenDataset(sample, [], "sample")}
           onResumeDataset={handleResumeDataset}
@@ -438,7 +442,7 @@ function App() {
   }
   if (state.currentScreen === "entityDetail") {
     return (
-      <AppFrame>
+      <AppFrame onHome={handleNavigateHome}>
         <EntityDetailScreen
           dataset={dataset}
           selectedEntity={state.selectedEntity}
@@ -466,7 +470,7 @@ function App() {
   }
   if (state.currentScreen === "eventDetail") {
     return (
-      <AppFrame>
+      <AppFrame onHome={handleNavigateHome}>
         <EventDetailScreen
           dataset={dataset}
           selectedEvent={state.selectedEvent}
@@ -485,7 +489,7 @@ function App() {
   }
   if (state.currentScreen === "entityPicker" && state.selectedEvent) {
     return (
-      <AppFrame>
+      <AppFrame onHome={handleNavigateHome}>
         <EntityPickerScreen
           dataset={dataset}
           eventId={state.selectedEvent}
@@ -502,7 +506,7 @@ function App() {
   }
   if (state.currentScreen === "entityCreate" && state.selectedEvent) {
     return (
-      <AppFrame>
+      <AppFrame onHome={handleNavigateHome}>
         <EntityCreateScreen
           onCreate={handleCreateAndAssociateEntity}
           onPendingWorkChange={handleEntityCreatePendingWork}
@@ -514,7 +518,7 @@ function App() {
     );
   }
   return (
-    <AppFrame>
+    <AppFrame onHome={handleNavigateHome}>
       <TimelineScreen
         dataset={dataset}
         datasetModified={datasetModified}
