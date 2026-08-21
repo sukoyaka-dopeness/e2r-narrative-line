@@ -1,6 +1,6 @@
 import type { Dataset } from "../models/Dataset";
 
-export type DatasetCandidateSource = "new" | "local" | "sample" | "resume";
+export type DatasetCandidateSource = "new" | "local" | "sample" | "resume" | "handoff";
 
 export interface DatasetCandidate {
   dataset: Dataset;

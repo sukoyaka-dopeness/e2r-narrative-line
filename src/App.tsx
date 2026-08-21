@@ -55,9 +55,17 @@ import {
   type DatasetCandidateSource,
 } from "./services/DatasetCandidateService";
 import { useLanguage } from "./i18n/LanguageContext";
+import {
+  fetchDatasetHandoff,
+  parseDatasetHandoffFragment,
+  type DatasetHandoffFragment,
+} from "./services/DatasetHandoffService";
 
 function App() {
   const { language } = useLanguage();
+  const [startupHandoff] = useState<DatasetHandoffFragment>(() =>
+    parseDatasetHandoffFragment(window.location.hash),
+  );
   const sample = language === "ja" ? sampleDataset : sampleDatasetEn;
   const storedDataset = (() => {
     try {
@@ -87,6 +95,14 @@ function App() {
   );
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
   const [replacementError, setReplacementError] = useState<string | null>(null);
+  const [handoffLoading, setHandoffLoading] = useState(
+    startupHandoff.kind === "valid",
+  );
+  const [handoffFailure, setHandoffFailure] = useState<string | null>(() =>
+    startupHandoff.kind === "invalid"
+      ? "The Dataset handoff link is invalid."
+      : null,
+  );
   const [pendingSources, setPendingSources] = useState<Record<string, boolean>>({});
   const [eventDraft, setEventDraft] = useState<
     { eventId: string; draft: EventDetailDraft } | undefined
@@ -157,6 +173,7 @@ function App() {
   const restoringHistoryRef = useRef(false);
   const historyInitializedRef = useRef(false);
   const previousScreenRef = useRef(state.currentScreen);
+  const startupHandoffStartedRef = useRef(false);
 
   useEffect(() => {
     replaceInitialHistoryEntry(state);
@@ -214,7 +231,10 @@ function App() {
     };
   }, [state.currentScreen]);
 
-  const acceptStagedDataset = (candidateToAccept = datasetCandidate) => {
+  const acceptStagedDataset = (
+    candidateToAccept = datasetCandidate,
+    warningsToKeep: DatasetImportWarning[] = [],
+  ) => {
     if (!candidateToAccept) return;
     const acceptedDataset = acceptDatasetCandidate(candidateToAccept);
     setDataset(acceptedDataset);
@@ -225,7 +245,7 @@ function App() {
     setEntityDraft(undefined);
     setEntityCreateDraft(undefined);
     setReplacementError(null);
-    setImportWarnings([]);
+    setImportWarnings(warningsToKeep);
     setState((currentState) =>
       navigate(
         {
@@ -251,7 +271,7 @@ function App() {
     setImportWarnings(warnings);
     setReplacementError(null);
     if (!datasetModified && !pendingUserWork) {
-      acceptStagedDataset(candidate);
+      acceptStagedDataset(candidate, warnings);
     }
 
     if (datasetModified || pendingUserWork) return;
@@ -300,6 +320,52 @@ function App() {
 
     return result;
   };
+
+  useEffect(() => {
+    if (startupHandoffStartedRef.current) return;
+    startupHandoffStartedRef.current = true;
+
+    const handoff = startupHandoff;
+    if (handoff.kind !== "valid") {
+      return;
+    }
+
+    void (async () => {
+      try {
+        const fetched = await fetchDatasetHandoff(handoff.datasetUrl);
+        if (!fetched.ok) {
+          setHandoffFailure("Could not retrieve the Dataset from the handoff link.");
+          return;
+        }
+
+        const result = importDatasetJson(fetched.source);
+        if (!result.isValid || !result.dataset) {
+          const hasJsonParseError = result.issues.some(
+            (issue) => issue.code === "json_parse_error",
+          );
+          setHandoffFailure(
+            hasJsonParseError
+              ? "The Dataset from the handoff link is not valid JSON."
+              : "The Dataset from the handoff link failed E2R validation.",
+          );
+          return;
+        }
+
+        const warnings = result.issues.filter(
+          (issue): issue is DatasetImportWarning =>
+            "severity" in issue && issue.severity === "warning",
+        );
+        handleOpenDataset(result.dataset, warnings, "handoff");
+      } catch {
+        setHandoffFailure("Could not open the Dataset from the handoff link.");
+      } finally {
+        setHandoffLoading(false);
+      }
+    })();
+    // Startup handoff is intentionally inspected once. It must not refetch
+    // when ordinary application state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleResumeDataset = () => {
     setImportWarnings([]);
@@ -539,6 +605,8 @@ function App() {
           hasResumeDataset={storedDataset !== undefined}
           onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
           onImportDataset={handleImportDataset}
+          handoffLoading={handoffLoading}
+          handoffFailure={handoffFailure}
         />
         {datasetCandidate && (datasetModified || pendingUserWork) && (
           <DatasetReplacementDialog

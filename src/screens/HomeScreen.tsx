@@ -11,6 +11,8 @@ type Props = {
   onImportDataset: (source: string) => DatasetImportResult;
   onResumeDataset?: () => void;
   hasResumeDataset?: boolean;
+  handoffLoading?: boolean;
+  handoffFailure?: string | null;
 };
 
 function formatImportIssue(issue: DatasetImportIssue): string {
@@ -29,6 +31,8 @@ export function HomeScreen({
   onImportDataset,
   onResumeDataset,
   hasResumeDataset = false,
+  handoffLoading = false,
+  handoffFailure = null,
 }: Props) {
   const { language } = useLanguage();
   const ja = language === "ja";
@@ -82,6 +86,9 @@ export function HomeScreen({
       <h1>{ja ? "はじめる" : "Get Started"}</h1>
       <p className="home-description">{ja ? "できごとを並べて年表を作ります。" : "Create and edit E2R timelines centered on Events."}</p>
 
+      {handoffLoading && <p role="status">Opening the handed-off Dataset…</p>}
+      {handoffFailure && <p role="alert">{handoffFailure}</p>}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -92,14 +99,14 @@ export function HomeScreen({
 
       <div className="home-actions" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%" }}>
         {hasResumeDataset && (
-          <button type="button" onClick={onResumeDataset} style={{ width: "100%" }}>
+          <button type="button" onClick={onResumeDataset} disabled={handoffLoading} style={{ width: "100%" }}>
             {ja ? "編集を続ける" : "Continue Editing"}
           </button>
         )}
         <button
           type="button"
           onClick={onCreateDataset}
-          disabled={!onCreateDataset}
+          disabled={!onCreateDataset || handoffLoading}
           style={{ width: "100%" }}
         >
           {ja ? "新しいDataset" : "New Dataset"}
@@ -108,14 +115,14 @@ export function HomeScreen({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isImporting}
+          disabled={isImporting || handoffLoading}
           style={{ width: "100%" }}
         >
           {isImporting ? (ja ? "開いています…" : "Opening…") : (ja ? "E2R Datasetを開く" : "Open E2R Dataset")}
         </button>
 
         <div style={{ marginTop: "0.75rem" }}>
-          <button type="button" onClick={onOpenTimeline} style={{ width: "100%" }}>
+          <button type="button" onClick={onOpenTimeline} disabled={handoffLoading} style={{ width: "100%" }}>
            {ja ? "サンプルDatasetを開く" : "Open Sample Dataset"}
           </button>
         </div>
