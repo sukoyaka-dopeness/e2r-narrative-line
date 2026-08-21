@@ -16,6 +16,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 
 type TimelineScreenProps = {
   dataset: Dataset;
+  datasetModified: boolean;
   selectedEvent: string | null;
   onSelectEvent: (eventId: string) => void;
   onEditEvent: (eventId: string) => void;
@@ -82,6 +83,7 @@ function formatTimelineEventTime(
 
 export function TimelineScreen({
   dataset,
+  datasetModified,
   selectedEvent,
   onSelectEvent,
   onEditEvent,
@@ -155,7 +157,10 @@ export function TimelineScreen({
   };
 
   return (
-    <main className="timeline-screen">
+    <main
+      className="timeline-screen"
+      data-dataset-modified={datasetModified ? "true" : "false"}
+    >
       <h1>{ja ? "タイムライン" : "Timeline"}</h1>
 
       <div className="dataset-title-editor">

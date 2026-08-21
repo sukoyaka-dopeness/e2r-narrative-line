@@ -35,6 +35,10 @@ import {
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
 import type { HistoryDate } from "./services/HistoryService";
 import { updateObjectCoordinate } from "./services/CoordinateService";
+import {
+  isDatasetModified,
+  serializeDatasetBaseline,
+} from "./services/DatasetBaselineService";
 import { useLanguage } from "./i18n/LanguageContext";
 
 function App() {
@@ -59,6 +63,10 @@ function App() {
   });
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
+  const [acceptedDatasetBaseline, setAcceptedDatasetBaseline] = useState(() =>
+    serializeDatasetBaseline(storedDataset ?? sample),
+  );
+  const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
   const restoringHistoryRef = useRef(false);
   const historyInitializedRef = useRef(false);
@@ -125,6 +133,7 @@ function App() {
     warnings: DatasetImportWarning[] = [],
   ) => {
     setDataset(nextDataset);
+    setAcceptedDatasetBaseline(serializeDatasetBaseline(nextDataset));
     setImportWarnings(warnings);
     setState((currentState) =>
       navigate(
@@ -155,8 +164,13 @@ function App() {
     return result;
   };
 
-  const handleExportDataset = (): DatasetExportResult =>
-    exportDatasetJson(dataset);
+  const handleExportDataset = (): DatasetExportResult => {
+    const result = exportDatasetJson(dataset);
+    if (result.json !== undefined) {
+      setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
+    }
+    return result;
+  };
 
   const handleUpdateDatasetTitle = (title: string) => {
     setDataset((currentDataset) => updateDatasetTitle(currentDataset, title));
@@ -434,6 +448,7 @@ function App() {
     <AppFrame>
       <TimelineScreen
         dataset={dataset}
+        datasetModified={datasetModified}
         importWarnings={importWarnings}
         onUpdateDatasetTitle={handleUpdateDatasetTitle}
         selectedEvent={state.selectedEvent}
