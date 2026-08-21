@@ -63,10 +63,23 @@ export function replaceInitialHistoryEntry(state: AppState): void {
   );
 }
 
-function pushHistoryEntry(state: AppState): void {
+export function pushNavigationHistoryEntry(state: AppState): void {
   if (typeof window === "undefined") return;
 
   window.history.pushState(
+    {
+      ...(window.history.state ?? {}),
+      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryState(state),
+    },
+    "",
+    window.location.href,
+  );
+}
+
+export function replaceCurrentNavigationEntry(state: AppState): void {
+  if (typeof window === "undefined") return;
+
+  window.history.replaceState(
     {
       ...(window.history.state ?? {}),
       [NARRATIVE_LINE_HISTORY_KEY]: toHistoryState(state),
@@ -84,10 +97,6 @@ export function navigate(
     ...state,
     currentScreen: screen,
   };
-
-  if (screen !== state.currentScreen) {
-    pushHistoryEntry(nextState);
-  }
 
   return nextState;
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   isNarrativeLineHistoryState,
+  navigate,
   readNarrativeLineHistoryState,
 } from "../src/services/NavigationService.ts";
 
@@ -27,4 +28,19 @@ test("ignores foreign, unknown, and malformed history state", () => {
   assert.equal(isNarrativeLineHistoryState({ foreignApp: { screen: "home" } }), false);
   assert.equal(isNarrativeLineHistoryState({ narrativeLineView: { currentScreen: "unknown" } }), false);
   assert.equal(readNarrativeLineHistoryState({ narrativeLineView: null }), undefined);
+});
+
+test("navigation calculation is side-effect free and same-screen updates stay in one state", () => {
+  const state = {
+    currentScreen: "timeline",
+    currentDialog: null,
+    selectedEvent: "event-1",
+    selectedEntity: null,
+    returnEventId: null,
+    returnEntityId: null,
+    draftEventId: null,
+  };
+
+  assert.deepEqual(navigate(state, "timeline"), state);
+  assert.equal(navigate(state, "eventDetail").currentScreen, "eventDetail");
 });

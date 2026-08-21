@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HomeScreen } from "./screens/HomeScreen";
 import { TimelineScreen } from "./screens/TimelineScreen";
 import { EventDetailScreen } from "./screens/EventDetailScreen";
@@ -8,6 +8,8 @@ import { EntityCreateScreen } from "./screens/EntityCreateScreen";
 import { AppFrame } from "./components/AppFrame";
 import {
   navigate,
+  pushNavigationHistoryEntry,
+  replaceCurrentNavigationEntry,
   readNarrativeLineHistoryState,
   replaceInitialHistoryEntry,
 } from "./services/NavigationService";
@@ -58,6 +60,9 @@ function App() {
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
   const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
+  const restoringHistoryRef = useRef(false);
+  const historyInitializedRef = useRef(false);
+  const previousScreenRef = useRef(state.currentScreen);
 
   useEffect(() => {
     replaceInitialHistoryEntry(state);
@@ -66,6 +71,7 @@ function App() {
       const restored = readNarrativeLineHistoryState(event.state);
       if (restored === undefined) return;
 
+      restoringHistoryRef.current = true;
       setState((currentState) => ({
         ...currentState,
         ...restored,
@@ -78,6 +84,24 @@ function App() {
     // are written by NavigationService, not by every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!historyInitializedRef.current) {
+      historyInitializedRef.current = true;
+      previousScreenRef.current = state.currentScreen;
+      return;
+    }
+
+    if (state.currentScreen === previousScreenRef.current) return;
+
+    previousScreenRef.current = state.currentScreen;
+    if (restoringHistoryRef.current) {
+      restoringHistoryRef.current = false;
+      return;
+    }
+
+    pushNavigationHistoryEntry(state);
+  }, [state]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -191,10 +215,12 @@ function App() {
     return result.status;
   };
   const handleSelectEvent = (eventId: string) => {
-    setState({
+    const nextState = {
       ...state,
       selectedEvent: eventId,
-    });
+    };
+    setState(nextState);
+    replaceCurrentNavigationEntry(nextState);
   };
   const handleEditEvent = (eventId: string) => {
     setState(
