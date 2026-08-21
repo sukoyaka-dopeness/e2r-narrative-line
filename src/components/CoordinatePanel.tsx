@@ -15,6 +15,7 @@ type CoordinatePanelProps = {
     spaceId: string,
     values: Record<string, number>,
   ) => CoordinateWriteStatus;
+  onPendingWorkChange?: (pending: boolean) => void;
 };
 
 function componentLabel(component: { id: string; name?: string }): string {
@@ -27,6 +28,7 @@ export function CoordinatePanel({
   dataset,
   object,
   onSaveCoordinate,
+  onPendingWorkChange,
 }: CoordinatePanelProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
@@ -95,11 +97,24 @@ export function CoordinatePanel({
       ),
     );
     setFeedback(null);
+    onPendingWorkChange?.(false);
   };
 
   const stopEditing = () => {
     setEditingSpaceId(null);
     setDraftValues({});
+    onPendingWorkChange?.(false);
+  };
+
+  const handleDraftChange = (componentId: string, nextValue: string) => {
+    setDraftValues((current) => ({ ...current, [componentId]: nextValue }));
+    onPendingWorkChange?.(
+      editableValues.some(({ id, value }) =>
+        id === componentId
+          ? nextValue !== String(value)
+          : (draftValues[id] ?? String(value)) !== String(value),
+      ),
+    );
   };
 
   const saveCoordinate = () => {
@@ -184,10 +199,7 @@ export function CoordinatePanel({
                   aria-label={componentLabel(component)}
                   value={draftValues[component.id] ?? ""}
                   onChange={(inputEvent) =>
-                    setDraftValues((current) => ({
-                      ...current,
-                      [component.id]: inputEvent.target.value,
-                    }))
+                    handleDraftChange(component.id, inputEvent.target.value)
                   }
                 />
               ) : (

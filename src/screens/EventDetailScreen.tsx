@@ -61,6 +61,7 @@ type EventDetailScreenProps = {
       description?: string;
     },
   ) => void;
+  onPendingWorkChange: (pending: boolean) => void;
   isDraft: boolean;
   onCancel: (eventId: string, discardDraft: boolean) => void;
   onSelectEntity: (entityId: string) => void;
@@ -81,6 +82,7 @@ export function EventDetailScreen({
   selectedEvent,
   focusedRelatedEntityId,
   onUpdateEvent,
+  onPendingWorkChange,
   onDeleteEvent,
   onSelectEntity,
   onSaveAndOpenEntityPicker,
@@ -159,6 +161,37 @@ export function EventDetailScreen({
     return () => window.cancelAnimationFrame(frame);
   }, [focusedRelatedEntityId]);
 
+  useEffect(() => {
+    if (!event) {
+      onPendingWorkChange(false);
+      return () => onPendingWorkChange(false);
+    }
+
+    const pending =
+      name !== (event.name ?? "") ||
+      description !== (event.description ?? "") ||
+      year !== String(storedHistoryTime?.year ?? "") ||
+      month !== String(storedHistoryTime?.month ?? "") ||
+      day !== String(storedHistoryTime?.day ?? "") ||
+      hour !== String(storedHistoryTime?.hour ?? "") ||
+      minute !== String(storedHistoryTime?.minute ?? "") ||
+      second !== String(storedHistoryTime?.second ?? "");
+    onPendingWorkChange(pending);
+    return () => onPendingWorkChange(false);
+  }, [
+    event,
+    name,
+    description,
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    second,
+    storedHistoryTime,
+    onPendingWorkChange,
+  ]);
+
   if (!event) {
     return <p>{ja ? "Eventが見つかりません。" : "Event not found."}</p>;
   }
@@ -179,7 +212,6 @@ export function EventDetailScreen({
     ...(name === (event.name ?? "") ? {} : { name }),
     ...(description === (event.description ?? "") ? {} : { description }),
   });
-
   const handleSave = () => {
     if (historyDateValidationError) {
       return;

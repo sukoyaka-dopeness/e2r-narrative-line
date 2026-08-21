@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
@@ -12,6 +12,7 @@ type EntityDetailScreenProps = {
     entityId: string,
     updates: { name?: string; description?: string },
   ) => void;
+  onPendingWorkChange: (pending: boolean) => void;
   onUpdateCoordinate: (
     objectId: string,
     spaceId: string,
@@ -26,6 +27,7 @@ export function EntityDetailScreen({
   dataset,
   selectedEntity,
   onUpdateEntity,
+  onPendingWorkChange,
   onUpdateCoordinate,
   onDeleteEntity,
   onSelectEvent,
@@ -42,6 +44,14 @@ export function EntityDetailScreen({
   >(null);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
+  const hasPendingEdits =
+    entity !== null &&
+    (name !== (entity.name ?? "") || description !== (entity.description ?? ""));
+
+  useEffect(() => {
+    onPendingWorkChange(hasPendingEdits);
+    return () => onPendingWorkChange(false);
+  }, [hasPendingEdits, onPendingWorkChange]);
 
   if (!entity) {
     return <p>{ja ? "Entityが見つかりません。" : "Entity not found."}</p>;
@@ -108,6 +118,7 @@ export function EntityDetailScreen({
         onSaveCoordinate={(spaceId, values) =>
           onUpdateCoordinate(entity.id, spaceId, values)
         }
+        onPendingWorkChange={onPendingWorkChange}
       />
 
       <br />

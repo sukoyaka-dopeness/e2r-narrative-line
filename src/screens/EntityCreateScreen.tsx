@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 
 type EntityCreateScreenProps = {
   onCreate: (name: string, description: string) => void;
+  onPendingWorkChange: (pending: boolean) => void;
   onCancel: () => void;
 };
 
-export function EntityCreateScreen({ onCreate, onCancel }: EntityCreateScreenProps) {
+export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange }: EntityCreateScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const normalizedName = name.trim();
+
+  useEffect(() => {
+    onPendingWorkChange(normalizedName.length > 0 || description.length > 0);
+    return () => onPendingWorkChange(false);
+  }, [normalizedName, description, onPendingWorkChange]);
 
   return (
     <div className="detail-screen">

@@ -39,6 +39,7 @@ import {
   isDatasetModified,
   serializeDatasetBaseline,
 } from "./services/DatasetBaselineService";
+import { hasPendingUserWork } from "./services/PendingWorkService";
 import { useLanguage } from "./i18n/LanguageContext";
 
 function App() {
@@ -66,7 +67,19 @@ function App() {
   const [acceptedDatasetBaseline, setAcceptedDatasetBaseline] = useState(() =>
     serializeDatasetBaseline(storedDataset ?? sample),
   );
+  const [pendingSources, setPendingSources] = useState<Record<string, boolean>>({});
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
+  const pendingUserWork = hasPendingUserWork(pendingSources);
+  const setPendingSource = (source: string, pending: boolean) => {
+    setPendingSources((current) =>
+      current[source] === pending ? current : { ...current, [source]: pending },
+    );
+  };
+
+  useEffect(() => {
+    document.documentElement.dataset.pendingUserWork = pendingUserWork ? "true" : "false";
+    return () => { delete document.documentElement.dataset.pendingUserWork; };
+  }, [pendingUserWork]);
   const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
   const restoringHistoryRef = useRef(false);
   const historyInitializedRef = useRef(false);
@@ -377,6 +390,7 @@ function App() {
           dataset={dataset}
           selectedEntity={state.selectedEntity}
           onUpdateEntity={handleUpdateEntity}
+          onPendingWorkChange={(pending) => setPendingSource("entityDetail", pending)}
           onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
           onSelectEvent={handleEditEvent}
@@ -405,6 +419,7 @@ function App() {
           selectedEvent={state.selectedEvent}
           focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
+          onPendingWorkChange={(pending) => setPendingSource("eventDetail", pending)}
           onDeleteEvent={handleDeleteEvent}
           onSelectEntity={handleSelectEntity}
           onSaveAndOpenEntityPicker={handleSaveAndOpenEntityPicker}
@@ -437,6 +452,7 @@ function App() {
       <AppFrame>
         <EntityCreateScreen
           onCreate={handleCreateAndAssociateEntity}
+          onPendingWorkChange={(pending) => setPendingSource("entityCreate", pending)}
           onCancel={() =>
             setState((currentState) => navigate(currentState, "entityPicker"))
           }
