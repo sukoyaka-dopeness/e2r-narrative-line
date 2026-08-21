@@ -1,5 +1,13 @@
 # NarrativeLine Development Guidance
 
+## Reusable knowledge
+
+The central workspace knowledge base is `C:\Users\extra\E2R\ai-knowledge`.
+Before navigation, Dataset safety, History, recovery, or Coordinate work,
+search its `INDEX.md` using task terms. Read only entries whose `scope` matches
+NarrativeLine or explicitly includes the workspace. Treat hypotheses as review
+prompts, not accepted implementation rules.
+
 ## Repository Purpose
 
 NarrativeLine is a timeline editor built on the E2R specification.
