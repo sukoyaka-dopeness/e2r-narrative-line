@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { HomeScreen } from "./screens/HomeScreen";
 import { TimelineScreen } from "./screens/TimelineScreen";
 import { EventDetailScreen } from "./screens/EventDetailScreen";
@@ -70,11 +70,23 @@ function App() {
   const [pendingSources, setPendingSources] = useState<Record<string, boolean>>({});
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const pendingUserWork = hasPendingUserWork(pendingSources);
-  const setPendingSource = (source: string, pending: boolean) => {
+  const setPendingSource = useCallback((source: string, pending: boolean) => {
     setPendingSources((current) =>
       current[source] === pending ? current : { ...current, [source]: pending },
     );
-  };
+  }, []);
+  const handleEventPendingWork = useCallback(
+    (pending: boolean) => setPendingSource("eventDetail", pending),
+    [setPendingSource],
+  );
+  const handleEntityPendingWork = useCallback(
+    (pending: boolean) => setPendingSource("entityDetail", pending),
+    [setPendingSource],
+  );
+  const handleEntityCreatePendingWork = useCallback(
+    (pending: boolean) => setPendingSource("entityCreate", pending),
+    [setPendingSource],
+  );
 
   useEffect(() => {
     document.documentElement.dataset.pendingUserWork = pendingUserWork ? "true" : "false";
@@ -390,7 +402,7 @@ function App() {
           dataset={dataset}
           selectedEntity={state.selectedEntity}
           onUpdateEntity={handleUpdateEntity}
-          onPendingWorkChange={(pending) => setPendingSource("entityDetail", pending)}
+          onPendingWorkChange={handleEntityPendingWork}
           onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
           onSelectEvent={handleEditEvent}
@@ -419,7 +431,7 @@ function App() {
           selectedEvent={state.selectedEvent}
           focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
-          onPendingWorkChange={(pending) => setPendingSource("eventDetail", pending)}
+          onPendingWorkChange={handleEventPendingWork}
           onDeleteEvent={handleDeleteEvent}
           onSelectEntity={handleSelectEntity}
           onSaveAndOpenEntityPicker={handleSaveAndOpenEntityPicker}
@@ -452,7 +464,7 @@ function App() {
       <AppFrame>
         <EntityCreateScreen
           onCreate={handleCreateAndAssociateEntity}
-          onPendingWorkChange={(pending) => setPendingSource("entityCreate", pending)}
+          onPendingWorkChange={handleEntityCreatePendingWork}
           onCancel={() =>
             setState((currentState) => navigate(currentState, "entityPicker"))
           }
