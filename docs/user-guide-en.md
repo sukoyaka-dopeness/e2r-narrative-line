@@ -1,85 +1,122 @@
 # NarrativeLine User Guide
 
-NarrativeLine is an application for editing E2R Datasets as a timeline of Events.
+NarrativeLine is an application for editing E2R Datasets as timelines of Events. This guide is organized around common tasks rather than screen names.
 
 For an introduction to E2R, see the [E2R Overview](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/e2r-overview-en.md).
 
-## Terms used in this guide
+## What can you do with NarrativeLine?
 
-- Dataset: the data for one timeline, including its Events, Entities, and Relations
-- Event: an occurrence or activity at a point in time or over a period, displayed on the Timeline
-- Entity: a person, organization, place, object, or other existence involved in an Event. For example, an Event named “Moon landing” might be related to astronauts, NASA, and the Moon.
-- Association: a connection between an Event and an Entity. It records who, what organization, or what place is involved in the Event.
-- Extension: additional information, such as dates and a title, that can be added to the basic E2R data
+You can use NarrativeLine to:
 
-## Starting a Dataset
+- view a Dataset as a Timeline;
+- create and edit Events;
+- connect Events with related Entities;
+- record dates and optional times; and
+- save the result as an E2R JSON Dataset for use in another E2R application.
 
-From the Home screen you can create a Dataset, import E2R JSON, open the sample Dataset, or resume the Dataset you were editing.
+An Entity is a person, organization, place, work, object, or other thing
+involved in an Event. For example, the astronauts and NASA can be connected
+to an Event named “Apollo 11 Moon landing.”
 
-## Importing a Dataset
+## View a Timeline
 
-Choose an E2R JSON file with **Import E2R JSON**. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset. NarrativeLine's legacy Event date representation is converted to the current History representation during import. The selected source file is not changed, while dates in a newly exported file use the current History representation.
-
-## Dataset title
-
-To name the timeline you are creating, enter a title at the top of the Timeline and choose **Apply title**. The title is recorded as extension data in the Dataset and is included in exported JSON files.
-
-Technical note: the storage location is `extensions.metadata.title`.
-
-## Editing Events
-
-Select an Event on the Timeline and choose **Edit**. You can edit its name, description, and Gregorian calendar date. Open **Add time (optional)** below the date fields to enter hour, minute, and second. Time is saved only with a recorded date; clearing a time field also clears finer time precision. **Save Event** returns to the Timeline. **Save and Add Related Entity** saves valid edits and opens the Entity Picker.
-
-## Screen navigation
-
-NarrativeLine uses the Timeline as its central workspace.
+From Home, choose **Open Sample Dataset** to explore the built-in sample, or choose **Resume Editing** to return to the Dataset you were editing. The Timeline is the main workspace for selecting Events and opening their details.
 
 ```text
 Home
   ↓ Open a Dataset
 Timeline
-  ↓ Add or edit an Event
+  ↓ Select or add an Event
 Event Detail
   ├─ Save → Timeline
-  ├─ Edit a related Entity → Entity Detail
-  │                            └─ Save or Back → originating Event Detail
+  ├─ Edit a related Entity → Entity Detail → Save or Back → Event Detail
   └─ Save and Add Related Entity → Entity Picker
-                                      ├─ Associate an existing Entity → Event Detail
-                                      └─ Create New Entity
-                                           ├─ Create and Associate → Event Detail
-                                           └─ Back → Entity Picker
+                                      ├─ Add an existing Entity → Event Detail
+                                      └─ Create New Entity → Event Detail
 ```
 
-Working screens place **Back** on the left side of the bottom action bar and their save or creation actions on the right. Delete actions remain separate from this primary action group.
+## Create or edit Events
 
-## Associating Entities
+From the Timeline, select an Event and choose **Edit**, or choose the action to add an Event. Enter its name, description, and Gregorian calendar date. Open **Add time (optional)** to enter hour, minute, and second. A time is saved only when a date is recorded; if you clear part of the time, more detailed time information is cleared with it. **Save Event** returns to the Timeline.
 
-From Event Detail, choose **Save and Add Related Entity**. The Entity Picker lists existing Entities separately from new Entity creation.
+## Connect an Event to an Entity
 
-- Choose **Add Entity** to associate an existing Entity.
-- Choose **Create New Entity** to open a separate creation screen.
-- Enter a name and optional description, then choose **Create and Associate**.
-- Entities may share the same name and are not merged automatically by name.
+From Event Detail, choose **Save and Add Related Entity**.
 
-The required Relation is created automatically.
+- Choose **Add Entity** to connect an existing Entity.
+- Choose **Create New Entity** to enter a name and optional description.
+- Choose **Create and Associate** to create and connect the new Entity.
 
-## Editing Entities
+Entities may share the same name; NarrativeLine does not merge them automatically. The required Relation is created automatically. Editing or removing an association does not delete the Entity. Entity deletion is a separate action in Entity Detail.
 
-Select a related Entity in Event Detail and choose **Edit Entity**. Saving or going back returns to the originating Event Detail and restores the related Entity context.
+## Use your own Dataset
 
-Removing an association does not delete the Entity. Entity deletion is a separate destructive action in Entity Detail.
+From Home, choose **New Dataset** to start from an empty Dataset, or choose **Open E2R Dataset** to import an E2R JSON file. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset.
 
-When an imported Dataset contains the experimental `linkscape-graph`
-Coordinate in an exact supported graph format, Entity Detail offers
-**Edit Recorded Coordinate**. It changes only the existing numeric `x` and `y`
-values. Other Spaces, missing values, and Event Coordinates remain read-only.
+## Save or share a Dataset
 
-## Exporting a Dataset
+To name the timeline, enter a title at the top of the Timeline and choose **Apply title**. The title is included in the exported JSON.
 
-Choose **Export E2R JSON**. A title is used for the filename; without a title, the fallback is `e2r-dataset.e2r.json`.
+Choose **Export E2R JSON** to save the Dataset. A title is used for the filename; without a title, the fallback is `e2r-dataset.e2r.json`.
 
-When every used Extension can be declared exactly, the new file also records those specification versions. NarrativeLine does not guess the version of an unknown Extension or emit an incomplete declaration.
+Before export, NarrativeLine validates the Dataset. The exported file keeps the information needed to open and edit the Dataset in another compatible E2R application.
 
-## Validation messages
+## Share a timeline with a link
 
-Errors prevent a Dataset from opening. Import information explains legacy migration and other non-blocking conditions. A legacy Dataset whose Extension specification versions are undeclared can still be read and edited. Exact diagnostic codes and JSON Pointer locations remain available under **Diagnostic details**.
+Dataset Handoff lets you share a timeline you created as a link. You can
+publish the link on social media or a website so other people can open and
+explore the timeline without first downloading a JSON file and importing it
+manually. NarrativeLine does not host the Dataset or post to social media;
+the Dataset must already be available at a public HTTPS URL.
+
+When someone opens the link, NarrativeLine obtains the published Dataset at
+startup and opens it in the Timeline.
+
+### Requirements for creating a Handoff link
+
+The link has this form:
+
+```text
+https://example.org/narrativeline/#datasetUrl=https%3A%2F%2Fexample.org%2Fhistory.e2r.json
+```
+
+The Dataset URL must be an absolute public `https://` URL, and its host must allow browser requests from NarrativeLine (CORS). Private or authentication-required URLs are not supported by Dataset Handoff v0.
+
+Handoff runs at startup only. Changing the extra information at the end of
+the URL later does not switch the active Dataset or start another remote
+download.
+
+If acquisition, JSON parsing, or Dataset validation fails, NarrativeLine stays on Home and reports the failure. It does not silently open a sample or another Dataset. You can explicitly choose **Continue Editing**, **New Dataset**, **Open E2R Dataset**, or **Open Sample Dataset**.
+
+After a successful Handoff, the link remains in the address bar as a
+reference to where the Dataset was obtained. In the technical representation
+this is `datasetUrl`; it is not the Dataset's identity and is not stored in
+the Dataset JSON. Replacing the handed-off Dataset with a local Dataset, the
+sample, or a new Dataset removes only that link reference and preserves
+unrelated URL information.
+
+## Technical details and validation
+
+NarrativeLine uses the Timeline as its central workspace. Working screens
+place **Back** on the left side of the bottom action bar and save or creation
+actions on the right. Delete actions remain separate from this primary group.
+
+When an imported Dataset contains the experimental `linkscape-graph` Coordinate in an exact supported graph format, Entity Detail offers **Edit Recorded Coordinate**. It changes only the existing numeric `x` and `y` values. Other Spaces, missing values, and Event Coordinates remain read-only.
+
+Errors prevent a Dataset from opening. Import information explains legacy migration and other non-blocking conditions. NarrativeLine converts its legacy Event date representation to the current History representation during import. The selected source file is not changed, and dates in a newly exported file use the current History representation. A legacy Dataset whose Extension specification versions are undeclared can still be read and edited. Exact diagnostic codes and JSON Pointer locations remain available under **Diagnostic details**.
+
+## Future possibilities
+
+The following are ideas being considered for future NarrativeLine improvements. They are not promises about a current release or a fixed release schedule:
+
+- organize the before-and-after relationships of Events whose dates are unknown;
+- search the Timeline by Event name or description;
+- filter the Timeline by conditions such as whether an Event has a date, making relevant Events easier to find;
+- record more detailed times where useful;
+- make existing connections easier to review and edit; and
+- support safer experimentation with editing features such as Undo and Redo.
+
+One possible improvement is to let users organize Events whose exact dates are
+unknown. Even when the date is not known, it may be clear that one Event
+happened before another, or that B happened after A. NarrativeLine could let
+users record those relationships and reflect them in the Timeline.
