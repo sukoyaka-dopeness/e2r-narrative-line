@@ -714,8 +714,12 @@ button:disabled {
 .detail-primary-actions__primary {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
+  margin-left: 0;
+}
+
+.detail-primary-actions__exit {
   margin-left: auto;
 }
 
@@ -724,6 +728,7 @@ button:disabled {
   justify-content: flex-end;
   margin-top: 32px;
   padding-top: 24px;
+  padding-bottom: 24px;
   border-top: 1px solid var(--border);
 }
 
@@ -838,6 +843,11 @@ button:disabled {
     padding: 20px 16px 152px;
   }
 
+  /* The grouped Event footer adds one 40px button and an 8px gap. */
+  .detail-screen--event {
+    padding-bottom: calc(152px + 40px + 8px);
+  }
+
   .timeline-screen {
     padding: 20px 16px 0 !important;
   }
@@ -849,6 +859,11 @@ button:disabled {
 
   .detail-primary-actions__primary {
     flex-direction: column;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .detail-primary-actions__exit {
     width: 100%;
     margin-left: 0;
   }

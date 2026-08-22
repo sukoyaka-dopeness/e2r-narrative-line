@@ -11,6 +11,7 @@ import {
   type HistoryDateValidationError,
 } from "../services/HistoryService";
 import { getEventHistoryDependencyValues } from "../services/EventDetailDraftService";
+import { getDetailDiscardCopy, getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
 const historyDateValidationMessages: Record<
   HistoryDateValidationError,
@@ -172,6 +173,16 @@ export function EventDetailScreen({
     null,
   );
   const disposingDraftRef = useRef(false);
+  const hasPendingEdits =
+    event !== null &&
+    (name !== (event.name ?? "") ||
+      description !== (event.description ?? "") ||
+      year !== String(storedHistoryFields.year ?? "") ||
+      month !== String(storedHistoryFields.month ?? "") ||
+      day !== String(storedHistoryFields.day ?? "") ||
+      hour !== String(storedHistoryFields.hour ?? "") ||
+      minute !== String(storedHistoryFields.minute ?? "") ||
+      second !== String(storedHistoryFields.second ?? ""));
 
   useEffect(() => {
     if (!focusedRelatedEntityId) return;
@@ -189,18 +200,9 @@ export function EventDetailScreen({
       return;
     }
 
-    const pending =
-      name !== (event.name ?? "") ||
-      description !== (event.description ?? "") ||
-      year !== String(storedHistoryFields.year ?? "") ||
-      month !== String(storedHistoryFields.month ?? "") ||
-      day !== String(storedHistoryFields.day ?? "") ||
-      hour !== String(storedHistoryFields.hour ?? "") ||
-      minute !== String(storedHistoryFields.minute ?? "") ||
-      second !== String(storedHistoryFields.second ?? "");
-    onPendingWorkChange(pending);
+    onPendingWorkChange(hasPendingEdits);
     if (event) {
-      if (pending && !disposingDraftRef.current) {
+      if (hasPendingEdits && !disposingDraftRef.current) {
         onDraftChange(event.id, {
           name,
           description,
@@ -234,6 +236,7 @@ export function EventDetailScreen({
     onPendingWorkChange,
     onDraftChange,
     onClearDraft,
+    hasPendingEdits,
   ]);
 
   if (!event) {
@@ -278,7 +281,7 @@ export function EventDetailScreen({
     onSaveAndOpenEntityPicker(event.id, getChangedEventUpdates());
   };
   return (
-    <div className="detail-screen">
+    <div className="detail-screen detail-screen--event">
       <div className="detail-header">
         <h1>{ja ? "できごとの詳細" : "Event Detail"}</h1>
         <p>
@@ -513,25 +516,7 @@ export function EventDetailScreen({
       <br />
 
       <div className="detail-primary-actions">
-        <button
-          type="button"
-          onClick={() => {
-            disposingDraftRef.current = true;
-            onClearDraft(event.id);
-            onCancel(event.id, isDraft);
-          }}
-        >
-          {ja ? "戻る" : "Back"}
-        </button>
-
         <div className="detail-primary-actions__primary">
-          <button
-            type="button"
-            onClick={handleSaveAndAddEntity}
-            disabled={historyDateValidationError !== null}
-          >
-            {ja ? "保存して関連エンティティを追加" : "Save and Add Related Entity"}
-          </button>
           <button
             type="button"
             onClick={handleSave}
@@ -539,8 +524,29 @@ export function EventDetailScreen({
           >
             {ja ? "できごとを保存" : "Save Event"}
           </button>
+          <button
+            type="button"
+            onClick={handleSaveAndAddEntity}
+            disabled={historyDateValidationError !== null}
+          >
+            {ja ? "保存して関連エンティティを追加" : "Save and Add Related Entity"}
+          </button>
         </div>
-
+        <div className="detail-primary-actions__exit">
+          <button
+            type="button"
+            className={isDraft || hasPendingEdits ? "danger-action" : undefined}
+            onClick={() => {
+              disposingDraftRef.current = true;
+              onClearDraft(event.id);
+              onCancel(event.id, isDraft);
+            }}
+          >
+            {isDraft
+              ? getDetailDiscardCopy(language, "event-draft")
+              : getExistingDetailNavigationCopy(language, "event", hasPendingEdits)}
+          </button>
+        </div>
       </div>
 
       <div className="danger-zone">

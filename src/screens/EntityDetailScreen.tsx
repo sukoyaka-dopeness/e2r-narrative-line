@@ -4,6 +4,7 @@ import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
 import type { CoordinateWriteStatus } from "../services/CoordinateService";
+import { getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
 type EntityDetailScreenProps = {
   dataset: Dataset;
@@ -186,12 +187,16 @@ export function EntityDetailScreen({
       <br />
 
       <div className="detail-primary-actions">
-        <button type="button" onClick={() => { disposingDraftRef.current = true; onClearDraft(entity.id); onBack(); }}>
-          {ja ? "戻る" : "Back"}
-        </button>
-        <button type="button" onClick={handleSave}>
-          {ja ? "エンティティを保存" : "Save Entity"}
-        </button>
+        <div className="detail-primary-actions__primary">
+          <button type="button" onClick={handleSave}>
+            {ja ? "エンティティを保存" : "Save Entity"}
+          </button>
+        </div>
+        <div className="detail-primary-actions__exit">
+          <button className={hasPendingEdits ? "danger-action" : undefined} type="button" onClick={() => { disposingDraftRef.current = true; onClearDraft(entity.id); onBack(); }}>
+            {getExistingDetailNavigationCopy(language, "entity", hasPendingEdits)}
+          </button>
+        </div>
       </div>
 
       <div className="danger-zone">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getDetailDiscardCopy } from "../services/DetailDiscardCopyService";
 
 type EntityCreateScreenProps = {
   onCreate: (name: string, description: string) => void;
@@ -54,10 +55,14 @@ export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pe
       </div>
 
       <div className="detail-primary-actions">
-        <button type="button" onClick={() => { disposingDraftRef.current = true; onClearDraft(); onCancel(); }}>{ja ? "戻る" : "Back"}</button>
-        <button type="button" disabled={normalizedName.length === 0} onClick={() => { disposingDraftRef.current = true; onClearDraft(); onCreate(normalizedName, description); }}>
-          {ja ? "作成して関連付ける" : "Create and Associate"}
-        </button>
+        <div className="detail-primary-actions__primary">
+          <button type="button" disabled={normalizedName.length === 0} onClick={() => { disposingDraftRef.current = true; onClearDraft(); onCreate(normalizedName, description); }}>
+            {ja ? "作成して関連付ける" : "Create and Associate"}
+          </button>
+        </div>
+        <div className="detail-primary-actions__exit">
+          <button className="danger-action" type="button" onClick={() => { disposingDraftRef.current = true; onClearDraft(); onCancel(); }}>{getDetailDiscardCopy(language, "entity-create-draft")}</button>
+        </div>
       </div>
     </div>
   );
