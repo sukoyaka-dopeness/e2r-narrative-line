@@ -75,9 +75,11 @@ Dataset URLには、公開された絶対 `https://` URLを指定します。提
 
 Handoffは起動時だけ処理されます。起動後にURL末尾の追加情報を書き換えても、Datasetは切り替わらず、新しい取得も始まりません。
 
-取得、JSON解析、またはDataset検証に失敗した場合、NarrativeLineはHomeに留まり、失敗を表示します。別のDatasetやサンプルを暗黙に開くことはありません。「編集を続ける」「新しいDataset」「E2R Datasetを開く」「サンプルDatasetを開く」から、明示的に操作を選べます。
+Handoffリンクの形式が正しくない場合や、Datasetの取得、JSON解析、またはDataset検証に失敗した場合、NarrativeLineはHomeに留まり、失敗を表示します。別のDatasetやサンプルを暗黙に開くことはありません。「編集を続ける」「新しいDataset」「E2R Datasetを開く」「サンプルDatasetを開く」から、明示的に操作を選べます。
 
-Handoffで開いたDatasetでは、取得元へのリンクがアドレスバーに残ります。技術上はこれを`datasetUrl`と呼びますが、Datasetの同一性ではなく、Dataset JSONにも保存されません。ローカルDataset、サンプル、または新しいDatasetに置き換えると、そのリンク情報だけが削除され、その他のURL情報は保持されます。
+リンクからDatasetを開く場合も、ほかのDatasetを開く操作と同じ作業保護が適用されます。現在の作業が失われる可能性があるときは、置き換える前に確認が表示されます。
+
+Handoffで開いたDatasetでは、取得元へのリンクがアドレスバーに残ります。技術上はこれを`datasetUrl`と呼びますが、Datasetの同一性ではなく、現在の未書き出しの編集内容や画面の状態を表すものでもなく、Dataset JSONにも保存されません。ローカルDataset、サンプル、または新しいDatasetに置き換えると、そのリンク情報だけが削除され、その他のURL情報は保持されます。
 
 ## 詳細情報と検証
 

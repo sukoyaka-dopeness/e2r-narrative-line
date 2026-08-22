@@ -86,14 +86,17 @@ Handoff runs at startup only. Changing the extra information at the end of
 the URL later does not switch the active Dataset or start another remote
 download.
 
-If acquisition, JSON parsing, or Dataset validation fails, NarrativeLine stays on Home and reports the failure. It does not silently open a sample or another Dataset. You can explicitly choose **Continue Editing**, **New Dataset**, **Open E2R Dataset**, or **Open Sample Dataset**.
+If the Handoff link is invalid, or if Dataset acquisition, JSON parsing, or Dataset validation fails, NarrativeLine stays on Home and reports the failure. It does not silently open a sample or another Dataset. You can explicitly choose **Continue Editing**, **New Dataset**, **Open E2R Dataset**, or **Open Sample Dataset**.
+
+Opening a Dataset from a Handoff link uses the same replacement protection as other Dataset-opening actions. If current work could be lost, NarrativeLine asks for confirmation before replacing it.
 
 After a successful Handoff, the link remains in the address bar as a
 reference to where the Dataset was obtained. In the technical representation
-this is `datasetUrl`; it is not the Dataset's identity and is not stored in
-the Dataset JSON. Replacing the handed-off Dataset with a local Dataset, the
-sample, or a new Dataset removes only that link reference and preserves
-unrelated URL information.
+this is `datasetUrl`; it is not the Dataset's identity, does not represent
+current unexported edits or screen state, and is not stored in the Dataset
+JSON. Replacing the handed-off Dataset with a local Dataset, the sample, or a
+new Dataset removes only that link reference and preserves unrelated URL
+information.
 
 ## Technical details and validation
 
