@@ -10,6 +10,7 @@ import {
   type HistoryDate,
   type HistoryDateValidationError,
 } from "../services/HistoryService";
+import { getEventHistoryDependencyValues } from "../services/EventDetailDraftService";
 
 const historyDateValidationMessages: Record<
   HistoryDateValidationError,
@@ -128,6 +129,7 @@ export function EventDetailScreen({
     relatedEntityIds.has(entity.id),
   );
   const storedHistoryTime = event ? getEventHistoryTime(event) : undefined;
+  const storedHistoryFields = getEventHistoryDependencyValues(event);
   const [year, setYear] = useState(
     pendingDraft?.year ?? (storedHistoryTime?.year === undefined
       ? ""
@@ -190,12 +192,12 @@ export function EventDetailScreen({
     const pending =
       name !== (event.name ?? "") ||
       description !== (event.description ?? "") ||
-      year !== String(storedHistoryTime?.year ?? "") ||
-      month !== String(storedHistoryTime?.month ?? "") ||
-      day !== String(storedHistoryTime?.day ?? "") ||
-      hour !== String(storedHistoryTime?.hour ?? "") ||
-      minute !== String(storedHistoryTime?.minute ?? "") ||
-      second !== String(storedHistoryTime?.second ?? "");
+      year !== String(storedHistoryFields.year ?? "") ||
+      month !== String(storedHistoryFields.month ?? "") ||
+      day !== String(storedHistoryFields.day ?? "") ||
+      hour !== String(storedHistoryFields.hour ?? "") ||
+      minute !== String(storedHistoryFields.minute ?? "") ||
+      second !== String(storedHistoryFields.second ?? "");
     onPendingWorkChange(pending);
     if (event) {
       if (pending && !disposingDraftRef.current) {
@@ -223,7 +225,12 @@ export function EventDetailScreen({
     hour,
     minute,
     second,
-    storedHistoryTime,
+    storedHistoryFields.year,
+    storedHistoryFields.month,
+    storedHistoryFields.day,
+    storedHistoryFields.hour,
+    storedHistoryFields.minute,
+    storedHistoryFields.second,
     onPendingWorkChange,
     onDraftChange,
     onClearDraft,
