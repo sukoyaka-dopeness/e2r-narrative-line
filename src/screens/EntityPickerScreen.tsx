@@ -77,12 +77,16 @@ export function EntityPickerScreen({
       )}
 
       <div className="detail-primary-actions">
-        <button type="button" onClick={onCancel}>
-          {ja ? "戻る" : "Back"}
-        </button>
-        <button type="button" onClick={onOpenCreateEntity}>
-          {ja ? "新しいエンティティを作成" : "Create New Entity"}
-        </button>
+        <div className="detail-primary-actions__primary">
+          <button type="button" onClick={onOpenCreateEntity}>
+            {ja ? "新しいエンティティを作成" : "Create New Entity"}
+          </button>
+        </div>
+        <div className="detail-primary-actions__exit">
+          <button type="button" onClick={onCancel}>
+            {ja ? "戻る" : "Back"}
+          </button>
+        </div>
       </div>
 
     </div>
