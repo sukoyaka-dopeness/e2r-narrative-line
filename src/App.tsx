@@ -60,6 +60,10 @@ import {
   parseDatasetHandoffFragment,
   type DatasetHandoffFragment,
 } from "./services/DatasetHandoffService";
+import {
+  removeDatasetUrlFromCurrentLocation,
+  shouldRemoveDatasetUrlForAcceptedSource,
+} from "./services/DatasetHandoffFragmentService";
 
 function App() {
   const { language } = useLanguage();
@@ -246,6 +250,9 @@ function App() {
     setEntityCreateDraft(undefined);
     setReplacementError(null);
     setImportWarnings(warningsToKeep);
+    if (shouldRemoveDatasetUrlForAcceptedSource(candidateToAccept.source)) {
+      removeDatasetUrlFromCurrentLocation(window.history, window.location);
+    }
     setState((currentState) =>
       navigate(
         {
