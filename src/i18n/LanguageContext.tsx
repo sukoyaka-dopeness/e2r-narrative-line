@@ -1,25 +1,36 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { persistLocale } from "../services/LocalePreferenceService";
 
 export type Language = "en" | "ja";
 
 type LanguageContextValue = {
   language: Language;
   setLanguage: (language: Language) => void;
+  setTemporaryLanguage: (language: Language) => void;
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() =>
-    window.localStorage.getItem("narrativeline.language") === "ja" ? "ja" : "en",
+    (() => {
+      try {
+        return window.localStorage.getItem("narrativeline.language") === "ja" ? "ja" : "en";
+      } catch {
+        return "en";
+      }
+    })(),
   );
 
   const value = useMemo(
     () => ({
       language,
       setLanguage: (nextLanguage: Language) => {
-        window.localStorage.setItem("narrativeline.language", nextLanguage);
+        persistLocale(window.localStorage, nextLanguage);
+        setLanguage(nextLanguage);
+      },
+      setTemporaryLanguage: (nextLanguage: Language) => {
         setLanguage(nextLanguage);
       },
     }),

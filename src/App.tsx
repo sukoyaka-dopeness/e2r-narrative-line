@@ -7,6 +7,7 @@ import { EntityPickerScreen } from "./screens/EntityPickerScreen";
 import { EntityCreateScreen, type EntityCreateDraft } from "./screens/EntityCreateScreen";
 import { AppFrame } from "./components/AppFrame";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
+import { LocaleConflictDialog } from "./components/LocaleConflictDialog";
 import {
   navigate,
   pushNavigationHistoryEntry,
@@ -56,6 +57,17 @@ import {
 } from "./services/DatasetCandidateService";
 import { useLanguage } from "./i18n/LanguageContext";
 import {
+  parseRequestedLocale,
+  readPersistedLocale,
+  readTemporaryLocaleResolution,
+  resolveLocaleChoice,
+  resolveStartupLocale,
+  shouldStartHandoff,
+  type Locale,
+  type LocaleResolution,
+  writeTemporaryLocaleResolution,
+} from "./services/LocalePreferenceService";
+import {
   fetchDatasetHandoff,
   parseDatasetHandoffFragment,
   type DatasetHandoffFragment,
@@ -66,7 +78,29 @@ import {
 } from "./services/DatasetHandoffFragmentService";
 
 function App() {
-  const { language } = useLanguage();
+  const { language, setTemporaryLanguage } = useLanguage();
+  const [requestedLocale] = useState(() => parseRequestedLocale(window.location.hash));
+  const [persistedLocale] = useState(() => readPersistedLocale(window.localStorage));
+  const [temporaryLocaleResolution, setTemporaryLocaleResolution] = useState(() => {
+    try {
+      return readTemporaryLocaleResolution(window.sessionStorage);
+    } catch {
+      return undefined;
+    }
+  });
+  const initialLocaleDecision = resolveStartupLocale(
+    requestedLocale,
+    persistedLocale,
+    temporaryLocaleResolution,
+  );
+  const [localeResolution, setLocaleResolution] = useState<LocaleResolution>(() =>
+    initialLocaleDecision.resolution,
+  );
+  const [localeConflict, setLocaleConflict] = useState<Locale | null>(() => {
+    return initialLocaleDecision.resolution === "unresolved" && requestedLocale.kind === "valid"
+      ? requestedLocale.locale
+      : null;
+  });
   const [startupHandoff] = useState<DatasetHandoffFragment>(() =>
     parseDatasetHandoffFragment(window.location.hash),
   );
@@ -100,7 +134,7 @@ function App() {
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
   const [replacementError, setReplacementError] = useState<string | null>(null);
   const [handoffLoading, setHandoffLoading] = useState(
-    startupHandoff.kind === "valid",
+    shouldStartHandoff(startupHandoff.kind === "valid", localeResolution),
   );
   const [handoffFailure, setHandoffFailure] = useState<string | null>(() =>
     startupHandoff.kind === "invalid"
@@ -117,6 +151,17 @@ function App() {
   const [entityCreateDraft, setEntityCreateDraft] = useState<EntityCreateDraft>();
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const pendingUserWork = hasPendingUserWork(pendingSources);
+  const localizedHandoffFailure = handoffFailure && language === "ja"
+    ? handoffFailure === "The Dataset handoff link is invalid."
+      ? "Dataset引き継ぎリンクが無効です。"
+      : handoffFailure === "Could not retrieve the Dataset from the handoff link."
+        ? "引き継ぎリンクからDatasetを取得できませんでした。"
+        : handoffFailure === "The Dataset from the handoff link is not valid JSON."
+          ? "引き継ぎリンクのDatasetは有効なJSONではありません。"
+          : handoffFailure === "The Dataset from the handoff link failed E2R validation."
+            ? "引き継ぎリンクのDatasetはE2R検証に失敗しました。"
+            : "引き継ぎリンクのDatasetを開けませんでした。"
+    : handoffFailure;
   const setPendingSource = useCallback((source: string, pending: boolean) => {
     setPendingSources((current) =>
       current[source] === pending ? current : { ...current, [source]: pending },
@@ -178,6 +223,59 @@ function App() {
   const historyInitializedRef = useRef(false);
   const previousScreenRef = useRef(state.currentScreen);
   const startupHandoffStartedRef = useRef(false);
+  const effectiveLocale = localeResolution === "unresolved"
+    ? language
+    : requestedLocale.kind === "valid" && temporaryLocaleResolution?.requestedLocale === requestedLocale.locale
+      ? temporaryLocaleResolution.effectiveLocale
+      : localeResolution === "requested" && requestedLocale.kind === "valid"
+        ? requestedLocale.locale
+        : language;
+
+  const resolveSavedLocaleConflict = useCallback(() => {
+    const choice = localeConflict
+      ? resolveLocaleChoice(language, localeConflict, "saved")
+      : undefined;
+    if (choice) {
+      const temporary = {
+        requestedLocale: localeConflict!,
+        effectiveLocale: choice.effectiveLocale,
+      };
+      setTemporaryLocaleResolution(temporary);
+      try {
+        writeTemporaryLocaleResolution(window.sessionStorage, temporary);
+      } catch {
+        // Session persistence is optional; the current resolution still applies.
+      }
+    }
+    if (startupHandoff.kind === "valid") setHandoffLoading(true);
+    setLocaleResolution("saved");
+    setLocaleConflict(null);
+  }, [language, localeConflict, startupHandoff.kind]);
+
+  const resolveRequestedLocaleConflict = useCallback(() => {
+    if (localeConflict) {
+      const choice = resolveLocaleChoice(language, localeConflict, "requested");
+      const temporary = {
+        requestedLocale: localeConflict,
+        effectiveLocale: choice.effectiveLocale,
+      };
+      setTemporaryLocaleResolution(temporary);
+      setTemporaryLanguage(choice.effectiveLocale);
+      try {
+        writeTemporaryLocaleResolution(window.sessionStorage, temporary);
+      } catch {
+        // Session persistence is optional; the current resolution still applies.
+      }
+    }
+    if (startupHandoff.kind === "valid") setHandoffLoading(true);
+    setLocaleResolution("requested");
+    setLocaleConflict(null);
+  }, [language, localeConflict, setTemporaryLanguage, startupHandoff.kind]);
+
+  useEffect(() => {
+    if (localeResolution === "unresolved" || effectiveLocale === language) return;
+    setTemporaryLanguage(effectiveLocale);
+  }, [effectiveLocale, language, localeResolution, setTemporaryLanguage]);
 
   useEffect(() => {
     replaceInitialHistoryEntry(state);
@@ -329,6 +427,7 @@ function App() {
   };
 
   useEffect(() => {
+    if (localeResolution === "unresolved") return;
     if (startupHandoffStartedRef.current) return;
     startupHandoffStartedRef.current = true;
 
@@ -372,7 +471,7 @@ function App() {
     // Startup handoff is intentionally inspected once. It must not refetch
     // when ordinary application state changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [localeResolution]);
 
   const handleResumeDataset = () => {
     setImportWarnings([]);
@@ -613,8 +712,16 @@ function App() {
           onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
           onImportDataset={handleImportDataset}
           handoffLoading={handoffLoading}
-          handoffFailure={handoffFailure}
+          handoffFailure={localizedHandoffFailure}
         />
+        {localeConflict && (
+          <LocaleConflictDialog
+            savedLanguage={language}
+            requestedLanguage={localeConflict}
+            onUseSavedLanguage={resolveSavedLocaleConflict}
+            onUseRequestedLanguage={resolveRequestedLocaleConflict}
+          />
+        )}
         {datasetCandidate && (datasetModified || pendingUserWork) && (
           <DatasetReplacementDialog
             datasetModified={datasetModified}
