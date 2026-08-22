@@ -635,7 +635,7 @@ button:disabled {
 }
 
 .dataset-replacement-actions button {
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
