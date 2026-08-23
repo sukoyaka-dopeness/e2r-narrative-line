@@ -105,6 +105,7 @@ body {
 }
 
 .app-brand {
+  justify-self: start;
   color: var(--text-h);
   font-family: var(--sans);
   font-size: 20px;
