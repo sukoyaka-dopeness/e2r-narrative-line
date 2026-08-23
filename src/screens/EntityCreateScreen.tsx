@@ -9,17 +9,29 @@ type EntityCreateScreenProps = {
   onDraftChange: (draft: EntityCreateDraft) => void;
   onClearDraft: () => void;
   onCancel: () => void;
+  shouldAutofocusName: boolean;
+  onAutofocusNameConsumed: () => void;
 };
 
 export type EntityCreateDraft = { name: string; description: string };
 
-export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pendingDraft, onDraftChange, onClearDraft }: EntityCreateScreenProps) {
+export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pendingDraft, onDraftChange, onClearDraft, shouldAutofocusName, onAutofocusNameConsumed }: EntityCreateScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
   const [name, setName] = useState(pendingDraft?.name ?? "");
   const [description, setDescription] = useState(pendingDraft?.description ?? "");
   const normalizedName = name.trim();
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const hasFocusedNameRef = useRef(false);
   const disposingDraftRef = useRef(false);
+
+  useEffect(() => {
+    if (!shouldAutofocusName) return;
+    if (hasFocusedNameRef.current) return;
+    hasFocusedNameRef.current = true;
+    nameInputRef.current?.focus();
+    onAutofocusNameConsumed();
+  }, [onAutofocusNameConsumed, shouldAutofocusName]);
 
   useEffect(() => {
     const pending = normalizedName.length > 0 || description.length > 0;
@@ -39,6 +51,7 @@ export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pe
         <label>{ja ? "名前" : "Name"}</label>
         <br />
         <input
+          ref={nameInputRef}
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}

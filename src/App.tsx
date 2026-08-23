@@ -149,6 +149,7 @@ function App() {
     { entityId: string; draft: EntityDetailDraft } | undefined
   >();
   const [entityCreateDraft, setEntityCreateDraft] = useState<EntityCreateDraft>();
+  const [shouldAutofocusEntityCreateName, setShouldAutofocusEntityCreateName] = useState(false);
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const pendingUserWork = hasPendingUserWork(pendingSources);
   const localizedHandoffFailure = handoffFailure && language === "ja"
@@ -285,6 +286,7 @@ function App() {
       if (restored === undefined) return;
 
       restoringHistoryRef.current = true;
+      setShouldAutofocusEntityCreateName(false);
       setState((currentState) => ({
         ...currentState,
         ...reconcileRestoredNavigationState(restored, datasetRef.current),
@@ -806,8 +808,10 @@ function App() {
           dataset={dataset}
           eventId={state.selectedEvent}
           onSelectEntity={handleAssociateEntity}
+          hasPendingEntityCreateDraft={entityCreateDraft !== undefined}
           onOpenCreateEntity={() =>
-            setState((currentState) => navigate(currentState, "entityCreate"))
+            (setShouldAutofocusEntityCreateName(entityCreateDraft === undefined),
+            setState((currentState) => navigate(currentState, "entityCreate")))
           }
           onCancel={() =>
             setState((currentState) => navigate(currentState, "eventDetail"))
@@ -825,6 +829,8 @@ function App() {
           pendingDraft={entityCreateDraft}
           onDraftChange={handleEntityCreateDraftChange}
           onClearDraft={handleClearEntityCreateDraft}
+          shouldAutofocusName={shouldAutofocusEntityCreateName}
+          onAutofocusNameConsumed={() => setShouldAutofocusEntityCreateName(false)}
           onCancel={() =>
             (handleClearEntityCreateDraft(),
             setState((currentState) => navigate(currentState, "entityPicker"))
