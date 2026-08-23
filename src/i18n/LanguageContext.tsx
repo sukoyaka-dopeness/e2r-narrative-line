@@ -1,6 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import { persistLocale } from "../services/LocalePreferenceService";
+import {
+  persistLocale,
+  readBrowserLocale,
+  readPersistedLocale,
+} from "../services/LocalePreferenceService";
 
 export type Language = "en" | "ja";
 
@@ -16,9 +20,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() =>
     (() => {
       try {
-        return window.localStorage.getItem("narrativeline.language") === "ja" ? "ja" : "en";
+        return readPersistedLocale(window.localStorage) ?? readBrowserLocale() ?? "en";
       } catch {
-        return "en";
+        return readBrowserLocale() ?? "en";
       }
     })(),
   );

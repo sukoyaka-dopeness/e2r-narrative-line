@@ -7,6 +7,8 @@ import {
   getLocaleChoiceLabel,
   parseRequestedLocale,
   persistLocale,
+  normalizeBrowserLocale,
+  readBrowserLocale,
   readPersistedLocale,
   readTemporaryLocaleResolution,
   resolveLocaleChoice,
@@ -14,6 +16,24 @@ import {
   shouldStartHandoff,
   writeTemporaryLocaleResolution,
 } from "../src/services/LocalePreferenceService.ts";
+
+test("normalizes supported browser locale families without accepting unsupported values", () => {
+  assert.equal(normalizeBrowserLocale("ja"), "ja");
+  assert.equal(normalizeBrowserLocale("ja-JP"), "ja");
+  assert.equal(normalizeBrowserLocale("EN-us"), "en");
+  assert.equal(normalizeBrowserLocale("en"), "en");
+  assert.equal(normalizeBrowserLocale("fr-FR"), undefined);
+  assert.equal(normalizeBrowserLocale(""), undefined);
+  assert.equal(normalizeBrowserLocale(undefined), undefined);
+});
+
+test("reads the first supported browser language and falls back to navigator.language", () => {
+  assert.equal(readBrowserLocale({ languages: ["fr-FR", "ja-JP"], language: "en-US" }), "ja");
+  assert.equal(readBrowserLocale({ languages: ["fr-FR", "de-DE"], language: "en-US" }), "en");
+  assert.equal(readBrowserLocale({ languages: ["fr-FR", "de-DE"], language: "zh-CN" }), undefined);
+  assert.equal(readBrowserLocale({ languages: [], language: undefined }), undefined);
+  assert.equal(readBrowserLocale({}), undefined);
+});
 
 test("parses valid locale fragments and preserves unrelated parameters", () => {
   assert.deepEqual(parseRequestedLocale("#locale=en"), { kind: "valid", locale: "en" });
@@ -50,6 +70,21 @@ test("records whether startup resolves to saved or requested language", () => {
   assert.equal(getInitialLocaleResolution({ kind: "valid", locale: "ja" }, undefined), "requested");
   assert.equal(getInitialLocaleResolution({ kind: "valid", locale: "en" }, "en"), "saved");
   assert.equal(getInitialLocaleResolution({ kind: "none" }, "ja"), "saved");
+});
+
+test("uses browser locale only after requested and persisted preferences", () => {
+  assert.deepEqual(resolveStartupLocale({ kind: "none" }, undefined, undefined, "ja"), {
+    resolution: "saved", effectiveLocale: "ja",
+  });
+  assert.deepEqual(resolveStartupLocale({ kind: "none" }, "en", undefined, "ja"), {
+    resolution: "saved", effectiveLocale: "en",
+  });
+  assert.deepEqual(resolveStartupLocale({ kind: "valid", locale: "ja" }, undefined, undefined, "en"), {
+    resolution: "requested", effectiveLocale: "ja",
+  });
+  assert.deepEqual(resolveStartupLocale({ kind: "valid", locale: "ja" }, "en", undefined, "ja"), {
+    resolution: "unresolved", effectiveLocale: "en",
+  });
 });
 
 test("saved and requested conflict choices produce the intended effective locale", () => {

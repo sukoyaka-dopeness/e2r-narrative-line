@@ -24,6 +24,29 @@ export type LocaleChoiceLabel = {
   lang: Locale;
 };
 
+export type BrowserLocaleSource = {
+  languages?: readonly string[];
+  language?: string;
+};
+
+export function normalizeBrowserLocale(value: unknown): Locale | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!/^(?:ja|en)(?:-[a-z0-9]+)*$/.test(normalized)) return undefined;
+  return normalized.startsWith("ja") ? "ja" : "en";
+}
+
+export function readBrowserLocale(source?: BrowserLocaleSource): Locale | undefined {
+  const browser = source ?? (typeof navigator === "undefined" ? undefined : navigator);
+  if (!browser) return undefined;
+
+  for (const value of browser.languages ?? []) {
+    const locale = normalizeBrowserLocale(value);
+    if (locale) return locale;
+  }
+  return normalizeBrowserLocale(browser.language);
+}
+
 export function getLocaleChoiceLabel(
   locale: Locale,
   choice: LocaleChoice,
@@ -142,6 +165,7 @@ export function resolveStartupLocale(
   requested: RequestedLocale,
   persisted: Locale | undefined,
   temporary: TemporaryLocaleResolution | undefined,
+  browser: Locale | undefined = undefined,
 ): StartupLocaleDecision {
   if (requested.kind === "valid" && temporary?.requestedLocale === requested.locale) {
     return {
@@ -156,7 +180,7 @@ export function resolveStartupLocale(
   if (requested.kind === "valid" && persisted === undefined) {
     return { resolution: "requested", effectiveLocale: requested.locale };
   }
-  return { resolution: "saved", effectiveLocale: persisted ?? "en" };
+  return { resolution: "saved", effectiveLocale: persisted ?? browser ?? "en" };
 }
 
 export function resolveLocaleChoice(
