@@ -75,6 +75,7 @@ import {
 } from "./services/DatasetHandoffService";
 import {
   removeDatasetUrlFromCurrentLocation,
+  setLocaleInCurrentLocation,
   shouldRemoveDatasetUrlForAcceptedSource,
 } from "./services/DatasetHandoffFragmentService";
 
@@ -237,6 +238,7 @@ function App() {
     setTemporaryLocaleResolution(undefined);
     clearTemporaryLocaleResolution(window.sessionStorage);
     setLanguage(nextLanguage);
+    setLocaleInCurrentLocation(window.history, window.location, nextLanguage);
   }, [setLanguage]);
 
   const resolveSavedLocaleConflict = useCallback(() => {
