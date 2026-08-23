@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   hasLocaleConflict,
+  clearTemporaryLocaleResolution,
   getInitialLocaleResolution,
   getLocaleChoiceLabel,
   parseRequestedLocale,
@@ -126,4 +127,20 @@ test("temporary storage is validated and storage failures are non-fatal", () => 
   };
   assert.equal(readTemporaryLocaleResolution(failingStorage), undefined);
   assert.doesNotThrow(() => writeTemporaryLocaleResolution(failingStorage, { requestedLocale: "ja", effectiveLocale: "ja" }));
+});
+
+test("clears temporary locale resolution without making storage failure fatal", () => {
+  const values = new Map([["narrativeline.localeTemporaryResolution", '{"requestedLocale":"ja","effectiveLocale":"en"}']]);
+  clearTemporaryLocaleResolution({
+    removeItem(key) {
+      values.delete(key);
+    },
+  });
+  assert.equal(values.has("narrativeline.localeTemporaryResolution"), false);
+
+  assert.doesNotThrow(() => clearTemporaryLocaleResolution({
+    removeItem() {
+      throw new Error("remove failed");
+    },
+  }));
 });

@@ -84,6 +84,14 @@ export function writeTemporaryLocaleResolution(
   }
 }
 
+export function clearTemporaryLocaleResolution(storage: Storage): void {
+  try {
+    storage.removeItem("narrativeline.localeTemporaryResolution");
+  } catch {
+    // Temporary-session cleanup is best effort; the current UI choice remains usable.
+  }
+}
+
 function decode(value: string): string | undefined {
   try {
     return decodeURIComponent(value.replace(/\+/g, " "));

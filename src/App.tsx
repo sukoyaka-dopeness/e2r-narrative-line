@@ -58,6 +58,7 @@ import {
 import { useLanguage } from "./i18n/LanguageContext";
 import {
   parseRequestedLocale,
+  clearTemporaryLocaleResolution,
   readPersistedLocale,
   readTemporaryLocaleResolution,
   resolveLocaleChoice,
@@ -78,7 +79,7 @@ import {
 } from "./services/DatasetHandoffFragmentService";
 
 function App() {
-  const { language, setTemporaryLanguage } = useLanguage();
+  const { language, setLanguage, setTemporaryLanguage } = useLanguage();
   const [requestedLocale] = useState(() => parseRequestedLocale(window.location.hash));
   const [persistedLocale] = useState(() => readPersistedLocale(window.localStorage));
   const [temporaryLocaleResolution, setTemporaryLocaleResolution] = useState(() => {
@@ -231,6 +232,12 @@ function App() {
       : localeResolution === "requested" && requestedLocale.kind === "valid"
         ? requestedLocale.locale
         : language;
+
+  const handleManualLanguageChange = useCallback((nextLanguage: Locale) => {
+    setTemporaryLocaleResolution(undefined);
+    clearTemporaryLocaleResolution(window.sessionStorage);
+    setLanguage(nextLanguage);
+  }, [setLanguage]);
 
   const resolveSavedLocaleConflict = useCallback(() => {
     const choice = localeConflict
@@ -706,7 +713,7 @@ function App() {
 
   if (state.currentScreen === "home") {
     return (
-      <AppFrame showFooter onHome={handleNavigateHome}>
+      <AppFrame showFooter onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
         <HomeScreen
           onOpenTimeline={() => handleOpenDataset(sample, [], "sample")}
           onResumeDataset={handleResumeDataset}
@@ -741,7 +748,7 @@ function App() {
   }
   if (state.currentScreen === "entityDetail") {
     return (
-      <AppFrame onHome={handleNavigateHome}>
+      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
         <EntityDetailScreen
           key={state.selectedEntity}
           dataset={dataset}
@@ -776,7 +783,7 @@ function App() {
   }
   if (state.currentScreen === "eventDetail") {
     return (
-      <AppFrame onHome={handleNavigateHome}>
+      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
         <EventDetailScreen
           key={state.selectedEvent}
           dataset={dataset}
@@ -803,7 +810,7 @@ function App() {
   }
   if (state.currentScreen === "entityPicker" && state.selectedEvent) {
     return (
-      <AppFrame onHome={handleNavigateHome}>
+      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
         <EntityPickerScreen
           dataset={dataset}
           eventId={state.selectedEvent}
@@ -822,7 +829,7 @@ function App() {
   }
   if (state.currentScreen === "entityCreate" && state.selectedEvent) {
     return (
-      <AppFrame onHome={handleNavigateHome}>
+      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
         <EntityCreateScreen
           onCreate={handleCreateAndAssociateEntity}
           onPendingWorkChange={handleEntityCreatePendingWork}
@@ -841,7 +848,7 @@ function App() {
     );
   }
   return (
-    <AppFrame onHome={handleNavigateHome}>
+    <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
       <TimelineScreen
         dataset={dataset}
         datasetModified={datasetModified}

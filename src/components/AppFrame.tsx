@@ -7,9 +7,10 @@ type AppFrameProps = {
   children: ReactNode;
   showFooter?: boolean;
   onHome?: () => void;
+  onLanguageChange?: (language: "en" | "ja") => void;
 };
 
-export function AppFrame({ children, showFooter = false, onHome }: AppFrameProps) {
+export function AppFrame({ children, showFooter = false, onHome, onLanguageChange }: AppFrameProps) {
   const { language, setLanguage } = useLanguage();
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const ja = language === "ja";
@@ -24,7 +25,14 @@ export function AppFrame({ children, showFooter = false, onHome }: AppFrameProps
         >
           NarrativeLine
         </a>
-        <button type="button" onClick={() => setLanguage(ja ? "en" : "ja")}>
+        <button type="button" onClick={() => {
+          const nextLanguage = ja ? "en" : "ja";
+          if (onLanguageChange) {
+            onLanguageChange(nextLanguage);
+          } else {
+            setLanguage(nextLanguage);
+          }
+        }}>
           {ja ? "English" : "日本語"}
         </button>
       </header>
