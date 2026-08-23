@@ -24,6 +24,9 @@ export function AppFrame({ children, showFooter = false, onHome }: AppFrameProps
         >
           NarrativeLine
         </a>
+        <button type="button" onClick={() => setLanguage(ja ? "en" : "ja")}>
+          {ja ? "English" : "日本語"}
+        </button>
       </header>
 
       <div className="app-content">{children}</div>
@@ -31,9 +34,6 @@ export function AppFrame({ children, showFooter = false, onHome }: AppFrameProps
       {showFooter && (
         <footer className="app-footer">
           <small>{ja ? "E2R\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u30a8\u30c7\u30a3\u30bf\u30fc" : "E2R timeline editor"}</small>
-          <button type="button" onClick={() => setLanguage(ja ? "en" : "ja")}>
-            {ja ? "English" : "\u65e5\u672c\u8a9e"}
-          </button>
           <button
             type="button"
             className="credits-button"

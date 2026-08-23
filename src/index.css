@@ -93,7 +93,15 @@ body {
 }
 
 .app-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
   border-bottom: 1px solid var(--border);
+}
+
+.app-header > button {
+  white-space: nowrap;
 }
 
 .app-brand {
@@ -127,11 +135,11 @@ body {
 .app-footer {
   border-top: 1px solid var(--border);
   color: var(--text);
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  text-align: center;
+  gap: 8px;
+  text-align: left;
 }
 
 .credits-button {
@@ -824,13 +832,6 @@ button:disabled {
   .app-header,
   .app-footer {
     padding: 12px 16px;
-  }
-
-  .app-footer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: 8px;
-    text-align: left;
   }
 
   .app-footer small {
