@@ -27,7 +27,7 @@ export function DetailBackConfirmationDialog({
     >
       <h2 id="detail-back-confirmation-title">{copy.title}</h2>
       <p>{copy.body}</p>
-      <div className="modal-actions">
+      <div className="modal-actions detail-back-confirmation-actions">
         <button type="button" onClick={onCancel}>
           {copy.cancel}
         </button>

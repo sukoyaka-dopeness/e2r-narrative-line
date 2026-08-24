@@ -638,6 +638,20 @@ button:disabled {
   outline-offset: 3px;
 }
 
+.detail-back-confirmation-actions {
+  align-items: stretch;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.detail-back-confirmation-actions button {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
 .dataset-replacement-actions {
   justify-content: flex-end;
   flex-wrap: nowrap;

@@ -57,9 +57,13 @@ test("exercises guarded Back dialog presentation, cancellation, discard, focus, 
     act(() => rendered.opener.click());
     const dialog = rendered.dialog();
     assert.ok(dialog);
+    const actions = dialog.querySelector(".detail-back-confirmation-actions");
+    assert.ok(actions);
     assert.equal(dialog.querySelector("h2")?.textContent, "Discard unsaved Event changes?");
     assert.equal(dialog.querySelector("p")?.textContent, "Leaving this screen will discard the unsaved changes to this Event.");
     let buttons = rendered.buttons();
+    assert.equal(actions?.children[0], buttons[0]);
+    assert.equal(actions?.children[1], buttons[1]);
     assert.equal(buttons[0].textContent, "Continue Editing");
     assert.equal(buttons[1].textContent, getDetailDiscardCopy("en", "event-changes"));
     assert.equal(buttons[1].className, "button-danger");
