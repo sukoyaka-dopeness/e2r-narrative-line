@@ -836,7 +836,7 @@ button:disabled {
 @media (max-width: 600px) {
   .app-header,
   .app-footer {
-    padding: 12px 16px;
+    padding: 16px 16px;
   }
 
   .app-footer small {
