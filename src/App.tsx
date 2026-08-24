@@ -855,7 +855,14 @@ function App() {
     );
   }
   return (
-    <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
+    <AppFrame
+      onHome={handleNavigateHome}
+      onLanguageChange={handleManualLanguageChange}
+      headerNavigationAction={{
+        label: language === "ja" ? "ホーム" : "Home",
+        onClick: handleNavigateHome,
+      }}
+    >
       <TimelineScreen
         dataset={dataset}
         datasetModified={datasetModified}
@@ -866,7 +873,6 @@ function App() {
         onEditEvent={handleEditEvent}
         onAddEvent={handleAddEvent}
         onExportDataset={handleExportDataset}
-        onBackToHome={() => setState(navigate(state, "home"))}
       />
     </AppFrame>
   );

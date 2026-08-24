@@ -9,9 +9,19 @@ type AppFrameProps = {
   showFooter?: boolean;
   onHome?: () => void;
   onLanguageChange?: (language: "en" | "ja") => void;
+  headerNavigationAction?: {
+    label: string;
+    onClick: () => void;
+  };
 };
 
-export function AppFrame({ children, showFooter = false, onHome, onLanguageChange }: AppFrameProps) {
+export function AppFrame({
+  children,
+  showFooter = false,
+  onHome,
+  onLanguageChange,
+  headerNavigationAction,
+}: AppFrameProps) {
   const { language, setLanguage } = useLanguage();
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const ja = language === "ja";
@@ -27,6 +37,11 @@ export function AppFrame({ children, showFooter = false, onHome, onLanguageChang
         >
           NarrativeLine
         </a>
+        {headerNavigationAction && (
+          <button type="button" onClick={headerNavigationAction.onClick}>
+            {headerNavigationAction.label}
+          </button>
+        )}
         <button type="button" onClick={() => {
           const nextLanguage = ja ? "en" : "ja";
           if (onLanguageChange) {

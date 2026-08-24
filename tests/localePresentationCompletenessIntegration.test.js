@@ -237,7 +237,7 @@ test("localizes the production Dataset Replacement export failure", async () => 
     const timelineCard = rendered.document.querySelector(".timeline-card");
     assert.ok(timelineCard);
     await act(async () => timelineCard.dispatchEvent(new rendered.window.MouseEvent("click", { bubbles: true })));
-    const addEventButton = rendered.document.querySelector(".timeline-actions button:nth-child(2)");
+    const addEventButton = rendered.document.querySelector(".timeline-actions button");
     assert.ok(addEventButton);
     await act(async () => addEventButton.click());
     await act(async () => rendered.document.querySelector(".app-brand")?.click());

@@ -23,7 +23,6 @@ type TimelineScreenProps = {
   onEditEvent: (eventId: string) => void;
   onAddEvent: () => void;
   onExportDataset: () => DatasetExportResult;
-  onBackToHome: () => void;
   importWarnings?: DatasetImportWarning[];
   onUpdateDatasetTitle: (title: string) => void;
 };
@@ -90,7 +89,6 @@ export function TimelineScreen({
   onEditEvent,
   onAddEvent,
   onExportDataset,
-  onBackToHome,
   importWarnings = [],
   onUpdateDatasetTitle,
 }: TimelineScreenProps) {
@@ -322,8 +320,6 @@ export function TimelineScreen({
       </ul>
 
       <div className="timeline-actions">
-        <button onClick={onBackToHome}>{ja ? "ホーム" : "Home"}</button>
-
         <button onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
       </div>
     </main>

@@ -61,6 +61,12 @@ async function dispatchHistoricalEntry(rendered, hash, screen) {
   await act(async () => rendered.window.dispatchEvent(new rendered.window.PopStateEvent("popstate", { state: navigationState(screen) })));
 }
 
+function getLocaleButton(document) {
+  return Array.from(document.querySelectorAll("header button")).find((button) =>
+    button.textContent === "English" || button.textContent === "日本語",
+  );
+}
+
 test("popstate restores historical view without re-resolving a different locale", async () => {
   const rendered = await renderApp({ hash: "#locale=ja", persistedLocale: "ja" });
   try {
@@ -72,7 +78,7 @@ test("popstate restores historical view without re-resolving a different locale"
 
     await dispatchHistoricalEntry(rendered, "#locale=ja", "timeline");
     assert.equal(rendered.document.querySelector("h1")?.textContent, "タイムライン");
-    assert.equal(rendered.document.querySelector('header button')?.textContent, "English");
+    assert.equal(getLocaleButton(rendered.document)?.textContent, "English");
     assert.equal(rendered.window.localStorage.getItem("narrativeline.language"), "ja");
   } finally {
     rendered.cleanup();
