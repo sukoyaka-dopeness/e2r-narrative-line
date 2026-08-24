@@ -84,6 +84,11 @@ function containsJapanesePresentation(text) {
   return /[\u3040-\u30ff]/.test(text);
 }
 
+function findHeaderLocaleButton(document, expectedLabel) {
+  return [...document.querySelectorAll("header button")]
+    .find((button) => button.textContent?.trim() === expectedLabel);
+}
+
 async function renderApp({ hash = "", persistedLocale, storedDataset, fetcher } = {}) {
   const environment = createDomTestEnvironment(`https://narrativeline.test/${hash}`);
   environment.document.documentElement.lang = "en";
@@ -139,7 +144,7 @@ test("sets the document language to the effective Japanese startup locale", asyn
 test("updates the document language through the explicit Header locale selector", async () => {
   const rendered = await renderApp({ persistedLocale: "en" });
   try {
-    await act(async () => rendered.document.querySelector("header button")?.click());
+    await act(async () => findHeaderLocaleButton(rendered.document, "日本語")?.click());
     assert.equal(rendered.document.querySelector("h1")?.textContent, "はじめる");
     assert.equal(rendered.document.documentElement.lang, "ja");
   } finally {
@@ -342,7 +347,7 @@ test("re-presents the same production History validation error after a locale sw
     assert.ok(alert);
     assert.equal(alert.textContent, "月は1から12の範囲で入力してください。");
 
-    await act(async () => rendered.document.querySelector("header button")?.click());
+    await act(async () => findHeaderLocaleButton(rendered.document, "English")?.click());
     const switchedAlert = rendered.document.querySelector('[role="alert"]');
     assert.ok(switchedAlert);
     assert.equal(switchedAlert.textContent, "Month must be between 1 and 12.");
@@ -380,7 +385,9 @@ test("re-presents the same production Coordinate feedback after a locale switch"
     assert.ok(status);
     assert.equal(status.textContent, "座標は変更されていません。");
 
-    await act(async () => rendered.document.querySelector("header button")?.click());
+    const localeButton = findHeaderLocaleButton(rendered.document, "English");
+    assert.ok(localeButton);
+    await act(async () => localeButton.click());
     const switchedStatus = rendered.document.querySelector('.coordinate-panel__notice[role="status"]');
     assert.ok(switchedStatus);
     assert.equal(switchedStatus.textContent, "The Coordinate was unchanged.");
@@ -393,7 +400,7 @@ test("re-presents the same production Coordinate feedback after a locale switch"
 test("round-trips the production locale toggle with an unknown fragment parameter", async () => {
   const rendered = await renderApp({ hash: "#locale=en&probe=keep-me" });
   try {
-    const localeButton = rendered.document.querySelector("header button");
+    const localeButton = findHeaderLocaleButton(rendered.document, "日本語");
     assert.ok(localeButton);
     const initialHistoryLength = rendered.window.history.length;
 
@@ -407,12 +414,14 @@ test("round-trips the production locale toggle with an unknown fragment paramete
     assert.equal(rendered.window.history.length, initialHistoryLength);
     assert.equal(rendered.document.documentElement.lang, "ja");
     assert.equal(rendered.document.querySelector("h1")?.textContent, "はじめる");
-    assert.equal(rendered.document.querySelector("header button")?.textContent, "English");
+    assert.equal(findHeaderLocaleButton(rendered.document, "English")?.textContent, "English");
 
-    await act(async () => rendered.document.querySelector("header button")?.click());
+    const englishLocaleButton = findHeaderLocaleButton(rendered.document, "English");
+    assert.ok(englishLocaleButton);
+    await act(async () => englishLocaleButton.click());
     assert.equal(rendered.document.querySelector("h1")?.textContent, "Get Started");
     assert.equal(rendered.document.documentElement.lang, "en");
-    assert.equal(rendered.document.querySelector("header button")?.textContent, "日本語");
+    assert.equal(findHeaderLocaleButton(rendered.document, "日本語")?.textContent, "日本語");
     assert.equal(rendered.window.location.hash, "#locale=en&probe=keep-me");
     assert.equal(rendered.window.history.length, initialHistoryLength);
   } finally {

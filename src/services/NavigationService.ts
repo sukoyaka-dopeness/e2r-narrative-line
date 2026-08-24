@@ -13,6 +13,14 @@ type NarrativeLineHistoryState = Pick<
   | "draftEventId"
 >;
 
+type NarrativeLineHistoryPayload = NarrativeLineHistoryState & {
+  navigationIndex?: number;
+};
+
+function isValidNavigationIndex(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
 function toHistoryState(state: AppState): NarrativeLineHistoryState {
   return {
     currentScreen: state.currentScreen,
@@ -22,6 +30,13 @@ function toHistoryState(state: AppState): NarrativeLineHistoryState {
     returnEntityId: state.returnEntityId,
     draftEventId: state.draftEventId,
   };
+}
+
+function toHistoryPayload(
+  state: AppState,
+  navigationIndex: number,
+): NarrativeLineHistoryPayload {
+  return { ...toHistoryState(state), navigationIndex };
 }
 
 export function isNarrativeLineHistoryState(
@@ -46,9 +61,21 @@ export function isNarrativeLineHistoryState(
 export function readNarrativeLineHistoryState(
   value: unknown,
 ): NarrativeLineHistoryState | undefined {
-  return isNarrativeLineHistoryState(value)
-    ? value[NARRATIVE_LINE_HISTORY_KEY]
-    : undefined;
+  if (!isNarrativeLineHistoryState(value)) return undefined;
+
+  const navigationState = {
+    ...(value[NARRATIVE_LINE_HISTORY_KEY] as NarrativeLineHistoryPayload),
+  };
+  delete navigationState.navigationIndex;
+  return navigationState;
+}
+
+export function readNarrativeLineNavigationIndex(
+  value: unknown,
+): number | undefined {
+  if (!isNarrativeLineHistoryState(value)) return undefined;
+  const navigationIndex = (value[NARRATIVE_LINE_HISTORY_KEY] as NarrativeLineHistoryPayload).navigationIndex;
+  return isValidNavigationIndex(navigationIndex) ? navigationIndex : undefined;
 }
 
 export function reconcileRestoredNavigationState(
@@ -79,10 +106,12 @@ export function reconcileRestoredNavigationState(
 export function replaceInitialHistoryEntry(state: AppState): void {
   if (typeof window === "undefined") return;
 
+  const currentIndex = readNarrativeLineNavigationIndex(window.history.state) ?? 0;
+
   window.history.replaceState(
     {
       ...(window.history.state ?? {}),
-      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryState(state),
+      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryPayload(state, currentIndex),
     },
     "",
     window.location.href,
@@ -92,10 +121,27 @@ export function replaceInitialHistoryEntry(state: AppState): void {
 export function pushNavigationHistoryEntry(state: AppState): void {
   if (typeof window === "undefined") return;
 
+  const currentIndex = readNarrativeLineNavigationIndex(window.history.state);
+  const nextIndex = currentIndex === undefined ? 1 : currentIndex + 1;
+
+  if (currentIndex === undefined && isNarrativeLineHistoryState(window.history.state)) {
+    window.history.replaceState(
+      {
+        ...(window.history.state ?? {}),
+        [NARRATIVE_LINE_HISTORY_KEY]: {
+          ...window.history.state[NARRATIVE_LINE_HISTORY_KEY],
+          navigationIndex: 0,
+        },
+      },
+      "",
+      window.location.href,
+    );
+  }
+
   window.history.pushState(
     {
       ...(window.history.state ?? {}),
-      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryState(state),
+      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryPayload(state, nextIndex),
     },
     "",
     window.location.href,
@@ -105,10 +151,25 @@ export function pushNavigationHistoryEntry(state: AppState): void {
 export function replaceCurrentNavigationEntry(state: AppState): void {
   if (typeof window === "undefined") return;
 
+  const currentIndex = readNarrativeLineNavigationIndex(window.history.state) ?? 0;
+
   window.history.replaceState(
     {
       ...(window.history.state ?? {}),
-      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryState(state),
+      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryPayload(state, currentIndex),
+    },
+    "",
+    window.location.href,
+  );
+}
+
+export function rebaseCurrentNavigationEntry(state: AppState): void {
+  if (typeof window === "undefined") return;
+
+  window.history.replaceState(
+    {
+      ...(window.history.state ?? {}),
+      [NARRATIVE_LINE_HISTORY_KEY]: toHistoryPayload(state, 0),
     },
     "",
     window.location.href,

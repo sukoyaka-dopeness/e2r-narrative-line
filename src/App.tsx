@@ -8,11 +8,15 @@ import { EntityCreateScreen, type EntityCreateDraft } from "./screens/EntityCrea
 import { AppFrame } from "./components/AppFrame";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { LocaleConflictDialog } from "./components/LocaleConflictDialog";
+import { DetailBackConfirmationDialog } from "./components/DetailBackConfirmationDialog";
+import type { DetailDiscardCopyKind } from "./services/DetailDiscardCopyService";
 import {
   navigate,
   pushNavigationHistoryEntry,
   replaceCurrentNavigationEntry,
   readNarrativeLineHistoryState,
+  readNarrativeLineNavigationIndex,
+  rebaseCurrentNavigationEntry,
   reconcileRestoredNavigationState,
   replaceInitialHistoryEntry,
 } from "./services/NavigationService";
@@ -79,6 +83,26 @@ import {
   setLocaleInCurrentLocation,
   shouldRemoveDatasetUrlForAcceptedSource,
 } from "./services/DatasetHandoffFragmentService";
+
+type GuardedBackIntent =
+  | { kind: "event-changes"; eventId: string; screen: AppState["currentScreen"] }
+  | { kind: "event-draft"; eventId: string; screen: AppState["currentScreen"] }
+  | { kind: "entity-changes"; entityId: string; screen: AppState["currentScreen"] }
+  | { kind: "entity-create-draft"; screen: AppState["currentScreen"] };
+
+type BrowserTraversalConfirmation = {
+  kind: DetailDiscardCopyKind;
+  eventId?: string;
+  entityId?: string;
+  currentIndex: number;
+  targetIndex: number;
+  delta: number;
+};
+
+type BrowserTraversalPhase =
+  | { kind: "rolling-back"; intent: BrowserTraversalConfirmation }
+  | { kind: "replaying"; intent: BrowserTraversalConfirmation }
+  | { kind: "rolling-back-header"; targetIndex: number; currentIndex: number };
 
 function App() {
   const { language, setLanguage, setTemporaryLanguage } = useLanguage();
@@ -154,9 +178,26 @@ function App() {
     { entityId: string; draft: EntityDetailDraft } | undefined
   >();
   const [entityCreateDraft, setEntityCreateDraft] = useState<EntityCreateDraft>();
+  const [guardedBackIntent, setGuardedBackIntent] = useState<GuardedBackIntent | null>(null);
+  const [browserTraversalIntent, setBrowserTraversalIntent] = useState<BrowserTraversalConfirmation | null>(null);
   const [shouldAutofocusEntityCreateName, setShouldAutofocusEntityCreateName] = useState(false);
   const datasetModified = isDatasetModified(dataset, acceptedDatasetBaseline);
   const pendingUserWork = hasPendingUserWork(pendingSources);
+  const backLabel = language === "ja" ? "\u623b\u308b" : "Back";
+  const currentAppStateRef = useRef(state);
+  const pendingSourcesRef = useRef(pendingSources);
+  const currentNavigationIndexRef = useRef<number | undefined>(undefined);
+  const browserTraversalPhaseRef = useRef<BrowserTraversalPhase | null>(null);
+  const guardedBackIntentRef = useRef(guardedBackIntent);
+  const browserTraversalIntentRef = useRef(browserTraversalIntent);
+
+  useEffect(() => {
+    currentAppStateRef.current = state;
+    pendingSourcesRef.current = pendingSources;
+    guardedBackIntentRef.current = guardedBackIntent;
+    browserTraversalIntentRef.current = browserTraversalIntent;
+  }, [browserTraversalIntent, guardedBackIntent, pendingSources, state]);
+
   const localizedHandoffFailure = handoffFailure && language === "ja"
     ? handoffFailure === "The Dataset handoff link is invalid."
       ? "Dataset引き継ぎリンクが無効です。"
@@ -169,6 +210,7 @@ function App() {
             : "引き継ぎリンクのDatasetを開けませんでした。"
     : handoffFailure;
   const setPendingSource = useCallback((source: string, pending: boolean) => {
+    pendingSourcesRef.current = { ...pendingSourcesRef.current, [source]: pending };
     setPendingSources((current) =>
       current[source] === pending ? current : { ...current, [source]: pending },
     );
@@ -294,17 +336,110 @@ function App() {
 
   useEffect(() => {
     replaceInitialHistoryEntry(state);
+    currentNavigationIndexRef.current = readNarrativeLineNavigationIndex(window.history.state);
 
-    const handlePopState = (event: PopStateEvent) => {
-      const restored = readNarrativeLineHistoryState(event.state);
-      if (restored === undefined) return;
-
+    const applyRestoredNavigation = (restored: NonNullable<ReturnType<typeof readNarrativeLineHistoryState>>) => {
       restoringHistoryRef.current = true;
       setShouldAutofocusEntityCreateName(false);
       setState((currentState) => ({
         ...currentState,
         ...reconcileRestoredNavigationState(restored, datasetRef.current),
       }));
+    };
+
+    const handlePopState = (event: PopStateEvent) => {
+      const restored = readNarrativeLineHistoryState(event.state);
+      if (restored === undefined) return;
+      const targetIndex = readNarrativeLineNavigationIndex(event.state);
+      const phase = browserTraversalPhaseRef.current;
+
+      if (phase?.kind === "rolling-back") {
+        if (targetIndex !== phase.intent.currentIndex) return;
+        browserTraversalPhaseRef.current = null;
+        setBrowserTraversalIntent(phase.intent);
+        return;
+      }
+
+      if (phase?.kind === "rolling-back-header") {
+        if (targetIndex !== phase.currentIndex) return;
+        browserTraversalPhaseRef.current = null;
+        return;
+      }
+
+      if (phase?.kind === "replaying") {
+        if (targetIndex !== phase.intent.targetIndex) return;
+        browserTraversalPhaseRef.current = null;
+        currentNavigationIndexRef.current = targetIndex;
+        applyRestoredNavigation(restored);
+        return;
+      }
+
+      const currentIndex = currentNavigationIndexRef.current;
+      const currentState = currentAppStateRef.current;
+      const lossRisk = currentState.currentScreen === "eventDetail" && currentState.selectedEvent !== null
+        ? currentState.draftEventId === currentState.selectedEvent
+          ? { kind: "event-draft" as const, eventId: currentState.selectedEvent }
+          : pendingSourcesRef.current.eventDetail === true
+            ? { kind: "event-changes" as const, eventId: currentState.selectedEvent }
+            : null
+        : currentState.currentScreen === "entityDetail" && currentState.selectedEntity !== null && pendingSourcesRef.current.entityDetail === true
+          ? { kind: "entity-changes" as const, entityId: currentState.selectedEntity }
+          : currentState.currentScreen === "entityCreate" && pendingSourcesRef.current.entityCreate === true
+            ? { kind: "entity-create-draft" as const }
+            : null;
+
+      const safeRebase = () => {
+        rebaseCurrentNavigationEntry({ ...currentState, ...restored });
+        pushNavigationHistoryEntry(currentState);
+        currentNavigationIndexRef.current = readNarrativeLineNavigationIndex(window.history.state);
+      };
+
+      if (guardedBackIntentRef.current && (targetIndex === undefined || currentIndex === undefined)) {
+        safeRebase();
+        return;
+      }
+      if (guardedBackIntentRef.current && targetIndex !== currentIndex) {
+        browserTraversalPhaseRef.current = { kind: "rolling-back-header", targetIndex: targetIndex!, currentIndex: currentIndex! };
+        window.history.go(currentIndex! - targetIndex!);
+        return;
+      }
+      if (browserTraversalIntentRef.current && targetIndex !== undefined && currentIndex !== undefined && targetIndex !== currentIndex) {
+        browserTraversalPhaseRef.current = { kind: "rolling-back", intent: browserTraversalIntentRef.current };
+        window.history.go(currentIndex - targetIndex);
+        return;
+      }
+
+      if (lossRisk && (currentIndex === undefined || targetIndex === undefined)) {
+        safeRebase();
+        const intent: BrowserTraversalConfirmation = {
+          ...lossRisk,
+          eventId: currentState.selectedEvent ?? undefined,
+          currentIndex: 1,
+          targetIndex: 0,
+          delta: -1,
+        };
+        setBrowserTraversalIntent(intent);
+        return;
+      }
+
+      if (targetIndex !== undefined && currentIndex !== undefined && targetIndex !== currentIndex && lossRisk) {
+        const intent: BrowserTraversalConfirmation = {
+          ...lossRisk,
+          eventId: currentState.selectedEvent!,
+          currentIndex,
+          targetIndex,
+          delta: targetIndex - currentIndex,
+        };
+        browserTraversalPhaseRef.current = { kind: "rolling-back", intent };
+        window.history.go(-intent.delta);
+        return;
+      }
+
+      if (targetIndex !== undefined) currentNavigationIndexRef.current = targetIndex;
+      else currentNavigationIndexRef.current = undefined;
+      const reconciled = reconcileRestoredNavigationState(restored, datasetRef.current);
+      if (JSON.stringify(reconciled) !== JSON.stringify(restored)) replaceCurrentNavigationEntry({ ...currentState, ...reconciled });
+      applyRestoredNavigation(reconciled);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -321,15 +456,18 @@ function App() {
       return;
     }
 
-    if (state.currentScreen === previousScreenRef.current) return;
-
-    previousScreenRef.current = state.currentScreen;
     if (restoringHistoryRef.current) {
       restoringHistoryRef.current = false;
+      previousScreenRef.current = state.currentScreen;
       return;
     }
 
+    if (state.currentScreen === previousScreenRef.current) return;
+
+    previousScreenRef.current = state.currentScreen;
+
     pushNavigationHistoryEntry(state);
+    currentNavigationIndexRef.current = readNarrativeLineNavigationIndex(window.history.state);
   }, [state]);
 
   useEffect(() => {
@@ -592,6 +730,7 @@ function App() {
     };
     setState(nextState);
     replaceCurrentNavigationEntry(nextState);
+    currentNavigationIndexRef.current = readNarrativeLineNavigationIndex(window.history.state);
   };
   const handleEditEvent = (eventId: string) => {
     setState(
@@ -648,6 +787,118 @@ function App() {
       return addEventEntityRelation(result.dataset, eventId, result.entityId);
     });
     setState((currentState) => navigate(currentState, "eventDetail"));
+  };
+  const handleEntityDetailBack = () => {
+    if (state.selectedEntity) handleClearEntityDraft(state.selectedEntity);
+    setPendingSource("entityDetail", false);
+    if (state.returnEventId) {
+      setState(
+        navigate(
+          { ...state, selectedEvent: state.returnEventId },
+          "eventDetail",
+        ),
+      );
+      return;
+    }
+
+    setState(navigate(state, "timeline"));
+  };
+  const handleEntityPickerBack = () => {
+    setState((currentState) => navigate(currentState, "eventDetail"));
+  };
+  const handleEntityCreateBack = () => {
+    handleClearEntityCreateDraft();
+    setState((currentState) => navigate(currentState, "entityPicker"));
+  };
+  const requestEventBack = () => {
+    if (!state.selectedEvent) return;
+    if (state.draftEventId === state.selectedEvent) {
+      setGuardedBackIntent({ kind: "event-draft", eventId: state.selectedEvent, screen: state.currentScreen });
+      return;
+    }
+    if (pendingSources.eventDetail) {
+      setGuardedBackIntent({ kind: "event-changes", eventId: state.selectedEvent, screen: state.currentScreen });
+      return;
+    }
+    handleCancelEventDetail(state.selectedEvent, false);
+  };
+  const requestEntityDetailBack = () => {
+    if (!state.selectedEntity) return;
+    if (pendingSources.entityDetail) {
+      setGuardedBackIntent({ kind: "entity-changes", entityId: state.selectedEntity, screen: state.currentScreen });
+      return;
+    }
+    handleEntityDetailBack();
+  };
+  const requestEntityCreateBack = () => {
+    if (pendingSources.entityCreate || entityCreateDraft) {
+      setGuardedBackIntent({ kind: "entity-create-draft", screen: state.currentScreen });
+      return;
+    }
+    handleEntityCreateBack();
+  };
+  const handleConfirmedBackDiscard = () => {
+    const intent = guardedBackIntent?.screen === state.currentScreen ? guardedBackIntent : null;
+    setGuardedBackIntent(null);
+    if (!intent) return;
+    if (intent.kind === "event-changes") {
+      handleCancelEventDetail(intent.eventId, false);
+    } else if (intent.kind === "event-draft") {
+      handleCancelEventDetail(intent.eventId, true);
+    } else if (intent.kind === "entity-changes") {
+      handleEntityDetailBack();
+    } else {
+      handleEntityCreateBack();
+    }
+  };
+  const renderGuardedBackDialog = () => {
+    if (!guardedBackIntent || guardedBackIntent.screen !== state.currentScreen) return null;
+    const kind: DetailDiscardCopyKind = guardedBackIntent.kind;
+    return (
+      <DetailBackConfirmationDialog
+        kind={kind}
+        onCancel={() => setGuardedBackIntent(null)}
+        onDiscard={handleConfirmedBackDiscard}
+      />
+    );
+  };
+  const discardBrowserCurrentWork = (intent: BrowserTraversalConfirmation) => {
+    if (intent.kind === "event-draft" && intent.eventId) {
+      replaceCurrentNavigationEntry({ ...currentAppStateRef.current, currentScreen: "timeline", selectedEvent: null, selectedEntity: null, returnEventId: null, returnEntityId: null, draftEventId: null });
+    } else if (intent.kind === "entity-create-draft") {
+      replaceCurrentNavigationEntry({ ...currentAppStateRef.current, currentScreen: "entityPicker", selectedEntity: null });
+    }
+    if (intent.kind === "event-changes" && intent.eventId) {
+      handleClearEventDraft(intent.eventId);
+    } else if (intent.kind === "event-draft" && intent.eventId) {
+      handleClearEventDraft(intent.eventId);
+      setDataset((currentDataset) => deleteEvent(currentDataset, intent.eventId!));
+      setState((currentState) => ({
+        ...currentState,
+        draftEventId: currentState.draftEventId === intent.eventId ? null : currentState.draftEventId,
+      }));
+    } else if (intent.kind === "entity-changes") {
+      if (intent.entityId) handleClearEntityDraft(intent.entityId);
+      else setPendingSource("entityDetail", false);
+    } else {
+      handleClearEntityCreateDraft();
+    }
+  };
+  const renderBrowserTraversalDialog = () => {
+    if (!browserTraversalIntent) return null;
+    return (
+      <DetailBackConfirmationDialog
+        kind={browserTraversalIntent.kind}
+        onCancel={() => setBrowserTraversalIntent(null)}
+        onDiscard={() => {
+          const intent = browserTraversalIntent;
+          discardBrowserCurrentWork(intent);
+          setBrowserTraversalIntent(null);
+          browserTraversalPhaseRef.current = { kind: "replaying", intent };
+          window.history.go(intent.delta);
+        }}
+      />
+    );
   };
   const handleDeleteEvent = (eventId: string) => {
     handleClearEventDraft(eventId);
@@ -755,7 +1006,11 @@ function App() {
   }
   if (state.currentScreen === "entityDetail") {
     return (
-      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
+      <AppFrame
+        onHome={handleNavigateHome}
+        onLanguageChange={handleManualLanguageChange}
+        headerNavigationAction={{ label: backLabel, onClick: requestEntityDetailBack }}
+      >
         <EntityDetailScreen
           key={state.selectedEntity}
           dataset={dataset}
@@ -770,27 +1025,20 @@ function App() {
           onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
           onSelectEvent={handleEditEvent}
-          onBack={() => {
-            if (state.selectedEntity) handleClearEntityDraft(state.selectedEntity);
-            if (state.returnEventId) {
-              setState(
-                navigate(
-                  { ...state, selectedEvent: state.returnEventId },
-                  "eventDetail",
-                ),
-              );
-              return;
-            }
-
-            setState(navigate(state, "timeline"));
-          }}
+          onBack={handleEntityDetailBack}
         />
+        {renderGuardedBackDialog()}
+        {renderBrowserTraversalDialog()}
       </AppFrame>
     );
   }
   if (state.currentScreen === "eventDetail") {
     return (
-      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
+      <AppFrame
+        onHome={handleNavigateHome}
+        onLanguageChange={handleManualLanguageChange}
+        headerNavigationAction={{ label: backLabel, onClick: requestEventBack }}
+      >
         <EventDetailScreen
           key={state.selectedEvent}
           dataset={dataset}
@@ -812,12 +1060,18 @@ function App() {
           isDraft={state.draftEventId === state.selectedEvent}
           onCancel={handleCancelEventDetail}
         />
+        {renderGuardedBackDialog()}
+        {renderBrowserTraversalDialog()}
       </AppFrame>
     );
   }
   if (state.currentScreen === "entityPicker" && state.selectedEvent) {
     return (
-      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
+      <AppFrame
+        onHome={handleNavigateHome}
+        onLanguageChange={handleManualLanguageChange}
+        headerNavigationAction={{ label: backLabel, onClick: handleEntityPickerBack }}
+      >
         <EntityPickerScreen
           dataset={dataset}
           eventId={state.selectedEvent}
@@ -827,16 +1081,18 @@ function App() {
             (setShouldAutofocusEntityCreateName(entityCreateDraft === undefined),
             setState((currentState) => navigate(currentState, "entityCreate")))
           }
-          onCancel={() =>
-            setState((currentState) => navigate(currentState, "eventDetail"))
-          }
+          onCancel={handleEntityPickerBack}
         />
       </AppFrame>
     );
   }
   if (state.currentScreen === "entityCreate" && state.selectedEvent) {
     return (
-      <AppFrame onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
+      <AppFrame
+        onHome={handleNavigateHome}
+        onLanguageChange={handleManualLanguageChange}
+        headerNavigationAction={{ label: backLabel, onClick: requestEntityCreateBack }}
+      >
         <EntityCreateScreen
           onCreate={handleCreateAndAssociateEntity}
           onPendingWorkChange={handleEntityCreatePendingWork}
@@ -845,12 +1101,10 @@ function App() {
           onClearDraft={handleClearEntityCreateDraft}
           shouldAutofocusName={shouldAutofocusEntityCreateName}
           onAutofocusNameConsumed={() => setShouldAutofocusEntityCreateName(false)}
-          onCancel={() =>
-            (handleClearEntityCreateDraft(),
-            setState((currentState) => navigate(currentState, "entityPicker"))
-            )
-          }
+          onCancel={handleEntityCreateBack}
         />
+        {renderGuardedBackDialog()}
+        {renderBrowserTraversalDialog()}
       </AppFrame>
     );
   }
