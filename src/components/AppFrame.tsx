@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getPresentationMessages } from "../i18n/messages";
 import { ModalDialog } from "./ModalDialog";
 
 type AppFrameProps = {
@@ -14,6 +15,7 @@ export function AppFrame({ children, showFooter = false, onHome, onLanguageChang
   const { language, setLanguage } = useLanguage();
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
 
   return (
     <div className="app-frame">
@@ -56,22 +58,20 @@ export function AppFrame({ children, showFooter = false, onHome, onLanguageChang
         <ModalDialog
           ariaLabelledby="credits-heading"
           onDismiss={() => setIsCreditsOpen(false)}
+          onBackdropDismiss={() => setIsCreditsOpen(false)}
         >
           <h2 id="credits-heading">{ja ? "\u30af\u30ec\u30b8\u30c3\u30c8" : "Credits"}</h2>
           <p>NarrativeLine 0.1.0</p>
-          <p>Created by sukoyaka-dopeness</p>
-          <p>Released 2026-08-06</p>
-          <p>
-            With gratitude to all the AI systems that contributed to this
-            project.
-          </p>
+          <p>{copy.creditsCreatedByLabel}: sukoyaka-dopeness</p>
+          <p>{copy.creditsReleasedLabel}: 2026-08-06</p>
+          <p>{copy.creditsGratitude}</p>
           <p>
             <a href="https://github.com/sukoyaka-dopeness/e2r-narrative-line" target="_blank" rel="noreferrer">
-              NarrativeLine repository
+              {copy.creditsNarrativeLineRepository}
             </a>
             <br />
             <a href="https://github.com/sukoyaka-dopeness/e2r-spec" target="_blank" rel="noreferrer">
-              E2R specification repository
+              {copy.creditsSpecificationRepository}
             </a>
           </p>
           <div className="modal-actions">

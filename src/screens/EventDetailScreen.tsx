@@ -4,6 +4,7 @@ import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getPresentationMessages } from "../i18n/messages";
 import {
   getEventHistoryTime,
   validateHistoryDate,
@@ -13,24 +14,40 @@ import {
 import { getEventHistoryDependencyValues } from "../services/EventDetailDraftService";
 import { getDetailDiscardCopy, getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
-const historyDateValidationMessages: Record<
+type HistoryValidationMessageKey =
+  | "historyYearMustBeInteger"
+  | "historyMonthRequiresYear"
+  | "historyMonthMustBeInteger"
+  | "historyMonthOutOfRange"
+  | "historyDayRequiresMonth"
+  | "historyDayMustBeInteger"
+  | "historyDayOutOfRange"
+  | "historyHourRequiresDay"
+  | "historyHourMustBeInteger"
+  | "historyHourOutOfRange"
+  | "historyMinuteMustBeInteger"
+  | "historyMinuteOutOfRange"
+  | "historySecondMustBeInteger"
+  | "historySecondOutOfRange";
+
+const historyDateValidationMessageKeys: Record<
   HistoryDateValidationError,
-  string
+  HistoryValidationMessageKey
 > = {
-  year_must_be_integer: "Year must be an integer.",
-  month_requires_year: "Month requires a year.",
-  month_must_be_integer: "Month must be an integer.",
-  month_out_of_range: "Month must be between 1 and 12.",
-  day_requires_month: "Day requires a year and month.",
-  day_must_be_integer: "Day must be an integer.",
-  day_out_of_range: "Day is not valid for the selected year and month.",
-  hour_requires_day: "Hour requires a complete date.",
-  hour_must_be_integer: "Hour must be an integer.",
-  hour_out_of_range: "Hour must be between 0 and 23.",
-  minute_must_be_integer: "Minute must be an integer.",
-  minute_out_of_range: "Minute must be between 0 and 59.",
-  second_must_be_integer: "Second must be an integer.",
-  second_out_of_range: "Second must be between 0 and 59.",
+  year_must_be_integer: "historyYearMustBeInteger",
+  month_requires_year: "historyMonthRequiresYear",
+  month_must_be_integer: "historyMonthMustBeInteger",
+  month_out_of_range: "historyMonthOutOfRange",
+  day_requires_month: "historyDayRequiresMonth",
+  day_must_be_integer: "historyDayMustBeInteger",
+  day_out_of_range: "historyDayOutOfRange",
+  hour_requires_day: "historyHourRequiresDay",
+  hour_must_be_integer: "historyHourMustBeInteger",
+  hour_out_of_range: "historyHourOutOfRange",
+  minute_must_be_integer: "historyMinuteMustBeInteger",
+  minute_out_of_range: "historyMinuteOutOfRange",
+  second_must_be_integer: "historySecondMustBeInteger",
+  second_out_of_range: "historySecondOutOfRange",
 };
 
 function parseOptionalInteger(value: string): number | undefined {
@@ -111,6 +128,7 @@ export function EventDetailScreen({
 }: EventDetailScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const event =
     dataset.events.find((event) => event.id === selectedEvent) ?? null;
   const relatedEntityIds = new Set(
@@ -285,7 +303,7 @@ export function EventDetailScreen({
       <div className="detail-header">
         <h1>{ja ? "できごとの詳細" : "Event Detail"}</h1>
         <p>
-          {event.name || "(Unnamed Event)"}
+          {event.name || copy.unnamedEvent}
         </p>
       </div>
 
@@ -363,7 +381,7 @@ export function EventDetailScreen({
 
         {historyDateValidationError && (
           <p role="alert" style={{ color: "#b00020", marginBottom: 0 }}>
-            {historyDateValidationMessages[historyDateValidationError]}
+            {copy[historyDateValidationMessageKeys[historyDateValidationError]]}
           </p>
         )}
 
@@ -478,7 +496,7 @@ export function EventDetailScreen({
               >
                 <div className="related-card__header">
                   <span className="related-card__name">
-                    {entity.name ?? "(Unnamed Entity)"}
+                    {entity.name ?? copy.unnamedEntity}
                   </span>
 
                   {selectedRelatedEntity === entity.id && (
@@ -590,7 +608,7 @@ export function EventDetailScreen({
           onDismiss={() => setEntityPendingRemoval(null)}
         >
           <h2 id="remove-entity-heading">{ja ? "エンティティの関連付けを解除しますか？" : "Remove Entity Association?"}</h2>
-          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? "（名前なしのエンティティ）"}の直接の関係をすべて解除します。エンティティ自体はデータセットに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? "(Unnamed Entity)"}. The Entity itself will remain in the Dataset.`}</p>
+          <p>{ja ? `このできごとと${entityPendingRemoval.name ?? copy.unnamedEntity}の直接の関係をすべて解除します。エンティティ自体はデータセットに残ります。` : `This removes every direct Relation between this Event and ${entityPendingRemoval.name ?? copy.unnamedEntity}. The Entity itself will remain in the Dataset.`}</p>
           <div className="modal-actions">
             <button
               type="button"

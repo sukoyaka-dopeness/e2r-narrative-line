@@ -1,5 +1,6 @@
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getPresentationMessages } from "../i18n/messages";
 
 type EntityPickerScreenProps = {
   dataset: Dataset;
@@ -20,6 +21,7 @@ export function EntityPickerScreen({
 }: EntityPickerScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const relatedEntityIds = new Set(
     dataset.relations.flatMap((relation) => {
       if (relation.sourceId === eventId) return [relation.targetId];
@@ -44,7 +46,7 @@ export function EntityPickerScreen({
             return (
               <div key={entity.id} className="entity-picker-card">
                 <div className="entity-picker-card__name" style={{ fontWeight: 600 }}>
-                  {entity.name || "(Unnamed Entity)"}
+                  {entity.name || copy.unnamedEntity}
                 </div>
                 {entity.description && (
                   <p className="entity-picker-card__description">

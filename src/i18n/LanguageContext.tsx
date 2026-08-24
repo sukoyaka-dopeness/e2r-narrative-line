@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   persistLocale,
   readBrowserLocale,
@@ -26,6 +26,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       }
     })(),
   );
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = language;
+    }
+  }, [language]);
 
   const value = useMemo(
     () => ({

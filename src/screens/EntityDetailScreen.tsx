@@ -3,6 +3,7 @@ import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getPresentationMessages } from "../i18n/messages";
 import type { CoordinateWriteStatus } from "../services/CoordinateService";
 import { getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
@@ -44,6 +45,7 @@ export function EntityDetailScreen({
 }: EntityDetailScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const entity =
     dataset.entities.find((entity) => entity.id === selectedEntity) ?? null;
   const [name, setName] = useState(pendingDraft?.name ?? entity?.name ?? "");
@@ -100,7 +102,7 @@ export function EntityDetailScreen({
       <div className="detail-header">
         <h1>{ja ? "エンティティの詳細" : "Entity Detail"}</h1>
         <p>
-          {entity.name || "(Unnamed Entity)"}
+          {entity.name || copy.unnamedEntity}
         </p>
       </div>
 
@@ -158,7 +160,7 @@ export function EntityDetailScreen({
               >
                 <div className="related-card__header">
                   <span className="related-card__name">
-                    {event.name ?? "(Unnamed Event)"}
+                    {event.name ?? copy.unnamedEvent}
                   </span>
 
                   {selectedRelatedEvent === event.id && (

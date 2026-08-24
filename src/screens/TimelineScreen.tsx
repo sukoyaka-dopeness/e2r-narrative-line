@@ -13,6 +13,7 @@ import {
   validateHistoryDate,
 } from "../services/HistoryService";
 import { useLanguage } from "../i18n/LanguageContext";
+import { formatEventCount, getPresentationMessages } from "../i18n/messages";
 
 type TimelineScreenProps = {
   dataset: Dataset;
@@ -95,9 +96,10 @@ export function TimelineScreen({
 }: TimelineScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const selectedEventRef = useRef<HTMLLIElement>(null);
   const [exportIssues, setExportIssues] = useState<DatasetExportIssue[]>([]);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState(false);
   const [titleDraft, setTitleDraft] = useState(
     dataset.extensions?.metadata?.title ?? "",
   );
@@ -136,14 +138,12 @@ export function TimelineScreen({
 
     if (result.json === undefined) {
       setExportIssues(result.issues);
-      setDownloadError(
-        result.issues.length === 0 ? "The Dataset could not be exported." : null,
-      );
+      setDownloadError(result.issues.length === 0);
       return;
     }
 
     setExportIssues([]);
-    setDownloadError(null);
+    setDownloadError(false);
 
     downloadDatasetExport(dataset, result);
   };
@@ -161,7 +161,7 @@ export function TimelineScreen({
           value={titleDraft}
           onChange={(event) => setTitleDraft(event.target.value)}
           placeholder={ja ? "タイトルを入力してください" : "Enter dataset title"}
-          aria-label="Dataset title"
+          aria-label={copy.datasetTitleLabel}
         />
         <button
           type="button"
@@ -180,14 +180,14 @@ export function TimelineScreen({
           marginBottom: "1rem",
         }}
       >
-        <p>{dataset.events.length} events</p>
+        <p>{formatEventCount(language, dataset.events.length)}</p>
 
         <button type="button" onClick={handleExport}>
           {ja ? "E2R JSONを書き出す" : "Export E2R JSON"}
         </button>
       </div>
 
-      {downloadError && <p role="alert">{downloadError}</p>}
+      {downloadError && <p role="alert">{copy.exportFailure}</p>}
 
       {importWarnings.length > 0 && (
         <section
@@ -294,7 +294,7 @@ export function TimelineScreen({
                     }}
                   >
                     <strong className="timeline-event-name">
-                      {event.name ?? "(Unnamed Event)"}
+                      {event.name ?? copy.unnamedEvent}
                     </strong>
 
                     {isSelected && (

@@ -56,6 +56,7 @@ import {
   type DatasetCandidateSource,
 } from "./services/DatasetCandidateService";
 import { useLanguage } from "./i18n/LanguageContext";
+import { getPresentationMessages } from "./i18n/messages";
 import {
   parseRequestedLocale,
   clearTemporaryLocaleResolution,
@@ -81,6 +82,7 @@ import {
 
 function App() {
   const { language, setLanguage, setTemporaryLanguage } = useLanguage();
+  const copy = getPresentationMessages(language);
   const [requestedLocale] = useState(() => parseRequestedLocale(window.location.hash));
   const [persistedLocale] = useState(() => readPersistedLocale(window.localStorage));
   const [temporaryLocaleResolution, setTemporaryLocaleResolution] = useState(() => {
@@ -124,6 +126,7 @@ function App() {
     returnEntityId: null,
     draftEventId: null,
   });
+  const startupLocaleAppliedRef = useRef(false);
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
   const datasetRef = useRef(dataset);
@@ -134,7 +137,7 @@ function App() {
     serializeDatasetBaseline(storedDataset ?? sample),
   );
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
-  const [replacementError, setReplacementError] = useState<string | null>(null);
+  const [replacementError, setReplacementError] = useState(false);
   const [handoffLoading, setHandoffLoading] = useState(
     shouldStartHandoff(startupHandoff.kind === "valid", localeResolution),
   );
@@ -283,7 +286,9 @@ function App() {
   }, [language, localeConflict, setTemporaryLanguage, startupHandoff.kind]);
 
   useEffect(() => {
-    if (localeResolution === "unresolved" || effectiveLocale === language) return;
+    if (startupLocaleAppliedRef.current || localeResolution === "unresolved") return;
+    startupLocaleAppliedRef.current = true;
+    if (effectiveLocale === language) return;
     setTemporaryLanguage(effectiveLocale);
   }, [effectiveLocale, language, localeResolution, setTemporaryLanguage]);
 
@@ -357,7 +362,7 @@ function App() {
     setEventDraft(undefined);
     setEntityDraft(undefined);
     setEntityCreateDraft(undefined);
-    setReplacementError(null);
+    setReplacementError(false);
     setImportWarnings(warningsToKeep);
     if (shouldRemoveDatasetUrlForAcceptedSource(candidateToAccept.source)) {
       removeDatasetUrlFromCurrentLocation(window.history, window.location);
@@ -385,7 +390,7 @@ function App() {
     const candidate = stageDatasetCandidate(nextDataset, source);
     setDatasetCandidate(candidate);
     setImportWarnings(warnings);
-    setReplacementError(null);
+    setReplacementError(false);
     if (!datasetModified && !pendingUserWork) {
       acceptStagedDataset(candidate, warnings);
     }
@@ -400,13 +405,13 @@ function App() {
 
   const handleCancelReplacement = () => {
     setDatasetCandidate(clearDatasetCandidate());
-    setReplacementError(null);
+    setReplacementError(false);
   };
 
   const handleExportAndContinue = () => {
     const result = exportDatasetJson(dataset);
     if (!downloadDatasetExport(dataset, result)) {
-      setReplacementError("The current Dataset could not be exported. The replacement was not performed.");
+      setReplacementError(true);
       return;
     }
     setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
@@ -416,11 +421,11 @@ function App() {
   const handleExportPendingReplacement = () => {
     const result = exportDatasetJson(dataset);
     if (!downloadDatasetExport(dataset, result)) {
-      setReplacementError("The current Dataset could not be exported. The replacement was not performed.");
+      setReplacementError(true);
       return;
     }
     setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
-    setReplacementError(null);
+    setReplacementError(false);
   };
 
   const handleImportDataset = (source: string): DatasetImportResult => {
@@ -744,7 +749,7 @@ function App() {
             onExportDataset={handleExportPendingReplacement}
           />
         )}
-        {replacementError && <p role="alert">{replacementError}</p>}
+        {replacementError && <p role="alert">{copy.replacementExportFailure}</p>}
       </AppFrame>
     );
   }

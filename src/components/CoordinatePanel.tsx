@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getPresentationMessages } from "../i18n/messages";
 import type { CoreObject } from "../models/CoreObject";
 import type { Dataset } from "../models/Dataset";
 import {
@@ -32,11 +33,12 @@ export function CoordinatePanel({
 }: CoordinatePanelProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const result = readObjectCoordinates(dataset, object);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<"updated" | "unchanged" | "failed" | null>(null);
 
   if (result.status === "absent") return null;
 
@@ -125,6 +127,13 @@ export function CoordinatePanel({
     }
     setFeedback(
       status === "updated"
+        ? "updated"
+        : status === "unchanged"
+          ? "unchanged"
+          : "failed",
+    );
+    /*
+      status === "updated"
         ? ja
           ? "座標を保存しました。"
           : "Coordinate saved."
@@ -136,7 +145,22 @@ export function CoordinatePanel({
             ? "この座標は安全に更新できないため、変更しませんでした。"
             : "This Coordinate could not be updated safely and was left unchanged.",
     );
+    */
   };
+
+  const feedbackText = feedback === "updated"
+    ? ja
+      ? "座標を保存しました。"
+      : "Coordinate saved."
+    : feedback === "unchanged"
+      ? ja
+        ? "座標は変更されていません。"
+        : "The Coordinate was unchanged."
+      : feedback === "failed"
+        ? ja
+          ? "この座標は安全に更新できないため、変更しませんでした。"
+          : "This Coordinate could not be updated safely and was left unchanged."
+        : null;
 
   return (
     <section
@@ -161,7 +185,7 @@ export function CoordinatePanel({
 
         {result.coordinates.length > 1 ? (
           <label className="coordinate-panel__space-picker">
-            Space
+            {copy.spaceLabel}
             <select
               value={selected.spaceId}
               disabled={editing}
@@ -179,7 +203,7 @@ export function CoordinatePanel({
           </label>
         ) : (
           <div className="coordinate-panel__space-name">
-            <span>Space</span>
+            <span>{copy.spaceLabel}</span>
             <strong>{selected.spaceName ?? selected.spaceId}</strong>
           </div>
         )}
@@ -259,9 +283,9 @@ export function CoordinatePanel({
             : "Enter a finite number within the allowed range for every value."}
         </p>
       ) : null}
-      {feedback ? (
+      {feedbackText ? (
         <p className="coordinate-panel__notice" role="status">
-          {feedback}
+          {feedbackText}
         </p>
       ) : null}
     </section>

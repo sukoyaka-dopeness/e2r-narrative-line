@@ -4,6 +4,7 @@ import type {
   DatasetImportResult,
 } from "../services/DatasetService";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getPresentationMessages } from "../i18n/messages";
 
 type Props = {
   onOpenTimeline: () => void;
@@ -36,10 +37,11 @@ export function HomeScreen({
 }: Props) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importIssues, setImportIssues] = useState<DatasetImportIssue[]>([]);
-  const [fileReadError, setFileReadError] = useState<string | null>(null);
+  const [fileReadError, setFileReadError] = useState(false);
 
   const handleImportFile = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -53,7 +55,7 @@ export function HomeScreen({
 
     setIsImporting(true);
     setImportIssues([]);
-    setFileReadError(null);
+    setFileReadError(false);
 
     try {
       const result = onImportDataset(await file.text());
@@ -62,7 +64,7 @@ export function HomeScreen({
         setImportIssues(result.issues);
       }
     } catch {
-      setFileReadError("The selected file could not be read.");
+      setFileReadError(true);
     } finally {
       setIsImporting(false);
     }
@@ -86,7 +88,7 @@ export function HomeScreen({
       <h1>{ja ? "はじめる" : "Get Started"}</h1>
       <p className="home-description">{ja ? "できごとを並べて年表を作ります。" : "Create and edit E2R timelines centered on Events."}</p>
 
-      {handoffLoading && <p role="status">Opening the handed-off Dataset…</p>}
+      {handoffLoading && <p role="status">{copy.handoffLoading}</p>}
       {handoffFailure && <p role="alert">{handoffFailure}</p>}
 
       <input
@@ -138,7 +140,7 @@ export function HomeScreen({
         {ja ? "日本語ユーザーガイド" : "English user guide"}
       </a>
 
-      {fileReadError && <p role="alert">{fileReadError}</p>}
+      {fileReadError && <p role="alert">{copy.localFileReadFailure}</p>}
 
       {importIssues.length > 0 && (
         <section aria-labelledby="import-errors-heading">
