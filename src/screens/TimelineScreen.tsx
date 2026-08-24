@@ -170,19 +170,14 @@ export function TimelineScreen({
         </button>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
+      <div className="timeline-toolbar">
         <p>{formatEventCount(language, dataset.events.length)}</p>
-
-        <button type="button" onClick={handleExport}>
-          {ja ? "E2R JSONを書き出す" : "Export E2R JSON"}
-        </button>
+        <div className="timeline-toolbar__actions">
+          <button type="button" onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
+          <button type="button" onClick={handleExport}>
+            {ja ? "E2R JSONを書き出す" : "Export E2R JSON"}
+          </button>
+        </div>
       </div>
 
       {downloadError && <p role="alert">{copy.exportFailure}</p>}
@@ -319,9 +314,6 @@ export function TimelineScreen({
         })}
       </ul>
 
-      <div className="timeline-actions">
-        <button onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
-      </div>
     </main>
   );
 }

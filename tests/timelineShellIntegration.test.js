@@ -20,11 +20,13 @@ function findHeaderButton(document, label) {
   );
 }
 
-function findLowerAction(document, label) {
-  return Array.from(document.querySelectorAll(".timeline-actions button")).find(
+function findToolbarAction(document, label) {
+  return Array.from(document.querySelectorAll(".timeline-toolbar button")).find(
     (button) => button.textContent === label,
   );
 }
+
+const findLowerAction = findToolbarAction;
 
 async function renderApp() {
   const environment = createDomTestEnvironment("https://narrativeline.test/");
@@ -80,8 +82,13 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     const localeButton = findHeaderButton(rendered.document, "日本語");
     assert.ok(headerHome);
     assert.ok(localeButton);
-    assert.equal(findLowerAction(rendered.document, "Add Event") !== undefined, true);
-    assert.equal(findLowerAction(rendered.document, "Home"), undefined);
+    const toolbar = rendered.document.querySelector(".timeline-toolbar");
+    assert.ok(toolbar);
+    const toolbarButtons = [...toolbar.querySelectorAll("button")];
+    assert.equal(toolbarButtons.length, 2);
+    assert.equal(toolbarButtons[0].textContent, "Add Event");
+    assert.equal(toolbarButtons[1].textContent, "Export E2R JSON");
+    assert.equal(findToolbarAction(rendered.document, "Home"), undefined);
     assert.equal(rendered.document.body.textContent.includes("Shell evidence event"), true);
 
     await act(async () => headerHome.click());

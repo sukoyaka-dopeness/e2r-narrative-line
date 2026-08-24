@@ -1,5 +1,5 @@
 :root {
-  overflow-x: hidden;
+  overflow-x: clip;
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -36,7 +36,7 @@ html,
 body,
 #root {
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -317,19 +317,33 @@ button:disabled {
   }
 }
 
-.timeline-actions {
+.timeline-toolbar {
   position: sticky;
-  bottom: 0;
+  top: 0;
   z-index: 20;
   display: flex;
+  align-items: center;
   box-sizing: border-box;
   width: 100%;
   justify-content: space-between;
   gap: 12px;
-  margin-top: auto;
-  padding: 8px 32px;
+  margin: 0 0 1rem;
+  padding: 8px 0;
   border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: var(--bg);
+}
+
+.timeline-toolbar > p {
+  margin: 0;
+}
+
+.timeline-toolbar__actions {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: auto;
 }
 
 .timeline-event-time {
@@ -888,9 +902,13 @@ button:disabled {
     margin-left: 0;
   }
 
-  .timeline-actions {
-    padding-right: 16px;
-    padding-left: 16px;
+  .timeline-toolbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .timeline-toolbar__actions {
+    flex-wrap: wrap;
   }
 
   .detail-header h1 {
