@@ -410,8 +410,8 @@ button:disabled {
 
 .coordinate-panel__header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: stretch;
+  flex-direction: column;
   gap: 20px;
 }
 
@@ -430,7 +430,7 @@ button:disabled {
 .coordinate-panel__space-picker,
 .coordinate-panel__space-name {
   display: grid;
-  flex: 0 1 20rem;
+  width: 100%;
   gap: 3px;
   min-width: 0;
   font-size: 14px;
@@ -884,7 +884,6 @@ button:disabled {
   }
 
   .date-fields,
-  .coordinate-panel__header,
   .detail-primary-actions,
   .modal-actions,
   .entity-picker-create {
@@ -901,11 +900,6 @@ button:disabled {
 
   .date-fields label {
     flex-basis: auto;
-  }
-
-  .coordinate-panel__space-picker,
-  .coordinate-panel__space-name {
-    width: 100%;
   }
 
   .entity-picker-create input {
