@@ -29,7 +29,7 @@ function findToolbarAction(document, label) {
 const findLowerAction = findToolbarAction;
 
 async function renderApp() {
-  const environment = createDomTestEnvironment("https://narrativeline.test/");
+  const environment = createDomTestEnvironment({ url: "https://narrativeline.test/" });
   environment.document.documentElement.lang = "en";
   environment.window.scrollTo = () => {};
   let intersectionCallback;
@@ -51,32 +51,30 @@ async function renderApp() {
 
   const container = environment.document.createElement("div");
   environment.document.body.append(container);
-  const root = createRoot(container);
   const server = await createServer({
     root: process.cwd(),
     server: { middlewareMode: true, hmr: false },
     appType: "custom",
   });
-  try {
-    const [{ default: App }, { LanguageProvider }] = await Promise.all([
-      server.ssrLoadModule("/src/App.tsx"),
-      server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
-    ]);
-    await act(async () => {
-      root.render(React.createElement(LanguageProvider, null, React.createElement(App)));
-    });
-  } finally {
-    await server.close();
-  }
+  environment.addCleanup(() => server.close());
+  const root = createRoot(container);
+  environment.addCleanup(() => act(async () => root.unmount()));
+
+  const [{ default: App }, { LanguageProvider }] = await Promise.all([
+    server.ssrLoadModule("/src/App.tsx"),
+    server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+  ]);
+  await act(async () => {
+    root.render(React.createElement(LanguageProvider, null, React.createElement(App)));
+  });
 
   return {
     ...environment,
     root,
     setTopIntersection: (isIntersecting) =>
       intersectionCallback([{ isIntersecting }]),
-    cleanup() {
-      act(() => root.unmount());
-      environment.cleanup();
+    async cleanup() {
+      await environment.cleanup();
     },
   };
 }
@@ -146,6 +144,6 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
       ["できごとを追加", "↑ 上へ", "その他"],
     );
   } finally {
-    rendered.cleanup();
+    await rendered.cleanup();
   }
 });
