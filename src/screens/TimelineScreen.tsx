@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import type {
+  DatasetImportIssue,
   DatasetExportIssue,
   DatasetExportResult,
+  DatasetImportResult,
   DatasetImportWarning,
 } from "../services/DatasetService";
 import { downloadDatasetExport } from "../services/DatasetService";
+import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
@@ -22,6 +25,7 @@ type TimelineScreenProps = {
   onSelectEvent: (eventId: string) => void;
   onEditEvent: (eventId: string) => void;
   onAddEvent: () => void;
+  onImportDataset: (source: string) => DatasetImportResult;
   onExportDataset: () => DatasetExportResult;
   importWarnings?: DatasetImportWarning[];
   onUpdateDatasetTitle: (title: string) => void;
@@ -46,6 +50,16 @@ function formatImportWarning(issue: DatasetImportWarning): string {
   const profile = "profile" in issue ? ` (${issue.profile})` : "";
 
   return `${issue.code}${profile} at ${location}${relatedIds}`;
+}
+
+function formatImportIssue(issue: DatasetImportIssue): string {
+  const location = issue.path === "" ? "the document" : issue.path;
+  const relatedIds =
+    "relatedIds" in issue && issue.relatedIds?.length
+      ? ` (${issue.relatedIds.join(", ")})`
+      : "";
+
+  return `${issue.code} at ${location}${relatedIds}`;
 }
 
 function getExtensionId(path: string): string | undefined {
@@ -88,6 +102,7 @@ export function TimelineScreen({
   onSelectEvent,
   onEditEvent,
   onAddEvent,
+  onImportDataset,
   onExportDataset,
   importWarnings = [],
   onUpdateDatasetTitle,
@@ -96,6 +111,10 @@ export function TimelineScreen({
   const ja = language === "ja";
   const copy = getPresentationMessages(language);
   const selectedEventRef = useRef<HTMLLIElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importIssues, setImportIssues] = useState<DatasetImportIssue[]>([]);
+  const [fileReadError, setFileReadError] = useState(false);
   const [exportIssues, setExportIssues] = useState<DatasetExportIssue[]>([]);
   const [downloadError, setDownloadError] = useState(false);
   const [titleDraft, setTitleDraft] = useState(
@@ -146,6 +165,28 @@ export function TimelineScreen({
     downloadDatasetExport(dataset, result);
   };
 
+  const handleImportFile = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    setIsImporting(true);
+    setImportIssues([]);
+    setFileReadError(false);
+
+    try {
+      const result = onImportDataset(await file.text());
+      if (!result.isValid) setImportIssues(result.issues);
+    } catch {
+      setFileReadError(true);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <main
       className="timeline-screen"
@@ -170,16 +211,40 @@ export function TimelineScreen({
         </button>
       </div>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json,.e2r.json"
+        onChange={handleImportFile}
+        style={{ display: "none" }}
+      />
+
       <div className="timeline-toolbar">
         <p>{formatEventCount(language, dataset.events.length)}</p>
         <div className="timeline-toolbar__actions">
           <button type="button" onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
-          <button type="button" onClick={handleExport}>
-            {ja ? "E2R JSONを書き出す" : "Export E2R JSON"}
-          </button>
+          <WorkspaceMoreMenu
+            label={copy.more}
+            openDatasetLabel={copy.openDataset}
+            exportDatasetLabel={copy.exportDataset}
+            onOpenDataset={() => fileInputRef.current?.click()}
+            onExportDataset={handleExport}
+          />
         </div>
       </div>
 
+      {isImporting && <p role="status">{ja ? "開いています…" : "Opening…"}</p>}
+      {fileReadError && <p role="alert">{copy.localFileReadFailure}</p>}
+      {importIssues.length > 0 && (
+        <section aria-labelledby="timeline-import-errors-heading">
+          <h2 id="timeline-import-errors-heading">{ja ? "読み込みに失敗しました" : "Import failed"}</h2>
+          <ul>
+            {importIssues.map((issue, index) => (
+              <li key={`${issue.code}-${issue.path}-${index}`}>{formatImportIssue(issue)}</li>
+            ))}
+          </ul>
+        </section>
+      )}
       {downloadError && <p role="alert">{copy.exportFailure}</p>}
 
       {importWarnings.length > 0 && (

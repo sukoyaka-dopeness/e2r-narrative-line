@@ -85,9 +85,10 @@ test("exercises guarded Back dialog presentation, cancellation, discard, focus, 
     rendered.opener.focus();
     act(() => rendered.opener.click());
     const backdrop = rendered.environment.document.querySelector(".modal-backdrop");
-    act(() => backdrop.dispatchEvent(new rendered.environment.window.MouseEvent("mousedown", { bubbles: true })));
+    act(() => backdrop.dispatchEvent(new rendered.environment.window.MouseEvent("click", { bubbles: true, cancelable: true })));
     assert.deepEqual(rendered.events, ["cancel", "cancel", "cancel"]);
     assert.equal(rendered.dialog(), null);
+    assert.equal(rendered.environment.document.activeElement, rendered.opener);
 
     rendered.opener.focus();
     act(() => rendered.opener.click());

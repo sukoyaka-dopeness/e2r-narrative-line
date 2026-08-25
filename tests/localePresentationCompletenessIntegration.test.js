@@ -432,16 +432,20 @@ test("round-trips the production locale toggle with an unknown fragment paramete
 test("dismisses the production Credits dialog when the backdrop is directly targeted", async () => {
   const rendered = await renderApp();
   try {
-    await act(async () => rendered.document.querySelector(".credits-button")?.click());
+    const opener = rendered.document.querySelector(".credits-button");
+    assert.ok(opener);
+    opener.focus();
+    await act(async () => opener.click());
     assert.ok(rendered.document.querySelector('[role="alertdialog"]'));
     const backdrop = rendered.document.querySelector(".modal-backdrop");
     assert.ok(backdrop);
 
     await act(async () => {
-      backdrop.dispatchEvent(new rendered.window.MouseEvent("mousedown", { bubbles: true }));
+      backdrop.dispatchEvent(new rendered.window.MouseEvent("click", { bubbles: true, cancelable: true }));
     });
     const dialogIsPresent = rendered.document.querySelector('[role="alertdialog"]') !== null;
     assert.equal(dialogIsPresent, false);
+    assert.equal(rendered.document.activeElement, opener);
   } finally {
     rendered.cleanup();
   }

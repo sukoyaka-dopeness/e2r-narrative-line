@@ -87,7 +87,8 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     const toolbarButtons = [...toolbar.querySelectorAll("button")];
     assert.equal(toolbarButtons.length, 2);
     assert.equal(toolbarButtons[0].textContent, "Add Event");
-    assert.equal(toolbarButtons[1].textContent, "Export E2R JSON");
+    assert.equal(toolbarButtons[1].textContent, "More");
+    assert.equal(findToolbarAction(rendered.document, "Export E2R JSON"), undefined);
     assert.equal(findToolbarAction(rendered.document, "Home"), undefined);
     assert.equal(rendered.document.body.textContent.includes("Shell evidence event"), true);
 

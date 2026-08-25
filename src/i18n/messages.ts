@@ -2,6 +2,9 @@ import type { Locale } from "../services/LocalePreferenceService";
 
 const englishMessages = {
   handoffLoading: "Opening the handed-off Dataset…",
+  more: "More",
+  openDataset: "Open E2R Dataset",
+  exportDataset: "Export E2R JSON",
   localFileReadFailure: "The selected file could not be read.",
   creditsCreatedByLabel: "Created by",
   creditsReleasedLabel: "Released",
@@ -35,6 +38,9 @@ export type PresentationMessages = Record<MessageKey, string>;
 
 const japaneseMessages: PresentationMessages = {
   handoffLoading: "HandoffリンクからDatasetを開いています…",
+  more: "その他",
+  openDataset: "E2R Datasetを開く",
+  exportDataset: "E2R JSONを書き出す",
   localFileReadFailure: "選択したファイルを読み込めませんでした。",
   creditsCreatedByLabel: "作成者",
   creditsReleasedLabel: "公開日",

@@ -969,6 +969,23 @@ function App() {
     );
   };
 
+  const renderDatasetReplacementFeedback = () => (
+    <>
+      {datasetCandidate && (datasetModified || pendingUserWork) && (
+        <DatasetReplacementDialog
+          datasetModified={datasetModified}
+          pendingUserWork={pendingUserWork}
+          busy={false}
+          onCancel={handleCancelReplacement}
+          onDiscard={handleDiscardReplacement}
+          onExportAndContinue={handleExportAndContinue}
+          onExportDataset={handleExportPendingReplacement}
+        />
+      )}
+      {replacementError && <p role="alert">{copy.replacementExportFailure}</p>}
+    </>
+  );
+
   if (state.currentScreen === "home") {
     return (
       <AppFrame showFooter onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
@@ -989,18 +1006,7 @@ function App() {
             onUseRequestedLanguage={resolveRequestedLocaleConflict}
           />
         )}
-        {datasetCandidate && (datasetModified || pendingUserWork) && (
-          <DatasetReplacementDialog
-            datasetModified={datasetModified}
-            pendingUserWork={pendingUserWork}
-            busy={false}
-            onCancel={handleCancelReplacement}
-            onDiscard={handleDiscardReplacement}
-            onExportAndContinue={handleExportAndContinue}
-            onExportDataset={handleExportPendingReplacement}
-          />
-        )}
-        {replacementError && <p role="alert">{copy.replacementExportFailure}</p>}
+        {renderDatasetReplacementFeedback()}
       </AppFrame>
     );
   }
@@ -1126,8 +1132,10 @@ function App() {
         onSelectEvent={handleSelectEvent}
         onEditEvent={handleEditEvent}
         onAddEvent={handleAddEvent}
+        onImportDataset={handleImportDataset}
         onExportDataset={handleExportDataset}
       />
+      {renderDatasetReplacementFeedback()}
     </AppFrame>
   );
 }
