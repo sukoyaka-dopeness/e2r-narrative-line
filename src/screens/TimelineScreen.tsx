@@ -111,6 +111,8 @@ export function TimelineScreen({
   const ja = language === "ja";
   const copy = getPresentationMessages(language);
   const selectedEventRef = useRef<HTMLLIElement>(null);
+  const timelineHeadingRef = useRef<HTMLHeadingElement>(null);
+  const timelineTopSentinelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importIssues, setImportIssues] = useState<DatasetImportIssue[]>([]);
@@ -120,6 +122,25 @@ export function TimelineScreen({
   const [titleDraft, setTitleDraft] = useState(
     dataset.extensions?.metadata?.title ?? "",
   );
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const sentinel = timelineTopSentinelRef.current;
+
+    if (!sentinel || typeof window.IntersectionObserver === "undefined") return;
+
+    const observer = new window.IntersectionObserver(([entry]) => {
+      setShowBackToTop(!entry.isIntersecting);
+    });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleBackToTop = () => {
+    timelineHeadingRef.current?.focus();
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  };
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -192,7 +213,8 @@ export function TimelineScreen({
       className="timeline-screen"
       data-dataset-modified={datasetModified ? "true" : "false"}
     >
-      <h1>{ja ? "タイムライン" : "Timeline"}</h1>
+      <div ref={timelineTopSentinelRef} aria-hidden="true" />
+      <h1 ref={timelineHeadingRef} tabIndex={-1}>{ja ? "タイムライン" : "Timeline"}</h1>
 
       <div className="dataset-title-editor">
         <input
@@ -223,6 +245,11 @@ export function TimelineScreen({
         <p>{formatEventCount(language, dataset.events.length)}</p>
         <div className="timeline-toolbar__actions">
           <button type="button" onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
+          {showBackToTop && (
+            <button type="button" onClick={handleBackToTop}>
+              {ja ? "↑ 上へ" : "↑ Top"}
+            </button>
+          )}
           <WorkspaceMoreMenu
             label={copy.more}
             openDatasetLabel={copy.openDataset}

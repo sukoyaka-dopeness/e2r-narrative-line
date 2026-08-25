@@ -32,6 +32,14 @@ async function renderApp() {
   const environment = createDomTestEnvironment("https://narrativeline.test/");
   environment.document.documentElement.lang = "en";
   environment.window.scrollTo = () => {};
+  let intersectionCallback;
+  environment.window.IntersectionObserver = class {
+    constructor(callback) {
+      intersectionCallback = callback;
+    }
+    observe() {}
+    disconnect() {}
+  };
   environment.window.HTMLElement.prototype.scrollIntoView = () => {};
   environment.window.requestAnimationFrame = (callback) => {
     callback(0);
@@ -64,6 +72,8 @@ async function renderApp() {
   return {
     ...environment,
     root,
+    setTopIntersection: (isIntersecting) =>
+      intersectionCallback([{ isIntersecting }]),
     cleanup() {
       act(() => root.unmount());
       environment.cleanup();
@@ -88,9 +98,28 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     assert.equal(toolbarButtons.length, 2);
     assert.equal(toolbarButtons[0].textContent, "Add Event");
     assert.equal(toolbarButtons[1].textContent, "More");
+    assert.equal(findToolbarAction(rendered.document, "↑ Top"), undefined);
     assert.equal(findToolbarAction(rendered.document, "Export E2R JSON"), undefined);
     assert.equal(findToolbarAction(rendered.document, "Home"), undefined);
     assert.equal(rendered.document.body.textContent.includes("Shell evidence event"), true);
+
+    await act(async () => rendered.setTopIntersection(false));
+    const backToTop = findToolbarAction(rendered.document, "↑ Top");
+    assert.ok(backToTop);
+    assert.deepEqual(
+      [...rendered.document.querySelectorAll(".timeline-toolbar__actions button")].map(
+        (button) => button.textContent,
+      ),
+      ["Add Event", "↑ Top", "More"],
+    );
+    const scrollCalls = [];
+    rendered.window.scrollTo = (options) => scrollCalls.push(options);
+    await act(async () => backToTop.click());
+    assert.deepEqual(scrollCalls, [{ top: 0, left: 0, behavior: "auto" }]);
+    assert.equal(rendered.document.activeElement?.tagName, "H1");
+
+    await act(async () => rendered.setTopIntersection(true));
+    assert.equal(findToolbarAction(rendered.document, "↑ Top"), undefined);
 
     await act(async () => headerHome.click());
     assert.equal(rendered.document.querySelector("h1")?.textContent, "Get Started");
@@ -109,6 +138,13 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     assert.equal(findHeaderButton(rendered.document, "English")?.textContent, "English");
     assert.equal(findLowerAction(rendered.document, "できごとを追加")?.textContent, "できごとを追加");
     assert.equal(findLowerAction(rendered.document, "ホーム"), undefined);
+    await act(async () => rendered.setTopIntersection(false));
+    assert.deepEqual(
+      [...rendered.document.querySelectorAll(".timeline-toolbar__actions button")].map(
+        (button) => button.textContent,
+      ),
+      ["できごとを追加", "↑ 上へ", "その他"],
+    );
   } finally {
     rendered.cleanup();
   }
