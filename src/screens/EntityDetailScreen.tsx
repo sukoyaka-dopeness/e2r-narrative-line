@@ -5,6 +5,7 @@ import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
 import type { CoordinateWriteStatus } from "../services/CoordinateService";
+import { getIncidentRelations } from "../services/EntityService";
 import { getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
 type EntityDetailScreenProps = {
@@ -24,6 +25,7 @@ type EntityDetailScreenProps = {
     values: Record<string, number>,
   ) => CoordinateWriteStatus;
   onDeleteEntity: (entityId: string) => void;
+  onDeleteRelation: (relationId: string) => void;
   onSelectEvent: (eventId: string) => void;
   onBack: () => void;
 };
@@ -40,6 +42,7 @@ export function EntityDetailScreen({
   onClearDraft,
   onUpdateCoordinate,
   onDeleteEntity,
+  onDeleteRelation,
   onSelectEvent,
   onBack,
 }: EntityDetailScreenProps) {
@@ -57,6 +60,8 @@ export function EntityDetailScreen({
   >(null);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
+  const [isBlockedDialogOpen, setIsBlockedDialogOpen] = useState(false);
+  const [pendingRelationId, setPendingRelationId] = useState<string | null>(null);
   const disposingDraftRef = useRef(false);
   const hasPendingEdits =
     entity !== null &&
@@ -96,6 +101,11 @@ export function EntityDetailScreen({
   const relatedEvents = dataset.events.filter((event) =>
     relatedEventIds.has(event.id),
   );
+  const incidentRelations = getIncidentRelations(dataset, entity.id);
+  const objectName = (id: string) => {
+    const object = [...dataset.entities, ...dataset.events].find((item) => item.id === id);
+    return object?.name?.trim() || id;
+  };
 
   return (
     <div className="detail-screen">
@@ -205,13 +215,40 @@ export function EntityDetailScreen({
         <button
           type="button"
           className="danger-action"
-          onClick={() => setIsDeleteConfirmationOpen(true)}
+          onClick={() => incidentRelations.length > 0 ? setIsBlockedDialogOpen(true) : setIsDeleteConfirmationOpen(true)}
         >
           {ja ? "エンティティを削除" : "Delete Entity"}
         </button>
       </div>
 
-      {isDeleteConfirmationOpen && (
+      {isBlockedDialogOpen && (
+        <ModalDialog ariaLabelledby="blocked-delete-heading" onDismiss={() => setIsBlockedDialogOpen(false)} className="entity-delete-dialog">
+          <h2 id="blocked-delete-heading">{ja ? "つながりを確認してください" : "Review connections before deleting"}</h2>
+          <div className="modal-actions">
+            <button type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
+          </div>
+          <p role="status">{ja ? `このエンティティには${incidentRelations.length}件のつながりが残っているため、まだ削除できません。` : `This Entity cannot be deleted yet because ${incidentRelations.length} connection${incidentRelations.length === 1 ? "" : "s"} remain.`}</p>
+          <p>{ja ? "通常このタイムラインに表示されないつながりもあります。個別に確認して削除してください。" : "Some connections are not normally shown on this Timeline. Review and remove them individually first."}</p>
+          <div className="entity-delete-connections" aria-label={ja ? "削除するつながり" : "Connections to remove"}>
+            {incidentRelations.map((relation) => (
+              <div className="entity-delete-connection" key={relation.id}>
+                <span>{relation.name?.trim() ? `${relation.name.trim()}: ` : ""}{objectName(relation.sourceId)} → {objectName(relation.targetId)}</span>
+                {pendingRelationId === relation.id ? <span className="entity-delete-connection__confirmation" role="group" aria-label={ja ? "つながりの削除確認" : "Confirm connection removal"}>
+                  <span>{ja ? "このつながりを削除しますか？" : "Remove this connection?"}</span>
+                  <button type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
+                  <button type="button" className="danger-action" onClick={() => { onDeleteRelation(relation.id); setPendingRelationId(null); }}>{ja ? "削除" : "Remove"}</button>
+                </span> : <button type="button" onClick={() => setPendingRelationId(relation.id)}>{ja ? "つながりを削除" : "Remove connection"}</button>}
+              </div>
+            ))}
+          </div>
+          <div className="modal-actions">
+            <button type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
+            {incidentRelations.length === 0 && <button type="button" className="danger-action" onClick={() => { setIsBlockedDialogOpen(false); setIsDeleteConfirmationOpen(true); }}>{ja ? "エンティティを削除" : "Delete Entity"}</button>}
+          </div>
+        </ModalDialog>
+      )}
+
+      {isDeleteConfirmationOpen && incidentRelations.length === 0 && (
         <ModalDialog
           ariaLabelledby="delete-entity-heading"
           onDismiss={() => setIsDeleteConfirmationOpen(false)}

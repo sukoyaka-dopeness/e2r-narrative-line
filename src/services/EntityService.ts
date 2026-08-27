@@ -1,4 +1,5 @@
 import type { Dataset } from "../models/Dataset";
+import type { Relation } from "../models/Relation";
 import { createCoreObjectId } from "./IdentifierService.ts";
 
 type AddEntityResult = {
@@ -57,9 +58,11 @@ export function deleteEntity(
   return {
     ...dataset,
     entities: dataset.entities.filter((entity) => entity.id !== entityId),
-    relations: dataset.relations.filter(
-      (relation) =>
-        relation.sourceId !== entityId && relation.targetId !== entityId,
-    ),
   };
+}
+
+export function getIncidentRelations(dataset: Dataset, entityId: string): Relation[] {
+  return dataset.relations.filter(
+    (relation) => relation.sourceId === entityId || relation.targetId === entityId,
+  );
 }

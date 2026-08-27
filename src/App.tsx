@@ -39,6 +39,7 @@ import {
   removeEventEntityRelations,
   updateEvent,
   deleteEvent,
+  deleteRelation,
 } from "./services/EventService";
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
 import type { HistoryDate } from "./services/HistoryService";
@@ -952,6 +953,9 @@ function App() {
       ),
     );
   };
+  const handleDeleteRelation = (relationId: string) => {
+    setDataset((currentDataset) => deleteRelation(currentDataset, relationId));
+  };
 
   const handleAddEvent = () => {
     const result = addEvent(dataset, language);
@@ -1030,6 +1034,7 @@ function App() {
           onClearDraft={handleClearEntityDraft}
           onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
+          onDeleteRelation={handleDeleteRelation}
           onSelectEvent={handleEditEvent}
           onBack={handleEntityDetailBack}
         />

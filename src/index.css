@@ -620,6 +620,41 @@ button:disabled {
   background-color: var(--bg);
 }
 
+.entity-delete-dialog {
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.entity-delete-connections {
+  display: grid;
+  gap: 8px;
+  max-height: min(45vh, 24rem);
+  margin-top: 16px;
+  overflow-y: auto;
+}
+
+.entity-delete-connection {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.entity-delete-connection > span:first-child {
+  min-width: 0;
+}
+
+.entity-delete-connection__confirmation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .related-card__header,
 .related-card__actions,
 .detail-primary-actions,

@@ -505,7 +505,7 @@ test("removes only direct Relations between an Event and Entity", () => {
   assert.deepEqual(result.events, dataset.events);
 });
 
-test("deletes an Entity and every connected Relation", () => {
+test("deletes an Entity without cascading connected Relations", () => {
   const dataset = {
     version: "1.0",
     entities: [{ id: "entity-1" }, { id: "entity-2" }],
@@ -521,7 +521,7 @@ test("deletes an Entity and every connected Relation", () => {
 
   assert.deepEqual(result.entities, [dataset.entities[1]]);
   assert.deepEqual(result.events, dataset.events);
-  assert.deepEqual(result.relations, [dataset.relations[2]]);
+  assert.deepEqual(result.relations, dataset.relations);
 });
 
 test("preserves omitted Event fields when no Event updates are supplied", () => {
