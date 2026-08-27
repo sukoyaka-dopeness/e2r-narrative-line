@@ -262,7 +262,8 @@ export function EntityDetailScreen({
             {incidentRelations.map((relation) => (
               <div className="entity-delete-connection" key={relation.id}>
                 <span className="entity-delete-connection__identity">
-                  <span className="entity-delete-connection__primary">{relationLabels.get(relation.id)?.primary}</span>
+                  {relationLabels.get(relation.id)?.relationName && <span className="entity-delete-connection__name">{relationLabels.get(relation.id)?.relationName}</span>}
+                  <span className="entity-delete-connection__primary">{relationLabels.get(relation.id)?.endpoints ?? relationLabels.get(relation.id)?.primary}</span>
                   {relationLabels.get(relation.id)?.relationIdHint && <span className="entity-delete-connection__secondary">{relationLabels.get(relation.id)?.relationIdHint}</span>}
                 </span>
                 {pendingRelationId === relation.id ? <span className="entity-delete-connection__confirmation" role="group" aria-label={ja ? "つながりの削除確認" : "Confirm connection removal"}>

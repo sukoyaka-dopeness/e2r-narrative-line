@@ -4,6 +4,8 @@ import type { Relation } from "../models/Relation";
 const MIN_HINT_LENGTH = 8;
 export type RelationBlockerLabel = {
   primary: string;
+  relationName?: string;
+  endpoints: string;
   relationIdHint?: string;
 };
 
@@ -27,6 +29,8 @@ export function getRelationBlockerLabels(dataset: Dataset, relations: Relation[]
   const relationHints = uniqueHints(relations.filter((_, index) => (rendered.get(base[index])?.length ?? 0) > 1).map((relation) => relation.id));
   return new Map(relations.map((relation, index) => [relation.id, {
     primary: base[index],
+    ...(relation.name?.trim() ? { relationName: relation.name.trim() } : {}),
+    endpoints: `${endpoint(relation.sourceId)} 竊・${endpoint(relation.targetId)}`,
     ...(relationHints.has(relation.id) ? { relationIdHint: relationHints.get(relation.id) } : {}),
   }]));
 }

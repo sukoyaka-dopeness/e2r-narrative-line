@@ -638,7 +638,7 @@ button:disabled {
 
 .entity-delete-connection {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 10rem;
+  grid-template-columns: minmax(0, 1fr);
   align-items: flex-start;
   gap: 8px;
   min-width: 0;
@@ -659,6 +659,12 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.entity-delete-connection__name {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .entity-delete-connection__secondary {
   color: var(--text);
   font-size: 14px;
@@ -669,7 +675,8 @@ button:disabled {
   width: 10rem;
   max-width: 100%;
   min-width: 0;
-  justify-self: end;
+  justify-self: start;
+  margin-top: 4px;
 }
 
 .entity-delete-connection__confirmation {
