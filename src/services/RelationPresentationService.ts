@@ -2,13 +2,18 @@ import type { Dataset } from "../models/Dataset";
 import type { Relation } from "../models/Relation";
 
 const MIN_HINT_LENGTH = 8;
+export type RelationBlockerLabel = {
+  primary: string;
+  relationIdHint?: string;
+};
+
 function prefixFor(id: string, length: number) { return id.slice(0, Math.min(length, id.length)); }
 function uniqueHints(ids: string[]) {
   const result = new Map<string, string>();
   ids.forEach((id) => { let length = MIN_HINT_LENGTH; while (ids.some((other) => other !== id && prefixFor(other, length) === prefixFor(id, length))) length += 1; result.set(id, prefixFor(id, length)); });
   return result;
 }
-export function getRelationBlockerLabels(dataset: Dataset, relations: Relation[]): Map<string, string> {
+export function getRelationBlockerLabels(dataset: Dataset, relations: Relation[]): Map<string, RelationBlockerLabel> {
   const objects = [...dataset.entities, ...dataset.events];
   const names = new Map(objects.map((object) => [object.id, object.name?.trim() || object.id]));
   const endpointIds = relations.flatMap((relation) => [relation.sourceId, relation.targetId]);
@@ -20,5 +25,8 @@ export function getRelationBlockerLabels(dataset: Dataset, relations: Relation[]
   const rendered = new Map<string, string[]>();
   base.forEach((label, index) => rendered.set(label, [...(rendered.get(label) ?? []), relations[index].id]));
   const relationHints = uniqueHints(relations.filter((_, index) => (rendered.get(base[index])?.length ?? 0) > 1).map((relation) => relation.id));
-  return new Map(relations.map((relation, index) => [relation.id, relationHints.has(relation.id) ? `${base[index]} (${relationHints.get(relation.id)})` : base[index]]));
+  return new Map(relations.map((relation, index) => [relation.id, {
+    primary: base[index],
+    ...(relationHints.has(relation.id) ? { relationIdHint: relationHints.get(relation.id) } : {}),
+  }]));
 }

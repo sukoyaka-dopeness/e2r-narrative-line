@@ -621,22 +621,25 @@ button:disabled {
 }
 
 .entity-delete-dialog {
+  display: flex;
+  flex-direction: column;
   max-height: calc(100vh - 32px);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .entity-delete-connections {
+  flex: 1 1 auto;
   display: grid;
   gap: 8px;
-  max-height: min(45vh, 24rem);
+  min-height: 0;
   margin-top: 16px;
   overflow-y: auto;
 }
 
 .entity-delete-connection {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 8px;
   min-width: 0;
   padding: 8px;
@@ -644,15 +647,44 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
-.entity-delete-connection > span:first-child {
+.entity-delete-connection__identity {
+  display: grid;
+  gap: 4px;
   min-width: 0;
 }
 
+.entity-delete-connection__primary,
+.entity-delete-connection__secondary {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.entity-delete-connection__secondary {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.entity-delete-connection > button,
 .entity-delete-connection__confirmation {
-  display: flex;
-  flex-wrap: wrap;
+  width: 10rem;
+  max-width: 100%;
+  min-width: 0;
+  justify-self: end;
+}
+
+.entity-delete-connection__confirmation {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   gap: 8px;
+}
+
+.entity-delete-connection__confirmation > span {
+  grid-column: 1 / -1;
+}
+
+.entity-delete-dialog > .modal-actions {
+  flex: 0 0 auto;
 }
 
 .related-card__header,

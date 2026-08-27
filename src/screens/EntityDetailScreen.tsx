@@ -82,6 +82,12 @@ export function EntityDetailScreen({
   }, [pendingRelationId, originRelationId]);
 
   useEffect(() => {
+    if (isBlockedDialogOpen && !pendingRelationId && !originRelationId && !deletedRelationId) {
+      keepEntityRef.current?.focus();
+    }
+  }, [isBlockedDialogOpen, pendingRelationId, originRelationId, deletedRelationId]);
+
+  useEffect(() => {
     if (!deletedRelationId || !isBlockedDialogOpen) return;
     const index = incidentRelations.findIndex((relation) => relation.id === deletedRelationId);
     const target = incidentRelations[index] ?? incidentRelations[index - 1] ?? incidentRelations[0];
@@ -232,24 +238,33 @@ export function EntityDetailScreen({
         <button
           type="button"
           className="danger-action"
-          onClick={() => incidentRelations.length > 0 ? setIsBlockedDialogOpen(true) : setIsDeleteConfirmationOpen(true)}
+          onClick={() => {
+            if (incidentRelations.length > 0) {
+              setOriginRelationId(null);
+              setDeletedRelationId(null);
+              setPendingRelationId(null);
+              setIsBlockedDialogOpen(true);
+            } else {
+              setIsDeleteConfirmationOpen(true);
+            }
+          }}
         >
           {ja ? "エンティティを削除" : "Delete Entity"}
         </button>
       </div>
 
       {isBlockedDialogOpen && (
-        <ModalDialog ariaLabelledby="blocked-delete-heading" onDismiss={() => setIsBlockedDialogOpen(false)} className="entity-delete-dialog">
+        <ModalDialog ariaLabelledby="blocked-delete-heading" onDismiss={() => setIsBlockedDialogOpen(false)} className="entity-delete-dialog" initialFocusRef={keepEntityRef}>
           <h2 id="blocked-delete-heading">{ja ? "つながりを確認してください" : "Review connections before deleting"}</h2>
-          <div className="modal-actions">
-            <button ref={keepEntityRef} type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
-          </div>
           <p role="status">{incidentRelations.length > 0 ? (ja ? `このエンティティには${incidentRelations.length}件のつながりが残っているため、まだ削除できません。` : `This Entity cannot be deleted yet because ${incidentRelations.length} connection${incidentRelations.length === 1 ? "" : "s"} remain.`) : (ja ? "すべてのつながりが解決されました。このエンティティを削除できます。" : "All blocking connections are resolved. This Entity can now be deleted.")}</p>
           {incidentRelations.length > 0 && <p>{ja ? "通常このタイムラインに表示されないつながりもあります。個別に確認して削除してください。" : "Some connections are not normally shown on this Timeline. Review and remove them individually first."}</p>}
           <div className="entity-delete-connections" aria-label={ja ? "削除するつながり" : "Connections to remove"}>
             {incidentRelations.map((relation) => (
               <div className="entity-delete-connection" key={relation.id}>
-                <span>{relationLabels.get(relation.id)}</span>
+                <span className="entity-delete-connection__identity">
+                  <span className="entity-delete-connection__primary">{relationLabels.get(relation.id)?.primary}</span>
+                  {relationLabels.get(relation.id)?.relationIdHint && <span className="entity-delete-connection__secondary">{relationLabels.get(relation.id)?.relationIdHint}</span>}
+                </span>
                 {pendingRelationId === relation.id ? <span className="entity-delete-connection__confirmation" role="group" aria-label={ja ? "つながりの削除確認" : "Confirm connection removal"}>
                   <span>{ja ? "このつながりを削除しますか？" : "Remove this connection?"}</span>
                       <button ref={inlineCancelRef} type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
@@ -259,7 +274,7 @@ export function EntityDetailScreen({
             ))}
           </div>
           <div className="modal-actions">
-            <button type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
+            <button ref={keepEntityRef} type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
             {incidentRelations.length === 0 && <button type="button" className="danger-action" onClick={() => { setIsBlockedDialogOpen(false); setIsDeleteConfirmationOpen(true); }}>{ja ? "エンティティを削除" : "Delete Entity"}</button>}
           </div>
         </ModalDialog>

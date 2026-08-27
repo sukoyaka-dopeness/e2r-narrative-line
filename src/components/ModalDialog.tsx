@@ -2,6 +2,7 @@ import {
   useEffect,
   useRef,
   type KeyboardEvent,
+  type RefObject,
   type ReactNode,
 } from "react";
 
@@ -11,6 +12,7 @@ type ModalDialogProps = {
   onDismiss: () => void;
   onBackdropDismiss?: () => void;
   className?: string;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 };
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -27,6 +29,7 @@ export function ModalDialog({
   onDismiss,
   onBackdropDismiss,
   className,
+  initialFocusRef,
 }: ModalDialogProps) {
   const dialogRef = useRef<HTMLElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -35,7 +38,7 @@ export function ModalDialog({
     openerRef.current = document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
     const firstFocusableElement =
-      dialog && getFocusableElements(dialog).at(0);
+      initialFocusRef?.current ?? (dialog && getFocusableElements(dialog).at(0));
 
     firstFocusableElement?.focus();
 
@@ -44,7 +47,7 @@ export function ModalDialog({
         openerRef.current.focus();
       }
     };
-  }, []);
+  }, [initialFocusRef]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape") {
