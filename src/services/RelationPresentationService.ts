@@ -13,7 +13,7 @@ export function getRelationBlockerLabels(dataset: Dataset, relations: Relation[]
   const names = new Map(objects.map((object) => [object.id, object.name?.trim() || object.id]));
   const endpointIds = relations.flatMap((relation) => [relation.sourceId, relation.targetId]);
   const groups = new Map<string, string[]>();
-  endpointIds.forEach((id) => { const name = names.get(id) ?? id; groups.set(name, [...(groups.get(name) ?? []), id]); });
+  endpointIds.forEach((id) => { const name = names.get(id) ?? id; groups.set(name, [...new Set([...(groups.get(name) ?? []), id])]); });
   const endpointHints = uniqueHints([...new Set(endpointIds)].filter((id) => (groups.get(names.get(id) ?? id)?.length ?? 0) > 1));
   const endpoint = (id: string) => { const name = names.get(id) ?? id; return endpointHints.has(id) ? `${name} (${endpointHints.get(id)})` : name; };
   const base = relations.map((relation) => { const name = relation.name?.trim(); return `${name ? `${name}: ` : ""}${endpoint(relation.sourceId)} → ${endpoint(relation.targetId)}`; });

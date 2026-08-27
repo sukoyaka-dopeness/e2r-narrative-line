@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
@@ -63,16 +63,31 @@ export function EntityDetailScreen({
     useState(false);
   const [isBlockedDialogOpen, setIsBlockedDialogOpen] = useState(false);
   const [pendingRelationId, setPendingRelationId] = useState<string | null>(null);
+  const [originRelationId, setOriginRelationId] = useState<string | null>(null);
+  const [deletedRelationId, setDeletedRelationId] = useState<string | null>(null);
   const inlineCancelRef = useRef<HTMLButtonElement>(null);
-  const firstRemainingRelationRef = useRef<HTMLButtonElement>(null);
+  const keepEntityRef = useRef<HTMLButtonElement>(null);
+  const relationTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
   const disposingDraftRef = useRef(false);
   const hasPendingEdits =
     entity !== null &&
     (name !== (entity.name ?? "") || description !== (entity.description ?? ""));
+  const incidentRelations = useMemo(
+    () => (entity ? getIncidentRelations(dataset, entity.id) : []),
+    [dataset, entity],
+  );
   useEffect(() => {
     if (pendingRelationId) inlineCancelRef.current?.focus();
-  }, [pendingRelationId]);
+    else if (originRelationId) relationTriggerRefs.current.get(originRelationId)?.focus();
+  }, [pendingRelationId, originRelationId]);
 
+  useEffect(() => {
+    if (!deletedRelationId || !isBlockedDialogOpen) return;
+    const index = incidentRelations.findIndex((relation) => relation.id === deletedRelationId);
+    const target = incidentRelations[index] ?? incidentRelations[index - 1] ?? incidentRelations[0];
+    if (target) relationTriggerRefs.current.get(target.id)?.focus();
+    else keepEntityRef.current?.focus();
+  }, [incidentRelations, deletedRelationId, isBlockedDialogOpen]);
   useEffect(() => {
     onPendingWorkChange(hasPendingEdits);
     if (!entity) return;
@@ -107,7 +122,6 @@ export function EntityDetailScreen({
   const relatedEvents = dataset.events.filter((event) =>
     relatedEventIds.has(event.id),
   );
-  const incidentRelations = getIncidentRelations(dataset, entity.id);
   const relationLabels = getRelationBlockerLabels(dataset, incidentRelations);
 
   return (
@@ -228,10 +242,10 @@ export function EntityDetailScreen({
         <ModalDialog ariaLabelledby="blocked-delete-heading" onDismiss={() => setIsBlockedDialogOpen(false)} className="entity-delete-dialog">
           <h2 id="blocked-delete-heading">{ja ? "つながりを確認してください" : "Review connections before deleting"}</h2>
           <div className="modal-actions">
-            <button type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
+            <button ref={keepEntityRef} type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
           </div>
-          <p role="status">{ja ? `このエンティティには${incidentRelations.length}件のつながりが残っているため、まだ削除できません。` : `This Entity cannot be deleted yet because ${incidentRelations.length} connection${incidentRelations.length === 1 ? "" : "s"} remain.`}</p>
-          <p>{ja ? "通常このタイムラインに表示されないつながりもあります。個別に確認して削除してください。" : "Some connections are not normally shown on this Timeline. Review and remove them individually first."}</p>
+          <p role="status">{incidentRelations.length > 0 ? (ja ? `このエンティティには${incidentRelations.length}件のつながりが残っているため、まだ削除できません。` : `This Entity cannot be deleted yet because ${incidentRelations.length} connection${incidentRelations.length === 1 ? "" : "s"} remain.`) : (ja ? "すべてのつながりが解決されました。このエンティティを削除できます。" : "All blocking connections are resolved. This Entity can now be deleted.")}</p>
+          {incidentRelations.length > 0 && <p>{ja ? "通常このタイムラインに表示されないつながりもあります。個別に確認して削除してください。" : "Some connections are not normally shown on this Timeline. Review and remove them individually first."}</p>}
           <div className="entity-delete-connections" aria-label={ja ? "削除するつながり" : "Connections to remove"}>
             {incidentRelations.map((relation) => (
               <div className="entity-delete-connection" key={relation.id}>
@@ -239,8 +253,8 @@ export function EntityDetailScreen({
                 {pendingRelationId === relation.id ? <span className="entity-delete-connection__confirmation" role="group" aria-label={ja ? "つながりの削除確認" : "Confirm connection removal"}>
                   <span>{ja ? "このつながりを削除しますか？" : "Remove this connection?"}</span>
                       <button ref={inlineCancelRef} type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
-                  <button type="button" className="danger-action" onClick={() => { onDeleteRelation(relation.id); setPendingRelationId(null); }}>{ja ? "削除" : "Remove"}</button>
-                </span> : <button ref={firstRemainingRelationRef} type="button" onClick={() => setPendingRelationId(relation.id)}>{ja ? "つながりを削除" : "Remove connection"}</button>}
+                  <button type="button" className="danger-action" onClick={() => { setDeletedRelationId(relation.id); onDeleteRelation(relation.id); setPendingRelationId(null); }}>{ja ? "削除" : "Remove"}</button>
+                </span> : <button ref={(element) => { if (element) relationTriggerRefs.current.set(relation.id, element); else relationTriggerRefs.current.delete(relation.id); }} type="button" onClick={() => { setOriginRelationId(relation.id); setPendingRelationId(relation.id); }}>{ja ? "つながりを削除" : "Remove connection"}</button>}
               </div>
             ))}
           </div>
@@ -261,7 +275,7 @@ export function EntityDetailScreen({
           </h2>
           <p>
             {ja
-              ? "このエンティティと接続されているすべての関係を完全に削除します。保存していない編集も破棄されます。"
+              ? "このエンティティを削除します。保存していない編集も破棄されます。"
               : "This permanently removes the Entity. Unsaved edits will also be discarded."}
           </p>
           <div className="modal-actions">
