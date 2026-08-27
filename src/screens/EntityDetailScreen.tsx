@@ -6,6 +6,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
 import type { CoordinateWriteStatus } from "../services/CoordinateService";
 import { getIncidentRelations } from "../services/EntityService";
+import { getRelationBlockerLabels } from "../services/RelationPresentationService";
 import { getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
 type EntityDetailScreenProps = {
@@ -62,10 +63,15 @@ export function EntityDetailScreen({
     useState(false);
   const [isBlockedDialogOpen, setIsBlockedDialogOpen] = useState(false);
   const [pendingRelationId, setPendingRelationId] = useState<string | null>(null);
+  const inlineCancelRef = useRef<HTMLButtonElement>(null);
+  const firstRemainingRelationRef = useRef<HTMLButtonElement>(null);
   const disposingDraftRef = useRef(false);
   const hasPendingEdits =
     entity !== null &&
     (name !== (entity.name ?? "") || description !== (entity.description ?? ""));
+  useEffect(() => {
+    if (pendingRelationId) inlineCancelRef.current?.focus();
+  }, [pendingRelationId]);
 
   useEffect(() => {
     onPendingWorkChange(hasPendingEdits);
@@ -102,10 +108,7 @@ export function EntityDetailScreen({
     relatedEventIds.has(event.id),
   );
   const incidentRelations = getIncidentRelations(dataset, entity.id);
-  const objectName = (id: string) => {
-    const object = [...dataset.entities, ...dataset.events].find((item) => item.id === id);
-    return object?.name?.trim() || id;
-  };
+  const relationLabels = getRelationBlockerLabels(dataset, incidentRelations);
 
   return (
     <div className="detail-screen">
@@ -232,12 +235,12 @@ export function EntityDetailScreen({
           <div className="entity-delete-connections" aria-label={ja ? "削除するつながり" : "Connections to remove"}>
             {incidentRelations.map((relation) => (
               <div className="entity-delete-connection" key={relation.id}>
-                <span>{relation.name?.trim() ? `${relation.name.trim()}: ` : ""}{objectName(relation.sourceId)} → {objectName(relation.targetId)}</span>
+                <span>{relationLabels.get(relation.id)}</span>
                 {pendingRelationId === relation.id ? <span className="entity-delete-connection__confirmation" role="group" aria-label={ja ? "つながりの削除確認" : "Confirm connection removal"}>
                   <span>{ja ? "このつながりを削除しますか？" : "Remove this connection?"}</span>
-                  <button type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
+                      <button ref={inlineCancelRef} type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
                   <button type="button" className="danger-action" onClick={() => { onDeleteRelation(relation.id); setPendingRelationId(null); }}>{ja ? "削除" : "Remove"}</button>
-                </span> : <button type="button" onClick={() => setPendingRelationId(relation.id)}>{ja ? "つながりを削除" : "Remove connection"}</button>}
+                </span> : <button ref={firstRemainingRelationRef} type="button" onClick={() => setPendingRelationId(relation.id)}>{ja ? "つながりを削除" : "Remove connection"}</button>}
               </div>
             ))}
           </div>
@@ -259,7 +262,7 @@ export function EntityDetailScreen({
           <p>
             {ja
               ? "このエンティティと接続されているすべての関係を完全に削除します。保存していない編集も破棄されます。"
-              : "This permanently removes the Entity and all of its connected Relations. Unsaved edits will also be discarded."}
+              : "This permanently removes the Entity. Unsaved edits will also be discarded."}
           </p>
           <div className="modal-actions">
             <button
