@@ -62,6 +62,15 @@ Inspect the current implementation before assuming that documentation and code a
 * Preserve compatibility with the E2R specification.
 * Application behavior must not silently redefine the E2R Core.
 
+## Application modularization policy
+
+Apply the workspace Decision in
+`ai-knowledge/decisions/application-modularization-and-incremental-extraction.md`.
+Use responsibility-based, incremental extraction when new work would enlarge
+a root or controller component. Do not rewrite the application wholesale,
+split files mechanically, or treat a file-count target as an architectural
+requirement; preserve accepted Dataset and interaction behavior.
+
 ## Current Data Model
 
 The current application model includes:
