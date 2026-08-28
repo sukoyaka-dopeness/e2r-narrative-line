@@ -64,7 +64,8 @@ function openFinalEntityDetail(document) {
 }
 
 function removeRelationFromResolution(document) {
-  const relation = document.querySelector(".entity-delete-connection > button");
+  const relation = [...document.querySelectorAll(".entity-delete-connection__actions > button")]
+    .find((button) => button.textContent?.trim() === "Remove connection");
   assert.ok(relation);
   act(() => relation.click());
   act(() => buttonByText(document, "Remove").click());

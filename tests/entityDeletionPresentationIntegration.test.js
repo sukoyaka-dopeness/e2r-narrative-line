@@ -27,7 +27,12 @@ function buttonByText(document, text) {
   return [...document.querySelectorAll("button")].find((button) => button.textContent?.trim() === text);
 }
 
-async function renderEntityDetail(dataset) {
+function ordinaryRemoveButtons(document) {
+  return [...document.querySelectorAll(".entity-delete-connection__actions > button")]
+    .filter((button) => button.textContent?.trim() === "Remove connection");
+}
+
+async function renderEntityDetail(dataset, getRelationHandoffHref = undefined) {
   const environment = createDomTestEnvironment("https://narrativeline.test/#locale=en");
   environment.window.localStorage.setItem("narrativeline.language", "en");
   const container = environment.document.createElement("div");
@@ -60,6 +65,7 @@ async function renderEntityDetail(dataset) {
           })),
           onSelectEvent: () => {},
           onBack: () => {},
+          getRelationHandoffHref,
         }),
       );
     }
@@ -78,6 +84,24 @@ async function renderEntityDetail(dataset) {
     await server.close();
   }
 }
+
+test("ordinary Relation actions use one local group for one and two actions", async () => {
+  const rendered = await renderEntityDetail(parallelRelationDataset, (relationId) => `https://liaisonscape.test/#${relationId}`);
+  try {
+    await act(async () => buttonByText(rendered.document, "Delete Entity").click());
+    const cards = [...rendered.document.querySelectorAll(".entity-delete-connection")];
+    assert.equal(cards.length, 2);
+    assert.equal(cards.every((card) => card.querySelectorAll(":scope > .entity-delete-connection__actions").length === 1), true);
+    assert.deepEqual(
+      cards.map((card) => card.querySelector(".entity-delete-connection__actions")?.children.length),
+      [2, 2],
+    );
+    assert.equal(rendered.document.querySelectorAll(".entity-delete-connection__confirmation").length, 0);
+    assert.equal([...rendered.document.querySelectorAll(".entity-delete-connection__handoff")].every((anchor) => anchor.getAttribute("href")?.startsWith("https://liaisonscape.test/")), true);
+  } finally {
+    await rendered.cleanup();
+  }
+});
 
 test("blocked Entity deletion has one safe footer action and focuses it initially", async () => {
   const rendered = await renderEntityDetail(oneRelationDataset);
@@ -98,18 +122,18 @@ test("inline Cancel restores its origin and final removal keeps a safe resolved 
   const rendered = await renderEntityDetail(parallelRelationDataset);
   try {
     await act(async () => buttonByText(rendered.document, "Delete Entity").click());
-    const removeButtons = [...rendered.document.querySelectorAll(".entity-delete-connection > button")];
+    const removeButtons = ordinaryRemoveButtons(rendered.document);
     assert.equal(removeButtons.length, 2);
 
     await act(async () => removeButtons[0].click());
     assert.equal(rendered.document.activeElement?.textContent, "Cancel");
     await act(async () => buttonByText(rendered.document, "Cancel").click());
-    const firstRemoveAfterCancel = [...rendered.document.querySelectorAll(".entity-delete-connection > button")][0];
+    const firstRemoveAfterCancel = ordinaryRemoveButtons(rendered.document)[0];
     assert.equal(rendered.document.activeElement === firstRemoveAfterCancel, true);
 
     await act(async () => firstRemoveAfterCancel.click());
     await act(async () => buttonByText(rendered.document, "Remove").click());
-    const surviving = rendered.document.querySelectorAll(".entity-delete-connection > button");
+    const surviving = ordinaryRemoveButtons(rendered.document);
     assert.equal(surviving.length, 1);
     assert.equal(rendered.document.activeElement === surviving[0], true);
 

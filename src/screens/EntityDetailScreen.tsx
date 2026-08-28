@@ -273,10 +273,10 @@ export function EntityDetailScreen({
                   <span>{ja ? "このつながりを削除しますか？" : "Remove this connection?"}</span>
                       <button ref={inlineCancelRef} type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
                   <button type="button" className="danger-action" onClick={() => { setDeletedRelationId(relation.id); onDeleteRelation(relation.id); setPendingRelationId(null); }}>{ja ? "削除" : "Remove"}</button>
-                </span> : <>
+                </span> : <div className="entity-delete-connection__actions">
                   <button ref={(element) => { if (element) relationTriggerRefs.current.set(relation.id, element); else relationTriggerRefs.current.delete(relation.id); }} type="button" onClick={() => { setOriginRelationId(relation.id); setPendingRelationId(relation.id); }}>{ja ? "つながりを削除" : "Remove connection"}</button>
                   {handoffHref && <a className="entity-delete-connection__handoff" href={handoffHref}>{copy.openInLiaisonScape}</a>}
-                </>}
+                </div>}
               </div>
             })}
           </div>
