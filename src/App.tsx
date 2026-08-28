@@ -941,7 +941,7 @@ function App() {
   };
   const handleDeleteEntity = (entityId: string) => {
     handleClearEntityDraft(entityId);
-    setDataset(deleteEntity(dataset, entityId));
+    setDataset((currentDataset) => deleteEntity(currentDataset, entityId));
 
     setState(
       navigate(
