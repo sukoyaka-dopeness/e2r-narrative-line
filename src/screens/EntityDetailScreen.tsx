@@ -266,15 +266,15 @@ export function EntityDetailScreen({
               return <div className="entity-delete-connection" key={relation.id}>
                 <span className="entity-delete-connection__identity">
                   <span className="entity-delete-connection__identity-row">
-                    <span className="entity-delete-connection__identity-label">{ja ? "縺､縺ｪ縺後ｊ縺ｮ蜷榊燕" : "Relation Name"}</span>
+                    <span className="entity-delete-connection__identity-label">{ja ? "つながりの名前" : "Relation Name"}</span>
                     <span className="entity-delete-connection__identity-value">{relationLabels.get(relation.id)?.relationName ?? ""}</span>
                   </span>
                   <span className="entity-delete-connection__identity-row">
-                    <span className="entity-delete-connection__identity-label">{ja ? "蟋狗せ" : "Source"}</span>
+                    <span className="entity-delete-connection__identity-label">{ja ? "始点" : "Source"}</span>
                     <span className="entity-delete-connection__identity-value">{relationLabels.get(relation.id)?.source}</span>
                   </span>
                   <span className="entity-delete-connection__identity-row">
-                    <span className="entity-delete-connection__identity-label">{ja ? "邨らせ" : "Target"}</span>
+                    <span className="entity-delete-connection__identity-label">{ja ? "終点" : "Target"}</span>
                     <span className="entity-delete-connection__identity-value">{relationLabels.get(relation.id)?.target}</span>
                   </span>
                   {relationLabels.get(relation.id)?.relationIdHint && <span className="entity-delete-connection__secondary">{relationLabels.get(relation.id)?.relationIdHint}</span>}

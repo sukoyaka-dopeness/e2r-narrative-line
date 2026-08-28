@@ -39,9 +39,9 @@ function ordinaryRemoveButtons(document) {
     .filter((button) => button.textContent?.trim() === "Remove connection");
 }
 
-async function renderEntityDetail(dataset, getRelationHandoffHref = undefined) {
-  const environment = createDomTestEnvironment("https://narrativeline.test/#locale=en");
-  environment.window.localStorage.setItem("narrativeline.language", "en");
+async function renderEntityDetail(dataset, getRelationHandoffHref = undefined, language = "en") {
+  const environment = createDomTestEnvironment(`https://narrativeline.test/#locale=${language}`);
+  environment.window.localStorage.setItem("narrativeline.language", language);
   const container = environment.document.createElement("div");
   environment.document.body.append(container);
   const root = createRoot(container);
@@ -91,6 +91,19 @@ async function renderEntityDetail(dataset, getRelationHandoffHref = undefined) {
     await server.close();
   }
 }
+
+test("Japanese Relation identity labels render as intended text", async () => {
+  const rendered = await renderEntityDetail(oneRelationDataset, undefined, "ja");
+  try {
+    await act(async () => buttonByText(rendered.document, "エンティティを削除").click());
+    const labels = [...rendered.document.querySelectorAll(".entity-delete-connection__identity-label")].map((element) => element.textContent);
+    assert.deepEqual(labels, ["つながりの名前", "始点", "終点"]);
+    const values = [...rendered.document.querySelectorAll(".entity-delete-connection__identity-value")].map((element) => element.textContent);
+    assert.deepEqual(values, ["Knows", "Meeting", "Alice"]);
+  } finally {
+    await rendered.cleanup();
+  }
+});
 
 test("ordinary Relation actions use one local group for one and two actions", async () => {
   const rendered = await renderEntityDetail(parallelRelationDataset, (relationId) => `https://liaisonscape.test/#${relationId}`);
