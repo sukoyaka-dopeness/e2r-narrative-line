@@ -23,6 +23,13 @@ const parallelRelationDataset = {
   ],
 };
 
+const selfRelationDataset = {
+  version: "1.0",
+  entities: [{ id: "entity-1", name: "Alice" }],
+  events: [],
+  relations: [{ id: "relation-self", name: "Reflects", sourceId: "entity-1", targetId: "entity-1" }],
+};
+
 function buttonByText(document, text) {
   return [...document.querySelectorAll("button")].find((button) => button.textContent?.trim() === text);
 }
@@ -156,6 +163,7 @@ test("inline Cancel restores its origin and final removal keeps a safe resolved 
 test("Relation ID hints are rendered as secondary identity lines", async () => {
   const labels = getRelationBlockerLabels(parallelRelationDataset, parallelRelationDataset.relations);
   assert.equal(labels.get("relation-12345678A")?.primary, "Knows: Meeting → Alice");
+  assert.equal(labels.get("relation-12345678A")?.endpoints, "Meeting → Alice");
   assert.equal(labels.get("relation-12345678A")?.relationIdHint, "relation-12345678A");
   assert.equal(labels.get("relation-12345678B")?.relationIdHint, "relation-12345678B");
 
@@ -173,6 +181,12 @@ test("Relation ID hints are rendered as secondary identity lines", async () => {
   }
 });
 
+test("Relation endpoint presentation keeps the separator for self Relations", () => {
+  const labels = getRelationBlockerLabels(selfRelationDataset, selfRelationDataset.relations);
+  assert.equal(labels.get("relation-self")?.primary, "Reflects: Alice → Alice");
+  assert.equal(labels.get("relation-self")?.endpoints, "Alice → Alice");
+});
+
 test("duplicate endpoint names retain endpoint hints without changing Relation ID rules", () => {
   const dataset = {
     version: "1.0",
@@ -185,7 +199,9 @@ test("duplicate endpoint names retain endpoint hints without changing Relation I
   };
   const labels = getRelationBlockerLabels(dataset, dataset.relations);
   assert.equal(labels.get("relation-1")?.primary, "Knows: Meeting → Alice (entity-12345678A)");
+  assert.equal(labels.get("relation-1")?.endpoints, "Meeting → Alice (entity-12345678A)");
   assert.equal(labels.get("relation-2")?.primary, "Knows: Meeting → Alice (entity-12345678B)");
+  assert.equal(labels.get("relation-2")?.endpoints, "Meeting → Alice (entity-12345678B)");
   assert.equal(labels.get("relation-1")?.relationIdHint, undefined);
   assert.equal(labels.get("relation-2")?.relationIdHint, undefined);
 });

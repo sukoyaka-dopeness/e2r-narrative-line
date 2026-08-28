@@ -30,7 +30,7 @@ export function getRelationBlockerLabels(dataset: Dataset, relations: Relation[]
   return new Map(relations.map((relation, index) => [relation.id, {
     primary: base[index],
     ...(relation.name?.trim() ? { relationName: relation.name.trim() } : {}),
-    endpoints: `${endpoint(relation.sourceId)} 竊・${endpoint(relation.targetId)}`,
+    endpoints: `${endpoint(relation.sourceId)} → ${endpoint(relation.targetId)}`,
     ...(relationHints.has(relation.id) ? { relationIdHint: relationHints.get(relation.id) } : {}),
   }]));
 }
