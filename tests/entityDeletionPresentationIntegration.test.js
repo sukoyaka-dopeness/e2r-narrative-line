@@ -166,11 +166,21 @@ test("Relation ID hints are rendered as secondary identity lines", async () => {
   assert.equal(labels.get("relation-12345678A")?.endpoints, "Meeting → Alice");
   assert.equal(labels.get("relation-12345678A")?.relationIdHint, "relation-12345678A");
   assert.equal(labels.get("relation-12345678B")?.relationIdHint, "relation-12345678B");
+  assert.equal(labels.get("relation-12345678A")?.source, "Meeting");
+  assert.equal(labels.get("relation-12345678A")?.target, "Alice");
 
   const rendered = await renderEntityDetail(parallelRelationDataset);
   try {
     await act(async () => buttonByText(rendered.document, "Delete Entity").click());
-    assert.equal(rendered.document.querySelectorAll(".entity-delete-connection__primary").length, 2);
+    assert.equal(rendered.document.querySelectorAll(".entity-delete-connection__identity-row").length, 6);
+    assert.deepEqual(
+      [...rendered.document.querySelectorAll(".entity-delete-connection__identity-label")].map((element) => element.textContent),
+      ["Relation Name", "Source", "Target", "Relation Name", "Source", "Target"],
+    );
+    assert.deepEqual(
+      [...rendered.document.querySelectorAll(".entity-delete-connection__identity-value")].map((element) => element.textContent),
+      ["Knows", "Meeting", "Alice", "Knows", "Meeting", "Alice"],
+    );
     assert.equal(rendered.document.querySelectorAll(".entity-delete-connection__secondary").length, 2);
     assert.deepEqual(
       [...rendered.document.querySelectorAll(".entity-delete-connection__secondary")].map((element) => element.textContent),
