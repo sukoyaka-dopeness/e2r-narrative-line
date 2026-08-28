@@ -14,7 +14,7 @@ function fragmentParameters(hash: string): URLSearchParams {
   return new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
 }
 
-function validateDatasetUrl(value: string): DatasetHandoffFragment {
+export function validateDatasetHandoffUrl(value: string): DatasetHandoffFragment {
   let url: URL;
   try {
     url = new URL(value);
@@ -37,7 +37,7 @@ export function parseDatasetHandoffFragment(hash: string): DatasetHandoffFragmen
   if (values.length === 0) return { kind: "none" };
   if (values.length > 1) return { kind: "invalid", reason: "duplicate-dataset-url" };
   if (values[0] === "") return { kind: "invalid", reason: "empty-dataset-url" };
-  return validateDatasetUrl(values[0]);
+  return validateDatasetHandoffUrl(values[0]);
 }
 
 export type DatasetHandoffFetchResult =

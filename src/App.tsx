@@ -84,6 +84,11 @@ import {
   setLocaleInCurrentLocation,
   shouldRemoveDatasetUrlForAcceptedSource,
 } from "./services/DatasetHandoffFragmentService";
+import {
+  buildRelationHandoffUrl,
+  classifyRelationHandoffAvailability,
+  resolveLiaisonScapeBaseUrl,
+} from "./services/CapabilityHandoffSenderService";
 
 type GuardedBackIntent =
   | { kind: "event-changes"; eventId: string; screen: AppState["currentScreen"] }
@@ -161,6 +166,7 @@ function App() {
   const [acceptedDatasetBaseline, setAcceptedDatasetBaseline] = useState(() =>
     serializeDatasetBaseline(storedDataset ?? sample),
   );
+  const [sourceDatasetUrl, setSourceDatasetUrl] = useState<string | undefined>();
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
   const [replacementError, setReplacementError] = useState(false);
   const [handoffLoading, setHandoffLoading] = useState(
@@ -279,6 +285,29 @@ function App() {
       : localeResolution === "requested" && requestedLocale.kind === "valid"
         ? requestedLocale.locale
         : language;
+  const liaisonScapeBaseUrl = resolveLiaisonScapeBaseUrl({
+    configuredUrl: import.meta.env.VITE_LIAISONSCAPE_URL,
+    locationOrigin: window.location.origin,
+  });
+  const relationHandoffAvailability = classifyRelationHandoffAvailability({
+    datasetModified,
+    pendingUserWork,
+    sourceDatasetUrl,
+    recipientBaseUrl: liaisonScapeBaseUrl,
+  });
+  const getRelationHandoffHref = useCallback((relationId: string) => {
+    if (relationHandoffAvailability.kind !== "available") return undefined;
+    if (!dataset.relations.some((relation) => relation.id === relationId)) return undefined;
+    return buildRelationHandoffUrl({
+      recipientBaseUrl: liaisonScapeBaseUrl!,
+      datasetUrl: sourceDatasetUrl!,
+      targetObjectId: relationId,
+      targetObjectType: "Relation",
+      requiredCapability: "relation.inspect",
+      targetContractVersion: "1",
+      locale: effectiveLocale,
+    });
+  }, [dataset.relations, effectiveLocale, liaisonScapeBaseUrl, relationHandoffAvailability.kind, sourceDatasetUrl]);
 
   const handleManualLanguageChange = useCallback((nextLanguage: Locale) => {
     setTemporaryLocaleResolution(undefined);
@@ -503,6 +532,11 @@ function App() {
     setEntityCreateDraft(undefined);
     setReplacementError(false);
     setImportWarnings(warningsToKeep);
+    setSourceDatasetUrl(
+      candidateToAccept.source === "handoff" && startupHandoff.kind === "valid"
+        ? startupHandoff.datasetUrl
+        : undefined,
+    );
     if (shouldRemoveDatasetUrlForAcceptedSource(candidateToAccept.source)) {
       removeDatasetUrlFromCurrentLocation(window.history, window.location);
     }
@@ -553,6 +587,7 @@ function App() {
       setReplacementError(true);
       return;
     }
+    setSourceDatasetUrl(undefined);
     setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
     acceptStagedDataset();
   };
@@ -563,6 +598,7 @@ function App() {
       setReplacementError(true);
       return;
     }
+    setSourceDatasetUrl(undefined);
     setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
     setReplacementError(false);
   };
@@ -652,6 +688,7 @@ function App() {
   const handleExportDataset = (): DatasetExportResult => {
     const result = exportDatasetJson(dataset);
     if (result.json !== undefined) {
+      setSourceDatasetUrl(undefined);
       setAcceptedDatasetBaseline(serializeDatasetBaseline(dataset));
     }
     return result;
@@ -1035,6 +1072,7 @@ function App() {
           onUpdateCoordinate={handleUpdateCoordinate}
           onDeleteEntity={handleDeleteEntity}
           onDeleteRelation={handleDeleteRelation}
+          getRelationHandoffHref={getRelationHandoffHref}
           onSelectEvent={handleEditEvent}
           onBack={handleEntityDetailBack}
         />

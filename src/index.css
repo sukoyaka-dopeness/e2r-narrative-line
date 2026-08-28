@@ -671,12 +671,31 @@ button:disabled {
 }
 
 .entity-delete-connection > button,
+.entity-delete-connection__handoff,
 .entity-delete-connection__confirmation {
   width: 10rem;
   max-width: 100%;
   min-width: 0;
   justify-self: start;
   margin-top: 4px;
+}
+
+.entity-delete-connection__handoff {
+  display: inline-flex;
+  box-sizing: border-box;
+  min-height: 40px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  line-height: 120%;
+  text-decoration: none;
+}
+
+.entity-delete-connection__handoff:hover {
+  border-color: var(--accent-border);
+  background: var(--button-hover-bg);
 }
 
 .entity-delete-connection__confirmation {

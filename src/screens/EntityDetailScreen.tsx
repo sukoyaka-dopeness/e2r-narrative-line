@@ -27,6 +27,7 @@ type EntityDetailScreenProps = {
   ) => CoordinateWriteStatus;
   onDeleteEntity: (entityId: string) => void;
   onDeleteRelation: (relationId: string) => void;
+  getRelationHandoffHref?: (relationId: string) => string | undefined;
   onSelectEvent: (eventId: string) => void;
   onBack: () => void;
 };
@@ -44,6 +45,7 @@ export function EntityDetailScreen({
   onUpdateCoordinate,
   onDeleteEntity,
   onDeleteRelation,
+  getRelationHandoffHref = () => undefined,
   onSelectEvent,
   onBack,
 }: EntityDetailScreenProps) {
@@ -259,8 +261,9 @@ export function EntityDetailScreen({
           <p role="status">{incidentRelations.length > 0 ? (ja ? `このエンティティには${incidentRelations.length}件のつながりが残っているため、まだ削除できません。` : `This Entity cannot be deleted yet because ${incidentRelations.length} connection${incidentRelations.length === 1 ? "" : "s"} remain.`) : (ja ? "すべてのつながりが解決されました。このエンティティを削除できます。" : "All blocking connections are resolved. This Entity can now be deleted.")}</p>
           {incidentRelations.length > 0 && <p>{ja ? "通常このタイムラインに表示されないつながりもあります。個別に確認して削除してください。" : "Some connections are not normally shown on this Timeline. Review and remove them individually first."}</p>}
           <div className="entity-delete-connections" aria-label={ja ? "削除するつながり" : "Connections to remove"}>
-            {incidentRelations.map((relation) => (
-              <div className="entity-delete-connection" key={relation.id}>
+            {incidentRelations.map((relation) => {
+              const handoffHref = getRelationHandoffHref(relation.id);
+              return <div className="entity-delete-connection" key={relation.id}>
                 <span className="entity-delete-connection__identity">
                   {relationLabels.get(relation.id)?.relationName && <span className="entity-delete-connection__name">{relationLabels.get(relation.id)?.relationName}</span>}
                   <span className="entity-delete-connection__primary">{relationLabels.get(relation.id)?.endpoints ?? relationLabels.get(relation.id)?.primary}</span>
@@ -270,9 +273,12 @@ export function EntityDetailScreen({
                   <span>{ja ? "このつながりを削除しますか？" : "Remove this connection?"}</span>
                       <button ref={inlineCancelRef} type="button" onClick={() => setPendingRelationId(null)}>{ja ? "キャンセル" : "Cancel"}</button>
                   <button type="button" className="danger-action" onClick={() => { setDeletedRelationId(relation.id); onDeleteRelation(relation.id); setPendingRelationId(null); }}>{ja ? "削除" : "Remove"}</button>
-                </span> : <button ref={(element) => { if (element) relationTriggerRefs.current.set(relation.id, element); else relationTriggerRefs.current.delete(relation.id); }} type="button" onClick={() => { setOriginRelationId(relation.id); setPendingRelationId(relation.id); }}>{ja ? "つながりを削除" : "Remove connection"}</button>}
+                </span> : <>
+                  <button ref={(element) => { if (element) relationTriggerRefs.current.set(relation.id, element); else relationTriggerRefs.current.delete(relation.id); }} type="button" onClick={() => { setOriginRelationId(relation.id); setPendingRelationId(relation.id); }}>{ja ? "つながりを削除" : "Remove connection"}</button>
+                  {handoffHref && <a className="entity-delete-connection__handoff" href={handoffHref}>{copy.openInLiaisonScape}</a>}
+                </>}
               </div>
-            ))}
+            })}
           </div>
           <div className="modal-actions">
             <button ref={keepEntityRef} type="button" onClick={() => setIsBlockedDialogOpen(false)}>{ja ? "エンティティを残す" : "Keep Entity"}</button>
