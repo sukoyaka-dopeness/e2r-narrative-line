@@ -108,7 +108,7 @@ export function EntityDetailScreen({
   }, [entity, hasPendingEdits, name, description, onPendingWorkChange, onDraftChange, onClearDraft]);
 
   if (!entity) {
-    return <p>{ja ? "Entityが見つかりません。" : "Entity not found."}</p>;
+    return <p>{ja ? "エンティティが見つかりません。" : "Entity not found."}</p>;
   }
 
   const handleSave = () => {
@@ -189,7 +189,7 @@ export function EntityDetailScreen({
 
         <div className="related-list">
           {relatedEvents.length === 0 ? (
-            <p style={{ color: "#666", margin: 0 }}>{ja ? "関連Eventはありません。" : "No related events."}</p>
+            <p style={{ color: "#666", margin: 0 }}>{ja ? "関連するできごとはありません。" : "No related events."}</p>
           ) : (
             relatedEvents.map((event) => {
               const identity = eventIdentity.get(event.id);

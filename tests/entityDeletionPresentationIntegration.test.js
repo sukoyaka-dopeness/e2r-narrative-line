@@ -105,6 +105,28 @@ test("Japanese Relation identity labels render as intended text", async () => {
   }
 });
 
+test("Japanese Entity Detail empty states use accepted copy", async () => {
+  const emptyRelatedEventsDataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Alice" }],
+    events: [],
+    relations: [],
+  };
+  const rendered = await renderEntityDetail(emptyRelatedEventsDataset, undefined, "ja");
+  try {
+    assert.equal(rendered.document.querySelector(".related-list > p")?.textContent, "関連するできごとはありません。");
+  } finally {
+    await rendered.cleanup();
+  }
+
+  const missingEntity = await renderEntityDetail({ version: "1.0", entities: [], events: [], relations: [] }, undefined, "ja");
+  try {
+    assert.equal(missingEntity.document.body.textContent, "エンティティが見つかりません。");
+  } finally {
+    await missingEntity.cleanup();
+  }
+});
+
 test("ordinary Relation actions use one local group for one and two actions", async () => {
   const rendered = await renderEntityDetail(parallelRelationDataset, (relationId) => `https://liaisonscape.test/#${relationId}`);
   try {
