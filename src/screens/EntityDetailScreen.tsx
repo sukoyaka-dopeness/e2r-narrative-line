@@ -8,6 +8,10 @@ import type { CoordinateWriteStatus } from "../services/CoordinateService";
 import { getIncidentRelations } from "../services/EntityService";
 import { getRelationBlockerLabels } from "../services/RelationPresentationService";
 import { getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
+import {
+  getEventIdentityChronology,
+  resolveEventIdentityPresentations,
+} from "../services/EventIdentityPresentationService";
 
 type EntityDetailScreenProps = {
   dataset: Dataset;
@@ -130,6 +134,10 @@ export function EntityDetailScreen({
   const relatedEvents = dataset.events.filter((event) =>
     relatedEventIds.has(event.id),
   );
+  const eventIdentity = resolveEventIdentityPresentations(relatedEvents, {
+    getPrimary: (event) => event.name ?? copy.unnamedEvent,
+    getChronology: getEventIdentityChronology,
+  });
   const relationLabels = getRelationBlockerLabels(dataset, incidentRelations);
 
   return (
@@ -183,8 +191,11 @@ export function EntityDetailScreen({
           {relatedEvents.length === 0 ? (
             <p style={{ color: "#666", margin: 0 }}>{ja ? "関連Eventはありません。" : "No related events."}</p>
           ) : (
-            relatedEvents.map((event) => (
-              <div
+            relatedEvents.map((event) => {
+              const identity = eventIdentity.get(event.id);
+
+              return (
+                <div
                 key={event.id}
                 onClick={() => setSelectedRelatedEvent(event.id)}
                 className={`related-card${
@@ -195,7 +206,7 @@ export function EntityDetailScreen({
               >
                 <div className="related-card__header">
                   <span className="related-card__name">
-                    {event.name ?? copy.unnamedEvent}
+                    {identity?.primary ?? event.name ?? copy.unnamedEvent}
                   </span>
 
                   {selectedRelatedEvent === event.id && (
@@ -210,13 +221,30 @@ export function EntityDetailScreen({
                   )}
                 </div>
 
+                {identity?.ambiguousPrimary && identity.chronologyHint && (
+                  <div>
+                    <small className="related-card__identity-hint">
+                      {identity.chronologyHint}
+                    </small>
+                  </div>
+                )}
+
+                {identity?.shortIdHint && (
+                  <div>
+                    <small className="related-card__identity-hint">
+                      {identity.shortIdHint}
+                    </small>
+                  </div>
+                )}
+
                 {selectedRelatedEvent === event.id && event.description && (
                   <div className="event-description-preview">
                     {event.description.split(/\r?\n/, 1)[0]}
                   </div>
                 )}
-              </div>
-            ))
+                </div>
+              );
+            })
           )}
         </div>
       </div>

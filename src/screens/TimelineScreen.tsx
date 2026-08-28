@@ -15,6 +15,10 @@ import {
   getEventHistoryTime,
   validateHistoryDate,
 } from "../services/HistoryService";
+import {
+  getEventIdentityChronology,
+  resolveEventIdentityPresentations,
+} from "../services/EventIdentityPresentationService";
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatEventCount, getPresentationMessages } from "../i18n/messages";
 
@@ -152,6 +156,10 @@ export function TimelineScreen({
   }, [selectedEvent, dataset.events.length]);
 
   const timelineEvents = [...dataset.events].sort(compareEventsByHistoryDate);
+  const eventIdentity = resolveEventIdentityPresentations(timelineEvents, {
+    getPrimary: (event) => event.name ?? copy.unnamedEvent,
+    getChronology: getEventIdentityChronology,
+  });
   const migrationWarnings = importWarnings.filter(
     ({ code }) => code === "legacy_dataset_migrated",
   );
@@ -345,6 +353,7 @@ export function TimelineScreen({
       <ul style={{ listStyle: "none", padding: 0 }}>
         {timelineEvents.map((event) => {
           const isSelected = event.id === selectedEvent;
+          const identity = eventIdentity.get(event.id);
 
           return (
             <li
@@ -379,7 +388,7 @@ export function TimelineScreen({
                     }}
                   >
                     <strong className="timeline-event-name">
-                      {event.name ?? copy.unnamedEvent}
+                      {identity?.primary ?? event.name ?? copy.unnamedEvent}
                     </strong>
 
                     {isSelected && (
@@ -393,6 +402,14 @@ export function TimelineScreen({
                       </button>
                     )}
                   </div>
+
+                  {identity?.shortIdHint && (
+                    <div>
+                      <small className="timeline-event-identity-hint">
+                        {identity.shortIdHint}
+                      </small>
+                    </div>
+                  )}
 
                   {isSelected && event.description && (
                     <div className="event-description-preview">
