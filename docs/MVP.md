@@ -14,8 +14,8 @@ Features that are not required for validating the Core data model are postponed 
 
 The NarrativeLine MVP was accepted as complete on 2026-08-06.
 
-The implemented Core Dataset workflow, History date-only editing, Event and
-Entity editing, Import and Export, validation, confirmation interactions, and
+The implemented Core Dataset workflow, History date and bounded local-time
+editing, Event and Entity editing, Import and Export, validation, confirmation interactions, and
 documented manual acceptance checks satisfy the current MVP scope.
 
 Deferred features and subsequent UI polish are post-MVP work and do not block
@@ -161,7 +161,7 @@ NarrativeLine validates Gregorian month lengths and leap years before applying
 an edited date. An Event without recorded date information does not contain an
 empty Time Object.
 
-## Clock and Time Zone Editing (Deferred)
+## Clock Editing (Bounded Support)
 
 Time fields:
 
@@ -169,7 +169,10 @@ Time fields:
 - Minute
 - Second
 
-These fields and their collapsible editing section are not yet implemented.
+These fields are available in the collapsible `Add time (optional)` section.
+An hour requires a recorded day; a minute requires an hour; and a second
+requires a minute. Clearing a finer field also clears dependent finer fields.
+Time Zone, UTC offset, and Instant editing remain deferred.
 
 Unknown values are omitted from the dataset.
 
@@ -218,10 +221,9 @@ When loading:
 NarrativeLine currently supports:
 
 - E2R Core
-- History Extension date-only representation
+- History Extension date and local-time representation with bounded precision
 
-History clock, Time Zone, offset, and Instant-related operations remain
-deferred.
+Time Zone, UTC offset, and Instant-related operations remain deferred.
 
 Other Extensions remain untouched unless explicitly supported by future versions.
 
@@ -314,7 +316,7 @@ The current MVP focuses on validating the core editing workflow of E2R datasets.
 - Delete Event
 - Confirm Event deletion before applying it
 - Modal confirmation keyboard handling and focus containment
-- History Extension date-only editing
+- History Extension date and bounded local-time editing
 - Year, month, and day precision
 - Astronomical year numbering
 - Gregorian date and leap-year validation
@@ -343,7 +345,7 @@ The following features are not yet implemented in the current MVP build. Some
 remain part of the target MVP, while others are deferred to later versions.
 
 - Direct Relation editing
-- History clock and Time Zone editing
+- History Time Zone, UTC offset, and Instant editing
 - Other Extension editing
 - Search
 - Filtering
@@ -351,7 +353,6 @@ remain part of the target MVP, while others are deferred to later versions.
 - Multiple datasets
 - History stack navigation
 - Dataset Settings
-- Japanese and English UI switching
 
 ## UI Principles
 

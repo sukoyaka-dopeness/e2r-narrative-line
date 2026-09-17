@@ -72,8 +72,10 @@ The MVP consists of six primary views.
 
 Every primary view is displayed inside the same application frame. The Header
 displays the `NarrativeLine` brand. On Home only, the Footer identifies the
-application as an `E2R timeline editor` and provides language and `Credits`
-actions. Working screens omit this shared Footer so that it does not compete
+application as an `E2R timeline editor` and provides a `Credits` action. The
+language selector is owned by the shared Header; the Home Footer provides only
+the application descriptor and `Credits` action. Working screens omit this
+shared Footer so that it does not compete
 with their navigation and editing action bars.
 
 The shared frame does not change navigation or editing state. Screen-specific
@@ -212,17 +214,17 @@ Unknown finer values are omitted. Date-only input is not interpreted as
 midnight. Removing all date fields removes the Time Object unless another valid
 History field requires it.
 
-## Clock and Time Zone Controls (Deferred)
+## Clock Controls (Bounded Support)
 
-Future controls may include:
+The optional clock section provides:
 
 - Hour
 - Minute
 - Second
-- IANA Time Zone
-- UTC offset
 
-These controls may be placed inside a collapsible section when implemented.
+The section is collapsible. Hour requires a recorded day, minute requires an
+hour, and second requires a minute. Clearing a finer value clears dependent
+finer values. IANA Time Zone, UTC offset, and Instant controls remain deferred.
 
 ---
 
