@@ -1,4 +1,5 @@
 import type { Event } from "../models/Event";
+import { isHistoryPayloadStable } from "./HistoryCapabilityService.ts";
 
 export interface HistoryDate {
   year?: number;
@@ -42,6 +43,7 @@ function daysInGregorianMonth(year: number, month: number): number {
 }
 
 export function getEventHistoryDate(event: Event): HistoryDate | undefined {
+  if (!isHistoryPayloadStable(event.extensions?.history)) return undefined;
   const time = event.extensions?.history?.time;
 
   if (time !== undefined) {
@@ -56,6 +58,7 @@ export function getEventHistoryDate(event: Event): HistoryDate | undefined {
 }
 
 export function getEventHistoryTime(event: Event): HistoryDate | undefined {
+  if (!isHistoryPayloadStable(event.extensions?.history)) return undefined;
   const time = event.extensions?.history?.time;
 
   if (time !== undefined) {

@@ -439,6 +439,15 @@ button:disabled {
   width: 100%;
 }
 
+.history-read-only-notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--social-bg);
+  color: var(--text-h);
+}
+
 .event-time-fields {
   margin-top: 16px;
   padding: 10px 12px;

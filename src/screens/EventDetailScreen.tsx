@@ -11,6 +11,10 @@ import {
   type HistoryDate,
   type HistoryDateValidationError,
 } from "../services/HistoryService";
+import {
+  classifyHistoryCapability,
+  isHistoryEditable,
+} from "../services/HistoryCapabilityService.ts";
 import { getEventHistoryDependencyValues } from "../services/EventDetailDraftService";
 import { getDetailDiscardCopy, getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
@@ -131,6 +135,8 @@ export function EventDetailScreen({
   const copy = getPresentationMessages(language);
   const event =
     dataset.events.find((event) => event.id === selectedEvent) ?? null;
+  const historyCapability = classifyHistoryCapability(dataset, event);
+  const historyEditable = isHistoryEditable(historyCapability);
   const relatedEntityIds = new Set(
     dataset.relations.flatMap((relation) => {
       if (relation.sourceId === selectedEvent) {
@@ -195,12 +201,14 @@ export function EventDetailScreen({
     event !== null &&
     (name !== (event.name ?? "") ||
       description !== (event.description ?? "") ||
-      year !== String(storedHistoryFields.year ?? "") ||
-      month !== String(storedHistoryFields.month ?? "") ||
-      day !== String(storedHistoryFields.day ?? "") ||
-      hour !== String(storedHistoryFields.hour ?? "") ||
-      minute !== String(storedHistoryFields.minute ?? "") ||
-      second !== String(storedHistoryFields.second ?? ""));
+      (historyEditable && (
+        year !== String(storedHistoryFields.year ?? "") ||
+        month !== String(storedHistoryFields.month ?? "") ||
+        day !== String(storedHistoryFields.day ?? "") ||
+        hour !== String(storedHistoryFields.hour ?? "") ||
+        minute !== String(storedHistoryFields.minute ?? "") ||
+        second !== String(storedHistoryFields.second ?? "")
+      )));
 
   useEffect(() => {
     if (!focusedRelatedEntityId) return;
@@ -255,6 +263,7 @@ export function EventDetailScreen({
     onDraftChange,
     onClearDraft,
     hasPendingEdits,
+    historyEditable,
   ]);
 
   if (!event) {
@@ -269,9 +278,11 @@ export function EventDetailScreen({
     ...(minute.trim() === "" ? {} : { minute: parseOptionalInteger(minute) }),
     ...(second.trim() === "" ? {} : { second: parseOptionalInteger(second) }),
   };
-  const historyDateValidationError = validateHistoryDate(editedHistoryDate);
+  const historyDateValidationError = historyEditable
+    ? validateHistoryDate(editedHistoryDate)
+    : null;
   const getChangedEventUpdates = () => ({
-    ...(historyDatesEqual(storedHistoryTime, editedHistoryDate)
+    ...(!historyEditable || historyDatesEqual(storedHistoryTime, editedHistoryDate)
       ? {}
       : { historyDate: editedHistoryDate }),
     ...(name === (event.name ?? "") ? {} : { name }),
@@ -307,6 +318,7 @@ export function EventDetailScreen({
         </p>
       </div>
 
+      {historyEditable ? (
       <div>
         <label>{ja ? "グレゴリオ暦" : "Gregorian Calendar"}</label>
         <div className="date-fields">
@@ -447,6 +459,11 @@ export function EventDetailScreen({
           </div>
         </details>
       </div>
+      ) : (
+        <p role="status" className="history-read-only-notice">
+          {copy.historyReadOnlyNotice}
+        </p>
+      )}
 
       <br />
 

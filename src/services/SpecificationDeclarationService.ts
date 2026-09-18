@@ -4,6 +4,10 @@ import {
   COORDINATE_EXTENSION_ID,
   COORDINATE_FORMAT_VERSION,
 } from "./CoordinateService.ts";
+import {
+  classifyHistoryCapability,
+  isHistoryEditable,
+} from "./HistoryCapabilityService.ts";
 
 export const SPECIFICATION_EXTENSION_ID =
   "draft.github.sukoyaka-dopeness.specification";
@@ -96,6 +100,14 @@ export function addExportSpecificationDeclaration(
   const unsupportedExtensionIds = [...extensionIds].filter(
     (id) =>
       !supportedVersions.has(id) ||
+      (id === "history" &&
+        dataset.events.some((event) => {
+          if (!event.extensions || !Object.prototype.hasOwnProperty.call(event.extensions, "history")) {
+            return false;
+          }
+          const capability = classifyHistoryCapability(dataset, event);
+          return !isHistoryEditable(capability) || capability.capability !== "stable";
+        })) ||
       (id === COORDINATE_EXTENSION_ID &&
         !coordinateVersionIsSupported(dataset)),
   );

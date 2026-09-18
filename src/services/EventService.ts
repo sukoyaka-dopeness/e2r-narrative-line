@@ -2,6 +2,7 @@ import type { Dataset } from "../models/Dataset";
 import type { Event } from "../models/Event";
 import type { HistoryDate } from "./HistoryService";
 import { validateHistoryDate } from "./HistoryService.ts";
+import { classifyHistoryCapability, isHistoryEditable } from "./HistoryCapabilityService.ts";
 import { createCoreObjectId } from "./IdentifierService.ts";
 
 type AddEventResult = {
@@ -28,7 +29,16 @@ export function addEvent(dataset: Dataset, language: "en" | "ja" = "en"): AddEve
   };
 }
 
-function setEventHistoryDate(event: Event, historyDate: HistoryDate): Event {
+function setEventHistoryDate(
+  dataset: Dataset,
+  event: Event,
+  historyDate: HistoryDate,
+): Event {
+  const historyCapability = classifyHistoryCapability(dataset, event);
+  if (!isHistoryEditable(historyCapability)) {
+    throw new Error(`History edit refused: ${historyCapability.capability}`);
+  }
+
   const validationError = validateHistoryDate(historyDate);
 
   if (validationError) {
@@ -145,7 +155,7 @@ export function updateEvent(
 
       return historyDate === undefined
         ? updatedEvent
-        : setEventHistoryDate(updatedEvent, historyDate);
+        : setEventHistoryDate(dataset, updatedEvent, historyDate);
     }),
   };
 }

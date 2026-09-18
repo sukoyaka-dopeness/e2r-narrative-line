@@ -32,6 +32,7 @@ const englishMessages = {
   historyMinuteOutOfRange: "Minute must be between 0 and 59.",
   historySecondMustBeInteger: "Second must be an integer.",
   historySecondOutOfRange: "Second must be between 0 and 59.",
+  historyReadOnlyNotice: "This History data is currently read-only in NarrativeLine. The existing date editor cannot safely edit it.",
 } as const;
 
 type MessageKey = keyof typeof englishMessages;
@@ -69,6 +70,7 @@ const japaneseMessages: PresentationMessages = {
   historyMinuteOutOfRange: "分は0から59の範囲で入力してください。",
   historySecondMustBeInteger: "秒は整数で入力してください。",
   historySecondOutOfRange: "秒は0から59の範囲で入力してください。",
+  historyReadOnlyNotice: "このHistoryデータは現在NarrativeLineで読み取り専用です。既存の日付エディターでは安全に編集できません。",
 };
 
 export const messages: Record<Locale, PresentationMessages> = {
