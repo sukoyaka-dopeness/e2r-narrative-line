@@ -188,11 +188,12 @@ This slice is selected, not started. It should be limited to:
 
 The validator dependency/release integration is a prerequisite decision for
 this slice, not permission to change the validator or application in this
-audit. The canonical production path is a normal published
+A canonical production path is a normal published
 `@sukoyaka-dopeness/e2r-validator` package; sibling file, workspace, or Git
-dependencies are temporary evidence only. Validator SemVer policy and prior
-compatible validation additions make `0.5.0` the recommended next version,
-but the version bump and package release require explicit human authorization.
+dependencies are temporary evidence only. Validator `0.5.0` release
+preparation is complete locally at commit `00bcda7`; the latest published
+package remains `0.4.0` until the separate authorization, push, tag, and
+publication steps occur.
 A later `NL-H2-R2` may consider read-only semantic presentation for a narrow,
 explicitly supported position shape, but it requires separate human decisions
 about display and ordering.
