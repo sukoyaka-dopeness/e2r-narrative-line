@@ -1,13 +1,22 @@
 # History 2.0.0 Candidate / Relative Time 0.1.0 Application Readiness Audit
 
 Date: 2026-09-19
-Status: **AUDIT COMPLETE — NO RUNTIME IMPLEMENTATION AUTHORIZED**
+Status: **HISTORICAL AUDIT BASELINE — NL-H2-R1 IMPLEMENTED AFTER THIS AUDIT**
 
 This document records the NarrativeLine-side readiness audit for the
 non-stable History `2.0.0` candidate and Relative Time `0.1.0` draft. The
 candidate specifications remain the responsibility of `e2r-spec`; this document
 does not promote either candidate, define migration, or authorize application
 editing.
+
+The bounded implementation selected by this audit was subsequently completed
+in NarrativeLine commit `1c1d068` as `NL-H2-R1`. The current application
+recognizes the exact supported History 2.0.0 Candidate boundary, keeps
+candidate/unknown/mixed/unsupported History read-only, refuses Stable History
+writes for those shapes, and preserves candidate and Relative Time payloads on
+unrelated edits and export. The observations below remain historical evidence;
+the current implementation result is recorded in
+`docs/nl-h2-r1-history-2-candidate-recognition-and-edit-refusal-result.md`.
 
 ## Authority and revisions inspected
 
@@ -84,44 +93,52 @@ structural recognition available to the application's validation boundary; it
 does not make History 2 or Relative Time semantic presentation or authoring an
 application capability.
 
-## Observed candidate behavior
+## Observed candidate behavior at audit time
 
 Read-only import probes used the current NarrativeLine import path and the
 candidate fixtures from `e2r-spec`.
 
-| Input | Current import result | Current presentation/sort | Current edit/export boundary |
+| Input | Audit-time import result | Audit-time presentation/sort | Audit-time edit/export boundary |
 | --- | --- | --- | --- |
-| History 2 `position` | accepted by the published validator as a valid candidate Dataset | no History date is read; Timeline uses the undated/ID fallback | unrelated changes preserve raw fields; History edit writes a second stable `time` object |
+| History 2 `position` | accepted by the published validator as a valid candidate Dataset | no History date is read; Timeline uses the undated/ID fallback | at audit time, unrelated changes preserved raw fields but History edit wrote a second stable `time` object |
 | History 2 `bounded-point` | accepted by the published validator as a valid candidate Dataset | no bounded interval UI or semantic order | preserved when untouched; no candidate editor |
 | History 2 `temporal-extent` | accepted by the published validator as a valid candidate Dataset | no extent UI or semantic order | preserved when untouched; no candidate editor |
 | multiple positions / approximation | accepted by the published validator as a valid candidate Dataset | no winner, midpoint, approximation, or generated date | preserved when untouched; no candidate editor |
 | candidate declaration/shape mismatch | rejected with a validator error | import fails at the existing validation boundary | no candidate editor or repair path |
-| unknown History Feature or newer version | warning and opaque preservation | no semantic interpretation | preserved when untouched; stable History edit is unsafe |
+| unknown History Feature or newer version | warning and opaque preservation | no semantic interpretation | at audit time, preserved when untouched; stable History edit was unsafe |
 | Relative Time `0.1.0` Relation payload | accepted by the published validator as a valid candidate Dataset | no Timeline ordering, solver, or authoring | raw Relation payload is preserved; no semantic edit |
 | unknown Relative Time Feature/version | warning and opaque preservation | no semantic interpretation | preserved when untouched |
 
 This behavior is preservation-oriented, not semantic support. In particular,
 `isValid` from the installed `0.5.0` dependency means the candidate structural
 contract was accepted; it does not mean that the candidate semantics are
-understood by NarrativeLine.
+understood by NarrativeLine. The current bounded result keeps that
+preservation-only boundary and adds no History 2 semantic presentation,
+ordering, migration, or writer.
 
-## Confirmed preservation/editing risk
+## Audit-time preservation/editing risk and current resolution
 
-The current History editor is not safe to use on a candidate History payload.
+At audit time, the History editor was not safe to use on a candidate History
+payload.
 Given an Event with `extensions.history.assertions`, saving the existing date
 editor preserves `assertions` but adds `extensions.history.time`. That creates
 a mixed payload whose meaning and specification declaration are not defined by
-the current app contract. The editor also has no candidate-aware refusal path.
+the current app contract. The editor also had no candidate-aware refusal path.
 
-There is a separate export risk. For a Dataset containing a candidate-shaped
+There was a separate export risk. For a Dataset containing a candidate-shaped
 History payload but no existing Specification declaration, the current export
 declaration helper can add `history: 1.0.0`, because its writer capability is
 key-based rather than candidate-payload-aware. An existing declaration is
 preserved, but the app cannot currently authoritatively claim History `2.0.0`
 support.
 
-These are bounded application integration risks. They do not establish that
+These were bounded application integration risks. They did not establish that
 the candidate schema is wrong and do not justify an automatic migration.
+
+`NL-H2-R1` closes this bounded application risk without promoting the
+candidate: candidate, unknown, mixed, and unsupported History shapes are now
+read-only, the Stable History writer refuses them, and export does not invent
+a `history: 1.0.0` declaration for an undeclared candidate-shaped payload.
 
 The following safety properties are already present and should be retained:
 
@@ -138,9 +155,10 @@ The following safety properties are already present and should be retained:
 ### A. Preservation-only / unsupported presentation
 
 This is the safest initial application boundary. Candidate data may be opened,
-diagnosed, and preserved without semantic display or authoring. It still needs
-one explicit protection: the existing History editor must refuse candidate or
-unknown History shapes rather than write stable `history.time` beside them.
+diagnosed, and preserved without semantic display or authoring. The explicit
+protection selected here is now implemented: the existing History editor
+refuses candidate or unknown History shapes rather than writing stable
+`history.time` beside them.
 
 ### B. Read-only semantic consumer
 
@@ -169,13 +187,13 @@ Deferred. It would combine History presentation/editing, Relative Time
 Relation authoring, conflict policy, diagnostics, and round-trip guarantees.
 Those are separate responsibility and product decisions.
 
-## Selected next bounded implementation slice
+## Implemented bounded runtime slice
 
-The smallest safe future NarrativeLine slice is:
+The smallest safe NarrativeLine slice identified by the audit was:
 
 **`NL-H2-R1 — History 2.0 candidate recognition boundary and edit refusal`**
 
-This slice is selected, not started. It should be limited to:
+This slice was implemented with the following bounded scope:
 
 1. recognize the exact candidate declaration/payload boundary using the
    candidate-supporting validator dependency now available to the app;
@@ -189,14 +207,15 @@ This slice is selected, not started. It should be limited to:
 6. add tests for import, unrelated edit, History edit refusal, export, and
    round-trip preservation.
 
-The validator dependency/release integration is complete for this slice's
-prerequisite, not permission to change the validator or implement the slice.
+The validator dependency/release integration was the prerequisite; Validator
+itself was not changed.
 A canonical production path is a normal published
 `@sukoyaka-dopeness/e2r-validator` package; sibling file, workspace, or Git
-dependencies are temporary evidence only. NarrativeLine now resolves the
-published `0.5.0` package from its lockfile. The candidate UI, edit refusal,
-mixed-shape handling, writer, migration, and Relative Time behavior remain
-unimplemented and require the separate `NL-H2-R1` checkpoint.
+dependencies are temporary evidence only. NarrativeLine resolves the
+published `0.5.0` package from its lockfile. Candidate UI refusal,
+mixed-shape handling, and writer/export protection are implemented by
+`NL-H2-R1`; migration, semantic presentation, and Relative Time behavior
+remain outside this slice.
 A later `NL-H2-R2` may consider read-only semantic presentation for a narrow,
 explicitly supported position shape, but it requires separate human decisions
 about display and ordering.

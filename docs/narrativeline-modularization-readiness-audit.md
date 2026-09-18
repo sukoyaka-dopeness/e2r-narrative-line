@@ -2,11 +2,18 @@
 
 Date: 2026-09-19
 
-Status: **RECORDED / IMPLEMENTATION NOT STARTED**
+Status: **RECORDED / READINESS BASELINE; NL-H2-R1 IMPLEMENTED AFTER THIS AUDIT**
 
 This is a source-first modularization and readiness record. It does not
 authorize a runtime refactor, History 2 implementation, or a change to Dataset
 semantics.
+
+The History capability/policy seam proposed by this audit was subsequently
+implemented in the bounded `NL-H2-R1` checkpoint. The current result is
+recorded in
+`docs/nl-h2-r1-history-2-candidate-recognition-and-edit-refusal-result.md`.
+This does not authorize a broader modularization refactor or History 2
+semantic consumer.
 
 ## Authority and evidence
 
@@ -145,12 +152,12 @@ Relative Time authoring/order, or a runtime release.
 
 ## Validation and safety boundary
 
-This checkpoint changes documentation only. The following are intentionally
-not changed:
+This audit was documentation-only at the time it was recorded. The later
+`NL-H2-R1` result is the current runtime status; the following remain
+intentionally unchanged by the later implementation:
 
-- runtime source, tests, schema, Core/Extension semantics, or sample Datasets;
-- History writer or Specification declaration behavior;
-- NL-H2-R1, History 2 UI, migration, or Relative Time consumer behavior;
+- Dataset schema, Core/Extension semantics, migration, or sample Datasets;
+- History 2 semantic presentation and Relative Time consumer behavior;
 - unrelated dirty or untracked work.
 
 The appropriate documentation gates are `git diff --check` in each changed
