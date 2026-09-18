@@ -1,7 +1,7 @@
 # NL-H2-R1 — History 2.0 Candidate Recognition and Edit Refusal
 
 Date: 2026-09-19
-Status: **IMPLEMENTED / READY FOR MANUAL ACCEPTANCE**
+Status: **ACCEPTED / MANUAL ACCEPTANCE COMPLETE**
 
 ## Scope and authority
 
@@ -71,14 +71,54 @@ outside this bounded History checkpoint and was not attempted.
 
 The automated UI integration coverage verifies the read-only notice and the
 absence of date inputs in English and Japanese, plus an unrelated name edit
-and save. A live-browser desktop/narrow and keyboard/focus acceptance pass has
-not been claimed here; this result is therefore ready for that manual
-acceptance step.
+and save.
+
+## Real-browser manual acceptance
+
+The previously blocked fixture-loading step was recovered without a production
+change. Chrome `152.0.0.0` loaded the canonical
+`e2r-spec/examples/history-2.0-draft/position.json` through CDP
+`DOM.setFileInputFiles` on NarrativeLine's real `input[type=file]`. The file
+therefore passed through the application's normal import, parsing, and
+validation boundary; no React state or parsed Dataset was injected.
+
+The resumed matrix passed on the exact documented revision:
+
+- Stable History `1.0.0` opened with its six date/time number inputs, remained
+  editable in EN and JA, saved a Year change, and reflected it on the Timeline.
+- The exact History `2.0.0` Candidate opened normally in EN and JA with clear
+  read-only guidance, no number inputs, no Stable time field group, and no
+  add-time control.
+- Tab and Shift+Tab reached the shell, Back, locale action, supported Event
+  fields, and supported actions with visible focus. No hidden History editor
+  entered the focus sequence. Enter activated Back successfully.
+- At a 360 x 800 viewport the Japanese notice and supported fields fit without
+  horizontal document overflow; brand, Back, and locale actions remained
+  visible and usable.
+- An unrelated Event Name edit saved successfully. A real browser export and
+  file-input re-import preserved the Candidate History object and exact
+  declaration, retained `history: 2.0.0`, and introduced neither `history.time`
+  nor a false Stable declaration.
+- A mixed `history.time` plus `history.assertions` fixture was refused by the
+  Validator boundary with `history_2_time_and_assertions_conflict`; the active
+  Candidate remained intact, no automatic repair occurred, and navigation
+  remained usable. The existing focused tests retain coverage of the internal
+  mixed-shape read-only capability classification.
+- An unknown Candidate assertion member remained read-only and survived an
+  unrelated Description edit plus export. An unsupported declared History
+  version also remained read-only and usable, without a blank/error loop.
+
+No Candidate assertion rewrite, History declaration invention, Stable fallback,
+blank screen, navigation lock, visible data loss, Relative Time ordering, or
+Derived writeback was observed. Human inspection of the EN desktop and JA
+360 px screenshots confirmed that the bounded read-only presentation is
+understandable and fits its surface. No runtime defect was found.
 
 ## Worktree and release boundary
 
 The implementation commit changes only the History capability boundary, its
-localized notice/style, and focused tests. The pre-existing dirty
+localized notice/style, and focused tests. This acceptance closure changes
+documentation only. The pre-existing dirty
 `AGENTS.md` was not staged or changed by this checkpoint. No schema, sample,
 Validator, LiaisonScape, release artifact, tag, push, deploy, or publication
 was performed.
