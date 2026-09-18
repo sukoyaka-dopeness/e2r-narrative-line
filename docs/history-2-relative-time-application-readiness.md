@@ -77,10 +77,12 @@ The relevant implementation boundaries are:
 - `src/services/SpecificationDeclarationService.ts` currently knows History
   only as `1.0.0` when it creates a new declaration.
 
-The application dependency is `@sukoyaka-dopeness/e2r-validator` `^0.4.0`.
-The installed application package is the registry `0.4.0` package, not the
-candidate-supporting validator HEAD. Therefore the validator candidate support
-accepted in `e2r-validator` is not yet an application runtime capability.
+The application dependency is the published
+`@sukoyaka-dopeness/e2r-validator` package at `^0.5.0`, resolved by the
+lockfile to registry version `0.5.0`. This makes the validator's candidate
+structural recognition available to the application's validation boundary; it
+does not make History 2 or Relative Time semantic presentation or authoring an
+application capability.
 
 ## Observed candidate behavior
 
@@ -89,17 +91,19 @@ candidate fixtures from `e2r-spec`.
 
 | Input | Current import result | Current presentation/sort | Current edit/export boundary |
 | --- | --- | --- | --- |
-| History 2 `position` | accepted by the installed validator with an unsupported-version warning | no History date is read; Timeline uses the undated/ID fallback | unrelated changes preserve raw fields; History edit writes a second stable `time` object |
-| History 2 `bounded-point` | accepted as a structurally usable raw Dataset with warning | no bounded interval UI or semantic order | preserved when untouched; no candidate editor |
-| History 2 `temporal-extent` | accepted as a raw Dataset with warning | no extent UI or semantic order | preserved when untouched; no candidate editor |
-| multiple positions / approximation | accepted as raw data with warning | no winner, midpoint, approximation, or generated date | preserved when untouched; no candidate editor |
+| History 2 `position` | accepted by the published validator as a valid candidate Dataset | no History date is read; Timeline uses the undated/ID fallback | unrelated changes preserve raw fields; History edit writes a second stable `time` object |
+| History 2 `bounded-point` | accepted by the published validator as a valid candidate Dataset | no bounded interval UI or semantic order | preserved when untouched; no candidate editor |
+| History 2 `temporal-extent` | accepted by the published validator as a valid candidate Dataset | no extent UI or semantic order | preserved when untouched; no candidate editor |
+| multiple positions / approximation | accepted by the published validator as a valid candidate Dataset | no winner, midpoint, approximation, or generated date | preserved when untouched; no candidate editor |
+| candidate declaration/shape mismatch | rejected with a validator error | import fails at the existing validation boundary | no candidate editor or repair path |
 | unknown History Feature or newer version | warning and opaque preservation | no semantic interpretation | preserved when untouched; stable History edit is unsafe |
-| Relative Time `0.1.0` Relation payload | accepted with unknown-extension/specification warnings | no Timeline ordering, solver, or authoring | raw Relation payload is preserved; no semantic edit |
+| Relative Time `0.1.0` Relation payload | accepted by the published validator as a valid candidate Dataset | no Timeline ordering, solver, or authoring | raw Relation payload is preserved; no semantic edit |
 | unknown Relative Time Feature/version | warning and opaque preservation | no semantic interpretation | preserved when untouched |
 
 This behavior is preservation-oriented, not semantic support. In particular,
-`isValid` from the installed `0.4.0` dependency does not mean that the
-candidate semantics are understood.
+`isValid` from the installed `0.5.0` dependency means the candidate structural
+contract was accepted; it does not mean that the candidate semantics are
+understood by NarrativeLine.
 
 ## Confirmed preservation/editing risk
 
@@ -174,8 +178,7 @@ The smallest safe future NarrativeLine slice is:
 This slice is selected, not started. It should be limited to:
 
 1. recognize the exact candidate declaration/payload boundary using the
-   candidate-supporting validator dependency once that dependency is explicitly
-   made available to the app;
+   candidate-supporting validator dependency now available to the app;
 2. keep candidate History payloads read-only and preservation-oriented;
 3. disable or refuse the stable History date editor for candidate, unknown, or
    mixed History shapes;
@@ -186,14 +189,14 @@ This slice is selected, not started. It should be limited to:
 6. add tests for import, unrelated edit, History edit refusal, export, and
    round-trip preservation.
 
-The validator dependency/release integration is a prerequisite decision for
-this slice, not permission to change the validator or application in this
+The validator dependency/release integration is complete for this slice's
+prerequisite, not permission to change the validator or implement the slice.
 A canonical production path is a normal published
 `@sukoyaka-dopeness/e2r-validator` package; sibling file, workspace, or Git
-dependencies are temporary evidence only. Validator `0.5.0` release
-preparation is complete locally at commit `00bcda7`; the latest published
-package remains `0.4.0` until the separate authorization, push, tag, and
-publication steps occur.
+dependencies are temporary evidence only. NarrativeLine now resolves the
+published `0.5.0` package from its lockfile. The candidate UI, edit refusal,
+mixed-shape handling, writer, migration, and Relative Time behavior remain
+unimplemented and require the separate `NL-H2-R1` checkpoint.
 A later `NL-H2-R2` may consider read-only semantic presentation for a narrow,
 explicitly supported position shape, but it requires separate human decisions
 about display and ordering.
