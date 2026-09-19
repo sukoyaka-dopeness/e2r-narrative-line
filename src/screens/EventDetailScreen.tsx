@@ -422,21 +422,6 @@ export function EventDetailScreen({
           </p>
         )}
 
-        <label className="history-approximation-toggle">
-          <input
-            type="checkbox"
-            checked={approximation}
-            disabled={year.trim() === ""}
-            onChange={(inputEvent) => setApproximation(inputEvent.target.checked)}
-          />
-          {copy.historyApproximationLabel}
-        </label>
-        {approximation && (
-          <p role="status" className="history-approximation-notice">
-            {copy.historyApproximationNotice}
-          </p>
-        )}
-
         <details
           className="event-time-fields"
           open={isTimeOpen}
@@ -498,6 +483,21 @@ export function EventDetailScreen({
             </label>
           </div>
         </details>
+
+        <label className="history-approximation-toggle">
+          <input
+            type="checkbox"
+            checked={approximation}
+            disabled={year.trim() === ""}
+            onChange={(inputEvent) => setApproximation(inputEvent.target.checked)}
+          />
+          {copy.historyApproximationLabel}
+        </label>
+        {approximation && (
+          <p role="status" className="history-approximation-notice">
+            {copy.historyApproximationNotice}
+          </p>
+        )}
       </div>
       ) : (
         <p role="status" className="history-read-only-notice">

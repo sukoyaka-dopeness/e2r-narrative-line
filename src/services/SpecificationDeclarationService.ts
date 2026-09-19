@@ -116,7 +116,8 @@ function getHistoryDeclarationInfo(
   );
   if (historyEvents.length === 0) return undefined;
 
-  let version: string | undefined;
+  let sawStable = false;
+  let sawCandidate = false;
   const features = new Set<string>();
 
   for (const event of historyEvents) {
@@ -125,11 +126,10 @@ function getHistoryDeclarationInfo(
       return undefined;
     }
 
-    const nextVersion = capability.capability === "stable" ? "1.0.0" : "2.0.0";
-    if (version !== undefined && version !== nextVersion) return undefined;
-    version = nextVersion;
-
-    if (capability.capability === "candidate") {
+    if (capability.capability === "stable") {
+      sawStable = true;
+    } else {
+      sawCandidate = true;
       const payload = event.extensions?.history;
       if (isRecord(payload)) {
         for (const feature of historyCandidateFeatures(payload)) {
@@ -139,6 +139,7 @@ function getHistoryDeclarationInfo(
     }
   }
 
+  const version = sawCandidate ? "2.0.0" : sawStable ? "1.0.0" : undefined;
   return version === undefined
     ? undefined
     : { version, features: [...features].sort() };

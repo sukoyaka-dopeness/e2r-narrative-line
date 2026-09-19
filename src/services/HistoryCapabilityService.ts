@@ -250,6 +250,12 @@ export function classifyHistoryCapability(
 
     for (const candidate of candidateEvents) {
       const candidatePayload = candidate.extensions?.[HISTORY_EXTENSION_ID];
+      const stableResult = classifyHistoryPayload(candidatePayload, {
+        status: "declared",
+        version: STABLE_HISTORY_VERSION,
+        features: [],
+      });
+      if (stableResult.capability === "stable") continue;
       if (
         !isRecord(candidatePayload) ||
         !onlyKnownKeys(candidatePayload, ["assertions"]) ||
@@ -263,6 +269,13 @@ export function classifyHistoryCapability(
         datasetFeatures.add(feature);
       }
     }
+
+    const targetStableResult = classifyHistoryPayload(payload, {
+      status: "declared",
+      version: STABLE_HISTORY_VERSION,
+      features: [],
+    });
+    if (targetStableResult.capability === "stable") return targetStableResult;
 
     return isExactCandidatePayload(payload, declaration, [...datasetFeatures].sort())
       ? result("candidate")

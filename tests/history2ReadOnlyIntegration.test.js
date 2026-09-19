@@ -30,17 +30,31 @@ const candidateDataset = JSON.stringify({
   },
 });
 
+const stableDataset = JSON.stringify({
+  version: "1.0",
+  entities: [],
+  events: [{
+    id: "event-stable",
+    name: "Stable Event",
+    extensions: { history: { time: { year: 1900 } } },
+  }],
+  relations: [],
+  extensions: {
+    metadata: { datasetId: "dataset-stable" },
+  },
+});
+
 function buttonByText(document, text) {
   return [...document.querySelectorAll("button")].find(
     (button) => button.textContent?.trim() === text,
   );
 }
 
-async function renderCandidateApp(language) {
+async function renderCandidateApp(language, datasetSource = candidateDataset) {
   const environment = createDomTestEnvironment("https://narrativeline.test/");
   environment.document.documentElement.lang = language;
   environment.window.localStorage.setItem("narrativeline.language", language);
-  environment.window.localStorage.setItem("narrativeline.lastDataset", candidateDataset);
+  environment.window.localStorage.setItem("narrativeline.lastDataset", datasetSource);
   environment.window.requestAnimationFrame = (callback) => {
     callback(0);
     return 0;
@@ -80,13 +94,13 @@ async function renderCandidateApp(language) {
   };
 }
 
-function openCandidateEvent(document) {
+function openCandidateEvent(document, eventName = "Candidate Event") {
   const resume = document.querySelector(".home-actions button");
   assert.ok(resume);
   act(() => resume.click());
 
   const card = [...document.querySelectorAll(".timeline-card")].find(
-    (item) => item.textContent?.includes("Candidate Event"),
+    (item) => item.textContent?.includes(eventName),
   );
   assert.ok(card);
   act(() => card.dispatchEvent(new document.defaultView.MouseEvent("click", { bubbles: true })));
@@ -103,6 +117,15 @@ test("History 2 single-position Candidate Event is editable and preserves unrela
     assert.equal(rendered.document.querySelector(".history-read-only-notice"), null);
     assert.equal(rendered.document.querySelectorAll('input[type="number"]').length, 6);
     assert.equal(rendered.document.querySelectorAll('input[type="checkbox"]').length, 1);
+    assert.match(
+      rendered.document.querySelector(".history-approximation-toggle")?.textContent ?? "",
+      /date and time/,
+    );
+    const timeFields = rendered.document.querySelector(".event-time-fields");
+    const approximationToggle = rendered.document.querySelector(".history-approximation-toggle");
+    assert.ok(timeFields);
+    assert.ok(approximationToggle);
+    assert.equal(timeFields.compareDocumentPosition(approximationToggle) & 4, 4);
 
     const name = rendered.document.querySelector('input[placeholder="Enter event name"]');
     assert.ok(name);
@@ -132,6 +155,37 @@ test("History 2 single-position Candidate Event presents approximation control i
     openCandidateEvent(rendered.document);
     assert.equal(rendered.document.querySelectorAll('input[type="number"]').length, 6);
     assert.equal(rendered.document.querySelectorAll('input[type="checkbox"]').length, 1);
+    assert.match(
+      rendered.document.querySelector(".history-approximation-toggle")?.textContent ?? "",
+      /日付と時刻/,
+    );
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("real Event Detail save upgrades a Stable History Event to H2 circa", async () => {
+  const rendered = await renderCandidateApp("en", stableDataset);
+  try {
+    openCandidateEvent(rendered.document, "Stable Event");
+    const approximation = rendered.document.querySelector('input[type="checkbox"]');
+    assert.ok(approximation);
+    act(() => approximation.click());
+    assert.match(
+      rendered.document.querySelector(".history-approximation-notice")?.textContent ?? "",
+      /entered date and time/,
+    );
+
+    const save = buttonByText(rendered.document, "Save Event");
+    assert.ok(save);
+    act(() => save.click());
+
+    const confirm = buttonByText(rendered.document, "Use approximate date and time");
+    assert.ok(confirm);
+    act(() => confirm.click());
+
+    assert.ok(rendered.document.querySelector(".timeline-screen"));
+    assert.ok(rendered.document.body.textContent.includes("circa 1900"));
   } finally {
     rendered.cleanup();
   }

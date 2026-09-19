@@ -124,6 +124,34 @@ test("explicit circa upgrade creates one H2 position and synchronizes declaratio
   ]);
 });
 
+test("explicit circa upgrade preserves sibling Stable History Events", () => {
+  const dataset = {
+    ...stableHistoryDataset(),
+    events: [
+      ...stableHistoryDataset().events,
+      { id: "event-sibling", extensions: { history: { time: { year: 1899 } } } },
+    ],
+  };
+
+  const updated = updateEvent(dataset, "event-h1", {
+    history2Position: {
+      position: { year: 1900, month: 5 },
+      approximation: true,
+    },
+  });
+
+  assert.deepEqual(updated.events[1].extensions.history, {
+    time: { year: 1899 },
+  });
+  assert.deepEqual(
+    updated.extensions["draft.github.sukoyaka-dopeness.specification"].uses,
+    [
+      { extension: "metadata", version: "1.0.0" },
+      { extension: "history", version: "2.0.0", features: ["approximation"] },
+    ],
+  );
+});
+
 test("turning circa off keeps the H2 assertion and removes only its Feature", () => {
   const upgraded = updateEvent(stableHistoryDataset(), "event-h1", {
     history2Position: {
