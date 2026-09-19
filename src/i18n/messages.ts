@@ -33,6 +33,12 @@ const englishMessages = {
   historySecondMustBeInteger: "Second must be an integer.",
   historySecondOutOfRange: "Second must be between 0 and 59.",
   historyReadOnlyNotice: "This History data is currently read-only in NarrativeLine. The existing date editor cannot safely edit it.",
+  cancel: "Cancel",
+  historyApproximationLabel: "Mark date as approximate",
+  historyApproximationNotice: "This date is approximate. Timeline placement uses the recorded position without inventing a range or midpoint.",
+  historyUpgradeHeading: "Use an approximate date?",
+  historyUpgradeDescription: "Saving this approximate date will use the History 2 representation. Your recorded date fields will be preserved; no exact day or range will be inferred.",
+  historyUpgradeConfirm: "Use approximate date",
 } as const;
 
 type MessageKey = keyof typeof englishMessages;
@@ -71,6 +77,12 @@ const japaneseMessages: PresentationMessages = {
   historySecondMustBeInteger: "秒は整数で入力してください。",
   historySecondOutOfRange: "秒は0から59の範囲で入力してください。",
   historyReadOnlyNotice: "このHistoryデータは現在NarrativeLineで読み取り専用です。既存の日付エディターでは安全に編集できません。",
+  cancel: "キャンセル",
+  historyApproximationLabel: "日付をおおよその値として記録",
+  historyApproximationNotice: "この日付はおおよその値です。Timelineでは範囲や中央値を作成せず、記録された位置を使って表示します。",
+  historyUpgradeHeading: "おおよその日付として保存しますか？",
+  historyUpgradeDescription: "おおよその日付として保存すると、History 2形式に変更されます。記録された日付は保持され、正確な日や範囲は推測されません。",
+  historyUpgradeConfirm: "おおよその日付として保存",
 };
 
 export const messages: Record<Locale, PresentationMessages> = {

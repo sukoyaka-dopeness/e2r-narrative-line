@@ -96,13 +96,13 @@ function openCandidateEvent(document) {
   act(() => edit.click());
 }
 
-test("History 2 Candidate Event Detail is read-only in English and preserves unrelated editing", async () => {
+test("History 2 single-position Candidate Event is editable and preserves unrelated editing", async () => {
   const rendered = await renderCandidateApp("en");
   try {
     openCandidateEvent(rendered.document);
-    assert.ok(rendered.document.querySelector(".history-read-only-notice"));
-    assert.equal(rendered.document.querySelectorAll('input[type="number"]').length, 0);
-    assert.equal(rendered.document.querySelector(".event-time-fields"), null);
+    assert.equal(rendered.document.querySelector(".history-read-only-notice"), null);
+    assert.equal(rendered.document.querySelectorAll('input[type="number"]').length, 6);
+    assert.equal(rendered.document.querySelectorAll('input[type="checkbox"]').length, 1);
 
     const name = rendered.document.querySelector('input[placeholder="Enter event name"]');
     assert.ok(name);
@@ -126,12 +126,12 @@ test("History 2 Candidate Event Detail is read-only in English and preserves unr
   }
 });
 
-test("History 2 Candidate Event Detail presents the read-only notice in Japanese", async () => {
+test("History 2 single-position Candidate Event presents approximation control in Japanese", async () => {
   const rendered = await renderCandidateApp("ja");
   try {
     openCandidateEvent(rendered.document);
-    assert.ok(rendered.document.body.textContent.includes("このHistoryデータは現在NarrativeLineで読み取り専用です"));
-    assert.equal(rendered.document.querySelectorAll('input[type="number"]').length, 0);
+    assert.equal(rendered.document.querySelectorAll('input[type="number"]').length, 6);
+    assert.equal(rendered.document.querySelectorAll('input[type="checkbox"]').length, 1);
   } finally {
     rendered.cleanup();
   }

@@ -4,10 +4,21 @@ import type { HistoryDate } from "./HistoryService";
 import { validateHistoryDate } from "./HistoryService.ts";
 import { classifyHistoryCapability, isHistoryEditable } from "./HistoryCapabilityService.ts";
 import { createCoreObjectId } from "./IdentifierService.ts";
+import {
+  updateEventHistory2Position,
+  type History2PositionUpdate,
+} from "./History2Service.ts";
 
 type AddEventResult = {
   dataset: Dataset;
   eventId: string;
+};
+
+export type EventUpdates = {
+  historyDate?: HistoryDate;
+  history2Position?: History2PositionUpdate;
+  name?: string;
+  description?: string;
 };
 
 export function addEvent(dataset: Dataset, language: "en" | "ja" = "en"): AddEventResult {
@@ -134,12 +145,25 @@ function setEventHistoryDate(
 export function updateEvent(
   dataset: Dataset,
   eventId: string,
-  updates: {
-    historyDate?: HistoryDate;
-    name?: string;
-    description?: string;
-  },
+  updates: EventUpdates,
 ): Dataset {
+  if (updates.history2Position !== undefined) {
+    const nextDataset = updateEventHistory2Position(
+      dataset,
+      eventId,
+      updates.history2Position,
+    );
+    const directUpdates = { ...updates };
+    delete directUpdates.history2Position;
+    if (Object.keys(directUpdates).length === 0) return nextDataset;
+    return {
+      ...nextDataset,
+      events: nextDataset.events.map((event) =>
+        event.id === eventId ? { ...event, ...directUpdates } : event,
+      ),
+    };
+  }
+
   return {
     ...dataset,
     events: dataset.events.map((event) => {

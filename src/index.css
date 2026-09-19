@@ -448,6 +448,24 @@ button:disabled {
   color: var(--text-h);
 }
 
+.history-approximation-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.history-approximation-toggle input {
+  width: auto;
+}
+
+.history-approximation-notice {
+  margin: 8px 0 0;
+  color: var(--text-h);
+}
+
 .event-time-fields {
   margin-top: 16px;
   padding: 10px 12px;

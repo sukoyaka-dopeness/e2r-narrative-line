@@ -7,6 +7,10 @@ import {
 } from "../src/services/DatasetService.ts";
 import { updateEvent } from "../src/services/EventService.ts";
 import { classifyHistoryCapability } from "../src/services/HistoryCapabilityService.ts";
+import {
+  compareEventsByHistoryDate,
+  formatEventTimelineDate,
+} from "../src/services/HistoryService.ts";
 
 async function readSpecExample(path) {
   return readFile(new URL(`../../e2r-spec/${path}`, import.meta.url), "utf8");
@@ -79,4 +83,120 @@ test("preserves Relative Time payloads without using them for History or Timelin
   assert.equal(exported.isValid, true);
   assert.ok(exported.json);
   assert.deepEqual(JSON.parse(exported.json), JSON.parse(source));
+});
+
+function stableHistoryDataset() {
+  return {
+    version: "1.0",
+    entities: [],
+    events: [{
+      id: "event-h1",
+      extensions: { history: { time: { year: 1900, month: 5 } } },
+    }],
+    relations: [],
+    extensions: { metadata: { datasetId: "dataset-h1" } },
+  };
+}
+
+test("explicit circa upgrade creates one H2 position and synchronizes declarations", () => {
+  const updated = updateEvent(stableHistoryDataset(), "event-h1", {
+    history2Position: {
+      position: { year: 1900, month: 5 },
+      approximation: true,
+    },
+  });
+  const history = updated.events[0].extensions.history;
+  const assertion = history.assertions[0];
+  const uses = updated.extensions["draft.github.sukoyaka-dopeness.specification"].uses;
+
+  assert.deepEqual(history, {
+    assertions: [{
+      id: assertion.id,
+      type: "position",
+      position: { year: 1900, month: 5, approximation: "circa" },
+    }],
+  });
+  assert.equal(assertion.id.length > 0, true);
+  assert.equal("time" in history, false);
+  assert.deepEqual(uses, [
+    { extension: "metadata", version: "1.0.0" },
+    { extension: "history", version: "2.0.0", features: ["approximation"] },
+  ]);
+});
+
+test("turning circa off keeps the H2 assertion and removes only its Feature", () => {
+  const upgraded = updateEvent(stableHistoryDataset(), "event-h1", {
+    history2Position: {
+      position: { year: 1900, month: 5 },
+      approximation: true,
+    },
+  });
+  const assertionId = upgraded.events[0].extensions.history.assertions[0].id;
+  const exact = updateEvent(upgraded, "event-h1", {
+    history2Position: {
+      position: { year: 1900, month: 5 },
+      approximation: false,
+    },
+  });
+
+  assert.equal(exact.events[0].extensions.history.assertions[0].id, assertionId);
+  assert.deepEqual(exact.events[0].extensions.history.assertions[0].position, {
+    year: 1900,
+    month: 5,
+  });
+  assert.deepEqual(
+    exact.extensions["draft.github.sukoyaka-dopeness.specification"].uses,
+    [
+      { extension: "metadata", version: "1.0.0" },
+      { extension: "history", version: "2.0.0" },
+    ],
+  );
+});
+
+test("removing the only H2 position cleans History and preserves unrelated declarations", () => {
+  const upgraded = updateEvent(stableHistoryDataset(), "event-h1", {
+    history2Position: {
+      position: { year: 1900 },
+      approximation: true,
+    },
+  });
+  const removed = updateEvent(upgraded, "event-h1", {
+    history2Position: { position: {}, approximation: false },
+  });
+
+  assert.equal(removed.events[0].extensions?.history, undefined);
+  assert.deepEqual(removed.extensions.metadata, { datasetId: "dataset-h1" });
+  assert.deepEqual(
+    removed.extensions["draft.github.sukoyaka-dopeness.specification"].uses,
+    [{ extension: "metadata", version: "1.0.0" }],
+  );
+});
+
+test("approved Option A orders H2 approximate positions by recorded Civil Time", () => {
+  const dataset = {
+    version: "1.0",
+    entities: [],
+    events: [
+      { id: "event-1901", extensions: { history: { assertions: [{ id: "a", type: "position", position: { year: 1901 } }] } } },
+      { id: "event-circa-1900", extensions: { history: { assertions: [{ id: "b", type: "position", position: { year: 1900, approximation: "circa" } }] } } },
+      { id: "event-1899", extensions: { history: { assertions: [{ id: "c", type: "position", position: { year: 1899 } }] } } },
+    ],
+    relations: [],
+    extensions: {
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "0.1.0",
+        uses: [{ extension: "history", version: "2.0.0", features: ["approximation"] }],
+      },
+    },
+  };
+  const ordered = [...dataset.events].sort((left, right) =>
+    compareEventsByHistoryDate(left, right, dataset),
+  );
+
+  assert.deepEqual(ordered.map((event) => event.id), [
+    "event-1899",
+    "event-circa-1900",
+    "event-1901",
+  ]);
+  assert.equal(formatEventTimelineDate(dataset, dataset.events[1]), "1900");
 });

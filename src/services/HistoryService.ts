@@ -1,5 +1,7 @@
 import type { Event } from "../models/Event";
+import type { Dataset } from "../models/Dataset";
 import { isHistoryPayloadStable } from "./HistoryCapabilityService.ts";
+import { getHistory2PositionEditorValues } from "./History2Service.ts";
 
 export interface HistoryDate {
   year?: number;
@@ -73,6 +75,13 @@ export function getEventHistoryTime(event: Event): HistoryDate | undefined {
   }
 
   return undefined;
+}
+
+export function getEventTimelineHistoryDate(
+  dataset: Dataset,
+  event: Event,
+): HistoryDate | undefined {
+  return getEventHistoryDate(event) ?? getHistory2PositionEditorValues(dataset, event)?.date;
 }
 
 export function validateHistoryDate(
@@ -185,6 +194,33 @@ export function formatEventHistoryDate(event: Event): string | undefined {
   return formatted;
 }
 
+export function formatEventTimelineDate(
+  dataset: Dataset,
+  event: Event,
+): string | undefined {
+  const date = getEventTimelineHistoryDate(dataset, event);
+
+  if (
+    !date ||
+    date.year === undefined ||
+    validateHistoryDate(date) !== null
+  ) {
+    return undefined;
+  }
+
+  let formatted = String(date.year);
+
+  if (date.month !== undefined) {
+    formatted += `-${String(date.month).padStart(2, "0")}`;
+  }
+
+  if (date.day !== undefined) {
+    formatted += `-${String(date.day).padStart(2, "0")}`;
+  }
+
+  return formatted;
+}
+
 export function formatEventHistoryTime(
   event: Event,
   includeSeconds = false,
@@ -235,9 +271,17 @@ function compareIds(left: string, right: string): number {
   return left < right ? -1 : 1;
 }
 
-export function compareEventsByHistoryDate(left: Event, right: Event): number {
-  const leftDate = getEventHistoryDate(left);
-  const rightDate = getEventHistoryDate(right);
+export function compareEventsByHistoryDate(
+  left: Event,
+  right: Event,
+  dataset?: Dataset,
+): number {
+  const leftDate = dataset
+    ? getEventTimelineHistoryDate(dataset, left)
+    : getEventHistoryDate(left);
+  const rightDate = dataset
+    ? getEventTimelineHistoryDate(dataset, right)
+    : getEventHistoryDate(right);
   const leftHasDate =
     leftDate?.year !== undefined && validateHistoryDate(leftDate) === null;
   const rightHasDate =
@@ -283,8 +327,14 @@ export function compareEventsByHistoryDate(left: Event, right: Event): number {
     }
   }
 
-  const leftTemporalOrder = left.extensions?.history?.time?.temporalOrder;
-  const rightTemporalOrder = right.extensions?.history?.time?.temporalOrder;
+  const leftTemporalOrder = dataset
+    ? getHistory2PositionEditorValues(dataset, left)?.temporalOrder ??
+      left.extensions?.history?.time?.temporalOrder
+    : left.extensions?.history?.time?.temporalOrder;
+  const rightTemporalOrder = dataset
+    ? getHistory2PositionEditorValues(dataset, right)?.temporalOrder ??
+      right.extensions?.history?.time?.temporalOrder
+    : right.extensions?.history?.time?.temporalOrder;
 
   if (
     Number.isInteger(leftTemporalOrder) &&

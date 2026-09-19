@@ -40,9 +40,9 @@ import {
   updateEvent,
   deleteEvent,
   deleteRelation,
+  type EventUpdates,
 } from "./services/EventService";
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
-import type { HistoryDate } from "./services/HistoryService";
 import { updateObjectCoordinate } from "./services/CoordinateService";
 import {
   isDatasetModified,
@@ -700,11 +700,7 @@ function App() {
 
   const handleUpdateEvent = (
     eventId: string,
-    updates: {
-      historyDate?: HistoryDate;
-      name?: string;
-      description?: string;
-    },
+    updates: EventUpdates,
   ) => {
     setEventDraft(undefined);
     setPendingSource("eventDetail", false);
@@ -712,11 +708,7 @@ function App() {
   };
   const handleSaveAndOpenEntityPicker = (
     eventId: string,
-    updates: {
-      historyDate?: HistoryDate;
-      name?: string;
-      description?: string;
-    },
+    updates: EventUpdates,
   ) => {
     setEventDraft(undefined);
     setPendingSource("eventDetail", false);

@@ -12,9 +12,11 @@ import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
+  formatEventTimelineDate,
   getEventHistoryTime,
   validateHistoryDate,
 } from "../services/HistoryService";
+import { getHistory2PositionEditorValues } from "../services/History2Service";
 import {
   getEventIdentityChronology,
   resolveEventIdentityPresentations,
@@ -155,7 +157,9 @@ export function TimelineScreen({
     return () => window.cancelAnimationFrame(frame);
   }, [selectedEvent, dataset.events.length]);
 
-  const timelineEvents = [...dataset.events].sort(compareEventsByHistoryDate);
+  const timelineEvents = [...dataset.events].sort((left, right) =>
+    compareEventsByHistoryDate(left, right, dataset),
+  );
   const eventIdentity = resolveEventIdentityPresentations(timelineEvents, {
     getPrimary: (event) => event.name ?? copy.unnamedEvent,
     getChronology: getEventIdentityChronology,
@@ -371,7 +375,19 @@ export function TimelineScreen({
                     fontWeight: "bold",
                   }}
                 >
-                  <div>{formatEventHistoryDate(event) ?? "----/--/--"}</div>
+                  <div
+                    aria-label={
+                      getHistory2PositionEditorValues(dataset, event)?.approximation
+                        ? `${ja ? "頃" : "circa"} ${formatEventTimelineDate(dataset, event) ?? "----/--/--"}`
+                        : undefined
+                    }
+                  >
+                    {getHistory2PositionEditorValues(dataset, event)?.approximation
+                      ? ja
+                        ? `${formatEventTimelineDate(dataset, event) ?? "----/--/--"}頃`
+                        : `circa ${formatEventTimelineDate(dataset, event) ?? "----/--/--"}`
+                      : formatEventHistoryDate(event) ?? formatEventTimelineDate(dataset, event) ?? "----/--/--"}
+                  </div>
                   {formatTimelineEventTime(event, ja, isSelected) && (
                     <small className="timeline-event-time">
                       {formatTimelineEventTime(event, ja, isSelected)}

@@ -12,10 +12,13 @@ import {
   type HistoryDateValidationError,
 } from "../services/HistoryService";
 import {
+  getHistory2PositionEditorValues,
+} from "../services/History2Service.ts";
+import type { EventUpdates } from "../services/EventService.ts";
+import {
   classifyHistoryCapability,
   isHistoryEditable,
 } from "../services/HistoryCapabilityService.ts";
-import { getEventHistoryDependencyValues } from "../services/EventDetailDraftService";
 import { getDetailDiscardCopy, getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
 type HistoryValidationMessageKey =
@@ -78,11 +81,7 @@ type EventDetailScreenProps = {
   focusedRelatedEntityId: string | null;
   onUpdateEvent: (
     eventId: string,
-    updates: {
-      historyDate?: HistoryDate;
-      name?: string;
-      description?: string;
-    },
+    updates: EventUpdates,
   ) => void;
   onPendingWorkChange: (pending: boolean) => void;
   pendingDraft?: EventDetailDraft;
@@ -93,11 +92,7 @@ type EventDetailScreenProps = {
   onSelectEntity: (entityId: string) => void;
   onSaveAndOpenEntityPicker: (
     eventId: string,
-    updates: {
-      historyDate?: HistoryDate;
-      name?: string;
-      description?: string;
-    },
+    updates: EventUpdates,
   ) => void;
   onRemoveEventEntity: (eventId: string, entityId: string) => void;
   onDeleteEvent: (eventId: string) => void;
@@ -112,6 +107,7 @@ export type EventDetailDraft = {
   hour: string;
   minute: string;
   second: string;
+  approximation: boolean;
 };
 
 export function EventDetailScreen({
@@ -137,6 +133,9 @@ export function EventDetailScreen({
     dataset.events.find((event) => event.id === selectedEvent) ?? null;
   const historyCapability = classifyHistoryCapability(dataset, event);
   const historyEditable = isHistoryEditable(historyCapability);
+  const history2Position = getHistory2PositionEditorValues(dataset, event);
+  const history2Editable = history2Position !== undefined;
+  const historyFieldsEditable = historyEditable || history2Editable;
   const relatedEntityIds = new Set(
     dataset.relations.flatMap((relation) => {
       if (relation.sourceId === selectedEvent) {
@@ -153,8 +152,15 @@ export function EventDetailScreen({
   const relatedEntities: Entity[] = dataset.entities.filter((entity) =>
     relatedEntityIds.has(entity.id),
   );
-  const storedHistoryTime = event ? getEventHistoryTime(event) : undefined;
-  const storedHistoryFields = getEventHistoryDependencyValues(event);
+  const storedHistoryTime = history2Position?.date ?? (event ? getEventHistoryTime(event) : undefined);
+  const storedHistoryFields = {
+    year: storedHistoryTime?.year,
+    month: storedHistoryTime?.month,
+    day: storedHistoryTime?.day,
+    hour: storedHistoryTime?.hour,
+    minute: storedHistoryTime?.minute,
+    second: storedHistoryTime?.second,
+  };
   const [year, setYear] = useState(
     pendingDraft?.year ?? (storedHistoryTime?.year === undefined
       ? ""
@@ -179,6 +185,9 @@ export function EventDetailScreen({
   const [second, setSecond] = useState(
     pendingDraft?.second ?? (storedHistoryTime?.second === undefined ? "" : String(storedHistoryTime.second)),
   );
+  const [approximation, setApproximation] = useState(
+    pendingDraft?.approximation ?? history2Position?.approximation ?? false,
+  );
   const [isTimeOpen, setIsTimeOpen] = useState(
     storedHistoryTime?.hour !== undefined ||
       storedHistoryTime?.minute !== undefined ||
@@ -193,6 +202,7 @@ export function EventDetailScreen({
   );
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
+  const [historyUpgradeAction, setHistoryUpgradeAction] = useState<"save" | "add" | null>(null);
   const [entityPendingRemoval, setEntityPendingRemoval] = useState<Entity | null>(
     null,
   );
@@ -201,13 +211,14 @@ export function EventDetailScreen({
     event !== null &&
     (name !== (event.name ?? "") ||
       description !== (event.description ?? "") ||
-      (historyEditable && (
+      (historyFieldsEditable && (
         year !== String(storedHistoryFields.year ?? "") ||
         month !== String(storedHistoryFields.month ?? "") ||
         day !== String(storedHistoryFields.day ?? "") ||
         hour !== String(storedHistoryFields.hour ?? "") ||
         minute !== String(storedHistoryFields.minute ?? "") ||
-        second !== String(storedHistoryFields.second ?? "")
+        second !== String(storedHistoryFields.second ?? "") ||
+        approximation !== (history2Position?.approximation ?? false)
       )));
 
   useEffect(() => {
@@ -238,6 +249,7 @@ export function EventDetailScreen({
           hour,
           minute,
           second,
+          approximation,
         });
       } else {
         onClearDraft(event.id);
@@ -263,7 +275,9 @@ export function EventDetailScreen({
     onDraftChange,
     onClearDraft,
     hasPendingEdits,
-    historyEditable,
+    historyFieldsEditable,
+    approximation,
+    history2Position?.approximation,
   ]);
 
   if (!event) {
@@ -278,37 +292,48 @@ export function EventDetailScreen({
     ...(minute.trim() === "" ? {} : { minute: parseOptionalInteger(minute) }),
     ...(second.trim() === "" ? {} : { second: parseOptionalInteger(second) }),
   };
-  const historyDateValidationError = historyEditable
+  const historyDateValidationError = historyFieldsEditable
     ? validateHistoryDate(editedHistoryDate)
     : null;
-  const getChangedEventUpdates = () => ({
-    ...(!historyEditable || historyDatesEqual(storedHistoryTime, editedHistoryDate)
-      ? {}
-      : { historyDate: editedHistoryDate }),
+  const historyDateChanged =
+    historyFieldsEditable &&
+    (!historyDatesEqual(storedHistoryTime, editedHistoryDate) ||
+      approximation !== (history2Position?.approximation ?? false));
+  const getChangedEventUpdates = (): EventUpdates => ({
+    ...(historyDateChanged
+      ? history2Editable || approximation
+        ? { history2Position: { position: editedHistoryDate, approximation } }
+        : { historyDate: editedHistoryDate }
+      : {}),
     ...(name === (event.name ?? "") ? {} : { name }),
     ...(description === (event.description ?? "") ? {} : { description }),
   });
-  const handleSave = () => {
+  const needsHistoryUpgradeConfirmation =
+    approximation && !history2Editable && editedHistoryDate.year !== undefined;
+  const commitSave = (addRelatedEntity: boolean) => {
+    disposingDraftRef.current = true;
+    onClearDraft(event.id);
+    if (addRelatedEntity) {
+      onSaveAndOpenEntityPicker(event.id, getChangedEventUpdates());
+    } else {
+      onUpdateEvent(event.id, getChangedEventUpdates());
+      onCancel(event.id, false);
+    }
+  };
+  const requestSave = (addRelatedEntity: boolean) => {
     if (historyDateValidationError) {
       return;
     }
 
-    disposingDraftRef.current = true;
-    onClearDraft(event.id);
-    onUpdateEvent(event.id, getChangedEventUpdates());
-
-    onCancel(event.id, false);
-  };
-
-  const handleSaveAndAddEntity = () => {
-    if (historyDateValidationError) {
+    if (needsHistoryUpgradeConfirmation) {
+      setHistoryUpgradeAction(addRelatedEntity ? "add" : "save");
       return;
     }
 
-    disposingDraftRef.current = true;
-    onClearDraft(event.id);
-    onSaveAndOpenEntityPicker(event.id, getChangedEventUpdates());
+    commitSave(addRelatedEntity);
   };
+  const handleSave = () => requestSave(false);
+  const handleSaveAndAddEntity = () => requestSave(true);
   return (
     <div className="detail-screen detail-screen--event">
       <div className="detail-header">
@@ -318,7 +343,7 @@ export function EventDetailScreen({
         </p>
       </div>
 
-      {historyEditable ? (
+      {historyFieldsEditable ? (
       <div>
         <label>{ja ? "グレゴリオ暦" : "Gregorian Calendar"}</label>
         <div className="date-fields">
@@ -394,6 +419,21 @@ export function EventDetailScreen({
         {historyDateValidationError && (
           <p role="alert" style={{ color: "#b00020", marginBottom: 0 }}>
             {copy[historyDateValidationMessageKeys[historyDateValidationError]]}
+          </p>
+        )}
+
+        <label className="history-approximation-toggle">
+          <input
+            type="checkbox"
+            checked={approximation}
+            disabled={year.trim() === ""}
+            onChange={(inputEvent) => setApproximation(inputEvent.target.checked)}
+          />
+          {copy.historyApproximationLabel}
+        </label>
+        {approximation && (
+          <p role="status" className="history-approximation-notice">
+            {copy.historyApproximationNotice}
           </p>
         )}
 
@@ -585,14 +625,44 @@ export function EventDetailScreen({
       </div>
 
       <div className="danger-zone">
-        <button
-          type="button"
-          className="danger-action"
-          onClick={() => setIsDeleteConfirmationOpen(true)}
+      <button
+        type="button"
+        className="danger-action"
+        onClick={() => setIsDeleteConfirmationOpen(true)}
+      >
+        {ja ? "できごとを削除" : "Delete Event"}
+      </button>
+    </div>
+
+      {historyUpgradeAction && (
+        <ModalDialog
+          ariaLabelledby="history-upgrade-heading"
+          onDismiss={() => setHistoryUpgradeAction(null)}
         >
-          {ja ? "できごとを削除" : "Delete Event"}
-        </button>
-      </div>
+          <h2 id="history-upgrade-heading">
+            {copy.historyUpgradeHeading}
+          </h2>
+          <p>{copy.historyUpgradeDescription}</p>
+          <div className="modal-actions">
+            <button
+              type="button"
+              onClick={() => setHistoryUpgradeAction(null)}
+            >
+              {copy.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const action = historyUpgradeAction;
+                setHistoryUpgradeAction(null);
+                commitSave(action === "add");
+              }}
+            >
+              {copy.historyUpgradeConfirm}
+            </button>
+          </div>
+        </ModalDialog>
+      )}
 
       {isDeleteConfirmationOpen && (
         <ModalDialog

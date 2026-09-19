@@ -168,6 +168,7 @@ function expectedCandidateFeatures(payload: JsonRecord): string[] | undefined {
 function isExactCandidatePayload(
   payload: JsonRecord,
   declaration: HistoryDeclaration,
+  declaredDatasetFeatures?: string[],
 ): boolean {
   if (
     declaration.status !== "declared" ||
@@ -180,7 +181,7 @@ function isExactCandidatePayload(
     return false;
   }
 
-  const expectedFeatures = expectedCandidateFeatures(payload);
+  const expectedFeatures = declaredDatasetFeatures ?? expectedCandidateFeatures(payload);
   return (
     expectedFeatures !== undefined &&
     JSON.stringify([...declaration.features].sort()) ===
@@ -234,6 +235,40 @@ export function classifyHistoryCapability(
   if (!event) return result("none");
   const payload = event.extensions?.[HISTORY_EXTENSION_ID];
   const declaration = readHistoryDeclaration(dataset);
+  const payloadResult = classifyHistoryPayload(payload, declaration);
+  if (payloadResult.capability === "mixed") return payloadResult;
+  if (!isRecord(payload)) return result(payloadResult.capability);
+
+  if (
+    declaration.status === "declared" &&
+    declaration.version === HISTORY_2_CANDIDATE_VERSION
+  ) {
+    const datasetFeatures = new Set<string>();
+    const candidateEvents = dataset.events.filter(
+      (candidate) => candidate.extensions?.[HISTORY_EXTENSION_ID] !== undefined,
+    );
+
+    for (const candidate of candidateEvents) {
+      const candidatePayload = candidate.extensions?.[HISTORY_EXTENSION_ID];
+      if (
+        !isRecord(candidatePayload) ||
+        !onlyKnownKeys(candidatePayload, ["assertions"]) ||
+        !Array.isArray(candidatePayload.assertions) ||
+        candidatePayload.assertions.length === 0 ||
+        !candidatePayload.assertions.every(isKnownCandidateAssertion)
+      ) {
+        return result("unknown");
+      }
+      for (const feature of expectedCandidateFeatures(candidatePayload) ?? []) {
+        datasetFeatures.add(feature);
+      }
+    }
+
+    return isExactCandidatePayload(payload, declaration, [...datasetFeatures].sort())
+      ? result("candidate")
+      : result("unknown");
+  }
+
   return classifyHistoryPayload(payload, declaration);
 }
 

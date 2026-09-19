@@ -6,7 +6,6 @@ import {
 } from "./CoordinateService.ts";
 import {
   classifyHistoryCapability,
-  isHistoryEditable,
 } from "./HistoryCapabilityService.ts";
 
 export const SPECIFICATION_EXTENSION_ID =
@@ -18,6 +17,17 @@ const supportedVersions = new Map<string, string>([
   ["history", "1.0.0"],
   [COORDINATE_EXTENSION_ID, COORDINATE_FORMAT_VERSION],
 ]);
+
+type HistoryDeclarationInfo = {
+  version: string;
+  features: string[];
+};
+
+export type SpecificationUse = {
+  extension: string;
+  version: string;
+  features?: string[];
+};
 
 export type ExportSpecificationDeclarationResult =
   | { status: "added"; dataset: Dataset }
@@ -68,6 +78,111 @@ function coordinateVersionIsSupported(dataset: Dataset): boolean {
   );
 }
 
+function historyCandidateFeatures(payload: Record<string, unknown>): string[] {
+  if (!Array.isArray(payload.assertions)) return [];
+
+  const features = new Set<string>();
+  if (payload.assertions.length > 1) features.add("multiple-assertions");
+
+  for (const assertion of payload.assertions) {
+    if (!isRecord(assertion)) continue;
+    if (assertion.type === "bounded-point") features.add("bounded-point");
+    if (assertion.type === "temporal-extent") features.add("temporal-extent");
+
+    const positions = [
+      assertion.position,
+      assertion.earliest,
+      assertion.latest,
+      isRecord(assertion.start) ? assertion.start.position : undefined,
+      isRecord(assertion.end) ? assertion.end.position : undefined,
+    ];
+    if (
+      positions.some(
+        (position) => isRecord(position) && position.approximation !== undefined,
+      )
+    ) {
+      features.add("approximation");
+    }
+  }
+
+  return [...features].sort();
+}
+
+function getHistoryDeclarationInfo(
+  dataset: Dataset,
+): HistoryDeclarationInfo | undefined {
+  const historyEvents = dataset.events.filter(
+    (event) => event.extensions?.history !== undefined,
+  );
+  if (historyEvents.length === 0) return undefined;
+
+  let version: string | undefined;
+  const features = new Set<string>();
+
+  for (const event of historyEvents) {
+    const capability = classifyHistoryCapability(dataset, event);
+    if (capability.capability !== "stable" && capability.capability !== "candidate") {
+      return undefined;
+    }
+
+    const nextVersion = capability.capability === "stable" ? "1.0.0" : "2.0.0";
+    if (version !== undefined && version !== nextVersion) return undefined;
+    version = nextVersion;
+
+    if (capability.capability === "candidate") {
+      const payload = event.extensions?.history;
+      if (isRecord(payload)) {
+        for (const feature of historyCandidateFeatures(payload)) {
+          features.add(feature);
+        }
+      }
+    }
+  }
+
+  return version === undefined
+    ? undefined
+    : { version, features: [...features].sort() };
+}
+
+export function getCompleteSupportedExtensionUses(
+  dataset: Dataset,
+): SpecificationUse[] | undefined {
+  const extensionIds = collectExtensionIds(dataset);
+  extensionIds.delete(SPECIFICATION_EXTENSION_ID);
+  const historyDeclaration = getHistoryDeclarationInfo(dataset);
+
+  if (
+    extensionIds.size === 0 ||
+    (!extensionIds.has("metadata") && !extensionIds.has("history"))
+  ) {
+    return undefined;
+  }
+
+  const unsupportedExtensionIds = [...extensionIds].filter(
+    (id) =>
+      !supportedVersions.has(id) ||
+      (id === "history" && historyDeclaration === undefined) ||
+      (id === COORDINATE_EXTENSION_ID &&
+        !coordinateVersionIsSupported(dataset)),
+  );
+  if (unsupportedExtensionIds.length > 0) return undefined;
+
+  return [...supportedVersions]
+    .filter(([id]) => extensionIds.has(id))
+    .map(([extension, version]) => {
+      if (extension !== "history" || historyDeclaration === undefined) {
+        return { extension, version };
+      }
+      return {
+        extension,
+        version: historyDeclaration.version,
+        ...(historyDeclaration.features.length > 0
+          ? { features: historyDeclaration.features }
+          : {}),
+      };
+    });
+}
+
 /**
  * Adds a complete Specification Extension declaration for newly exported data
  * only when NarrativeLine can state every used Extension version exactly.
@@ -76,6 +191,7 @@ export function addExportSpecificationDeclaration(
   dataset: Dataset,
 ): ExportSpecificationDeclarationResult {
   const extensionIds = collectExtensionIds(dataset);
+  const historyDeclaration = getHistoryDeclarationInfo(dataset);
 
   if (extensionIds.has(SPECIFICATION_EXTENSION_ID)) {
     return {
@@ -100,14 +216,7 @@ export function addExportSpecificationDeclaration(
   const unsupportedExtensionIds = [...extensionIds].filter(
     (id) =>
       !supportedVersions.has(id) ||
-      (id === "history" &&
-        dataset.events.some((event) => {
-          if (!event.extensions || !Object.prototype.hasOwnProperty.call(event.extensions, "history")) {
-            return false;
-          }
-          const capability = classifyHistoryCapability(dataset, event);
-          return !isHistoryEditable(capability) || capability.capability !== "stable";
-        })) ||
+      (id === "history" && historyDeclaration === undefined) ||
       (id === COORDINATE_EXTENSION_ID &&
         !coordinateVersionIsSupported(dataset)),
   );
@@ -123,7 +232,19 @@ export function addExportSpecificationDeclaration(
 
   const uses = [...supportedVersions]
     .filter(([id]) => extensionIds.has(id))
-    .map(([extension, version]) => ({ extension, version }));
+    .map(([extension, version]) => {
+      if (extension !== "history" || historyDeclaration === undefined) {
+        return { extension, version };
+      }
+
+      return {
+        extension,
+        version: historyDeclaration.version,
+        ...(historyDeclaration.features.length > 0
+          ? { features: historyDeclaration.features }
+          : {}),
+      };
+    });
 
   return {
     status: "added",
