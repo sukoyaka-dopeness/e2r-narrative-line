@@ -17,6 +17,15 @@ History 2 mutation and declaration synchronization are isolated in
 Timeline projection, and screen responsibilities remain at their existing
 boundaries. No wholesale application refactor was introduced.
 
+## Current repair follow-up
+
+The declaration creation blocker found during real-browser acceptance was fixed
+in the bounded follow-up recorded in
+[`h2-position-circa-declaration-blocker-fix-result.md`](h2-position-circa-declaration-blocker-fix-result.md).
+The current state is **BLOCKER FIXED / AUTOMATED GREEN / REAL-BROWSER
+ACCEPTANCE PENDING**. This document's earlier implementation status remains
+historical context; neither document marks the capability `ACCEPTED / CLOSED`.
+
 ## Implemented boundary
 
 - A single exact History 2.0.0 `position` assertion can be edited when the
