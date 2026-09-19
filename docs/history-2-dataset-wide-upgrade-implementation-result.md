@@ -125,6 +125,21 @@ WebSocket warning that port `24678` is already in use. The suite exits
 naturally with all assertions passing. This checkpoint does not diagnose that
 condition.
 
+## Confirmation dismissal consistency
+
+The H1-to-H2 confirmation uses the shared `ModalDialog` behavior for its
+safe cancellation paths: Cancel, Escape, and a click on the backdrop outside
+the dialog all dismiss without committing the Dataset-wide upgrade. A click
+inside the dialog does not dismiss it. The existing dialog focus restoration
+returns focus to the control that opened the confirmation.
+
+The H2-specific integration coverage verifies that backdrop dismissal keeps
+the Dataset in H1, preserves the unsaved Event draft and approximation state,
+leaves the persisted Dataset unchanged without a partial declaration or
+approximation Feature, and restores opener focus. This is a bounded
+interaction consistency fix; it does not establish a global policy that every
+dialog must dismiss on backdrop click.
+
 ## Next boundary
 
 The next checkpoint is browser connector timeout diagnosis, followed by fresh

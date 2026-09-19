@@ -195,7 +195,7 @@ test("real Event Detail save upgrades a Stable History Event to H2 circa", async
   }
 });
 
-test("canceling the Dataset-wide upgrade confirmation preserves the Event draft", async () => {
+test("Cancel and Escape preserve the Event draft during Dataset-wide upgrade confirmation", async () => {
   const rendered = await renderCandidateApp("en", stableDataset);
   try {
     openCandidateEvent(rendered.document, "Stable Event");
@@ -208,11 +208,59 @@ test("canceling the Dataset-wide upgrade confirmation preserves the Event draft"
     act(() => save.click());
     const cancel = buttonByText(rendered.document, "Cancel");
     assert.ok(cancel);
-    act(() => cancel.click());
+    act(() => cancel.dispatchEvent(new rendered.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
 
     assert.equal(rendered.document.querySelector(".timeline-screen"), null);
     assert.equal(approximation.checked, true);
     assert.ok(rendered.document.querySelector(".detail-screen--event"));
+
+    act(() => buttonByText(rendered.document, "Save Event")?.click());
+    const cancelButton = buttonByText(rendered.document, "Cancel");
+    assert.ok(cancelButton);
+    act(() => cancelButton.click());
+
+    assert.equal(rendered.document.querySelector(".timeline-screen"), null);
+    assert.equal(approximation.checked, true);
+    assert.ok(rendered.document.querySelector(".detail-screen--event"));
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("backdrop dismissal cancels the Dataset-wide upgrade confirmation without mutation", async () => {
+  const rendered = await renderCandidateApp("en", stableDataset);
+  try {
+    openCandidateEvent(rendered.document, "Stable Event");
+    const approximation = rendered.document.querySelector('input[type="checkbox"]');
+    assert.ok(approximation);
+    act(() => approximation.click());
+
+    const save = buttonByText(rendered.document, "Save Event");
+    assert.ok(save);
+    act(() => {
+      save.focus();
+      save.click();
+    });
+    const dialog = rendered.document.querySelector('[role="alertdialog"]');
+    assert.ok(dialog);
+    const persistedBeforeDismissal = rendered.window.localStorage.getItem("narrativeline.lastDataset");
+
+    act(() => dialog.querySelector("h2")?.dispatchEvent(new rendered.window.MouseEvent("click", { bubbles: true })));
+    assert.equal(rendered.document.querySelector('[role="alertdialog"]'), dialog);
+
+    const backdrop = rendered.document.querySelector(".modal-backdrop");
+    assert.ok(backdrop);
+    act(() => backdrop.dispatchEvent(new rendered.window.MouseEvent("click", { bubbles: true, cancelable: true })));
+
+    assert.equal(rendered.document.querySelector('[role="alertdialog"]'), null);
+    assert.ok(rendered.document.querySelector(".detail-screen--event"));
+    assert.equal(approximation.checked, true);
+    assert.equal(rendered.document.activeElement, save);
+    assert.equal(rendered.window.localStorage.getItem("narrativeline.lastDataset"), persistedBeforeDismissal);
+
+    const persisted = JSON.parse(rendered.window.localStorage.getItem("narrativeline.lastDataset"));
+    assert.deepEqual(persisted.events[0].extensions.history, { time: { year: 1900 } });
+    assert.equal(persisted.extensions["draft.github.sukoyaka-dopeness.specification"], undefined);
   } finally {
     rendered.cleanup();
   }

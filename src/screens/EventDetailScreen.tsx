@@ -638,6 +638,7 @@ export function EventDetailScreen({
         <ModalDialog
           ariaLabelledby="history-upgrade-heading"
           onDismiss={() => setHistoryUpgradeAction(null)}
+          onBackdropDismiss={() => setHistoryUpgradeAction(null)}
         >
           <h2 id="history-upgrade-heading">
             {copy.historyUpgradeHeading}
