@@ -22,8 +22,8 @@ boundaries. No wholesale application refactor was introduced.
 The declaration creation blocker found during real-browser acceptance was fixed
 in the bounded follow-up recorded in
 [`h2-position-circa-declaration-blocker-fix-result.md`](h2-position-circa-declaration-blocker-fix-result.md).
-The current state is **BLOCKER FIXED / AUTOMATED GREEN / REAL-BROWSER
-ACCEPTANCE PENDING**. This document's earlier implementation status remains
+The current state is **BLOCKER BOUNDARY CLARIFIED / AUTOMATED GREEN /
+REAL-BROWSER ACCEPTANCE PENDING**. This document's earlier implementation status remains
 historical context; neither document marks the capability `ACCEPTED / CLOSED`.
 
 ## Implemented boundary
