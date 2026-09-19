@@ -124,7 +124,7 @@ test("explicit circa upgrade creates one H2 position and synchronizes declaratio
   ]);
 });
 
-test("explicit circa upgrade preserves sibling Stable History Events", () => {
+test("explicit circa upgrade refuses an invalid H1/H2 mixed Dataset without mutation", () => {
   const dataset = {
     ...stableHistoryDataset(),
     events: [
@@ -132,24 +132,18 @@ test("explicit circa upgrade preserves sibling Stable History Events", () => {
       { id: "event-sibling", extensions: { history: { time: { year: 1899 } } } },
     ],
   };
+  const original = structuredClone(dataset);
 
-  const updated = updateEvent(dataset, "event-h1", {
-    history2Position: {
-      position: { year: 1900, month: 5 },
-      approximation: true,
-    },
-  });
-
-  assert.deepEqual(updated.events[1].extensions.history, {
-    time: { year: 1899 },
-  });
-  assert.deepEqual(
-    updated.extensions["draft.github.sukoyaka-dopeness.specification"].uses,
-    [
-      { extension: "metadata", version: "1.0.0" },
-      { extension: "history", version: "2.0.0", features: ["approximation"] },
-    ],
+  assert.throws(
+    () => updateEvent(dataset, "event-h1", {
+      history2Position: {
+        position: { year: 1900, month: 5 },
+        approximation: true,
+      },
+    }),
+    /History 2 declaration could not be created safely/,
   );
+  assert.deepEqual(dataset, original);
 });
 
 test("turning circa off keeps the H2 assertion and removes only its Feature", () => {
