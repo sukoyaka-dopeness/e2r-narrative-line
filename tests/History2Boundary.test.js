@@ -135,6 +135,57 @@ test("ordinary exact H1 editing remains H1 without an H2 declaration", () => {
   assert.equal(updated.extensions["draft.github.sukoyaka-dopeness.specification"], undefined);
 });
 
+test("exact H2 editing preserves Dataset-wide approximation when another Event remains circa", () => {
+  const dataset = {
+    ...stableHistoryDataset(),
+    events: [
+      {
+        id: "event-circa",
+        extensions: { history: { time: { year: 1900, month: 5 } } },
+      },
+      {
+        id: "event-exact",
+        extensions: { history: { time: { year: 1901, month: 6 } } },
+      },
+    ],
+  };
+
+  const upgraded = updateEvent(dataset, "event-circa", {
+    history2Position: {
+      position: { year: 1900, month: 5 },
+      approximation: true,
+    },
+  });
+  const exactEdited = updateEvent(upgraded, "event-exact", {
+    history2Position: {
+      position: { year: 1901, month: 7 },
+      approximation: false,
+    },
+  });
+
+  assert.deepEqual(
+    exactEdited.events[0].extensions.history.assertions[0].position,
+    { year: 1900, month: 5, approximation: "circa" },
+  );
+  assert.deepEqual(
+    exactEdited.events[1].extensions.history.assertions[0].position,
+    { year: 1901, month: 7 },
+  );
+  assert.deepEqual(
+    exactEdited.extensions["draft.github.sukoyaka-dopeness.specification"].uses,
+    [
+      { extension: "metadata", version: "1.0.0" },
+      { extension: "history", version: "2.0.0", features: ["approximation"] },
+    ],
+  );
+  assert.equal(formatEventTimelineDate(exactEdited, exactEdited.events[0]), "1900-05");
+  assert.equal(formatEventTimelineDate(exactEdited, exactEdited.events[1]), "1901-07");
+
+  const exported = exportDatasetJson(exactEdited);
+  assert.equal(exported.isValid, true);
+  assert.ok(exported.json);
+});
+
 test("Dataset-wide upgrade converts all eligible H1 Core Object History payloads", () => {
   const dataset = {
     version: "1.0",

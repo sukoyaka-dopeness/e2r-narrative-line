@@ -1,7 +1,7 @@
 # H2-POSITION-CIRCA - Declaration Blocker Fix and Acceptance Resume
 
 Date: 2026-09-19
-Status: **BLOCKER BOUNDARY CLARIFIED / AUTOMATED GREEN / REAL-BROWSER ACCEPTANCE PENDING**
+Status: **BLOCKER FIX VERIFIED / AUTOMATED GREEN / REAL-BROWSER PASS**
 
 ## Confirmed blocker and root cause
 
@@ -22,6 +22,12 @@ Dataset state, not a safe migration boundary.
 
 ## Minimal repair
 
+> Historical interim repair boundary: the single-representation and sibling-H1
+> statements below describe the first blocker-isolation repair. They were later
+> superseded by the accepted Dataset-wide conversion contract recorded in the
+> [Dataset-wide implementation result](history-2-dataset-wide-upgrade-implementation-result.md)
+> and the final bounded closure records.
+
 The source-first repair keeps the approved contract bounded:
 
 - a valid single-representation Dataset can convert the explicitly selected
@@ -40,6 +46,10 @@ entered value without creating a range or midpoint.
 
 ## Automated evidence
 
+The counts in this interim repair section are historical checkpoint evidence;
+the final closure gate is recorded as 24 focused tests and 251 full-suite tests
+passing.
+
 - H1 exact save remains H1: PASS;
 - H1 to H2 circa confirmation and save through the Event Detail orchestration:
   PASS;
@@ -57,20 +67,22 @@ for port `24678`; it terminates normally with zero failures.
 
 ## Real-browser status
 
-The approved single-representation application path is covered by source and
-application-path regression tests. A fresh real-browser rerun was attempted
-after the repair, but the browser connector failed to initialize and timed
-out. Therefore the following remain pending and are not claimed as accepted:
+The approved single-representation application path was subsequently verified
+through the original Real Browser regression path. A valid H2 Dataset with one
+circa Event and another exact Event retained the circa payload and the
+Dataset-wide `approximation` Feature after the exact Event was edited. Timeline
+dates remained valid, export validation succeeded, and the prior
+`history_2_feature_declaration_mismatch` failure did not recur.
 
-- successful H1 to H2 upgrade in a fresh real browser;
-- Timeline exact / circa / exact presentation;
-- circa OFF, export/reload/re-import, and History removal;
-- complete EN/JA, keyboard/focus, and narrow-layout review;
-- human semantic judgment for the Option A presentation and upgrade UX.
+The broader bounded acceptance matrix then passed, including unsafe refusal,
+History removal, EN/JA, keyboard/focus, narrow layout, and the Relative Time
+preservation boundary. This repair record is now historical evidence for the
+final bounded closure; the exact/circa/exact review used a valid H2 Dataset and
+did not rely on an invalid mixed declaration.
 
-This document does not mark H2-POSITION-CIRCA `ACCEPTED / CLOSED`. The
-exact/circa/exact Timeline review must use a valid H2 Dataset fixture for all
-H2 Events; it must not rely on an invalid H1/H2 mixed declaration.
+The final capability status is recorded by the bounded implementation and
+scope-closure records as `H2-POSITION-CIRCA: ACCEPTED / CLOSED`. History 2.0.0
+remains a non-Stable Candidate.
 
 ## Scope and release boundary
 

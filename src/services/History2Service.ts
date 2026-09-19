@@ -384,10 +384,6 @@ function removeHistoryDeclaration(dataset: Dataset): Dataset {
   };
 }
 
-function history2Features(approximation: boolean): string[] {
-  return approximation ? ["approximation"] : [];
-}
-
 function expectedHistory2Features(payload: unknown): string[] {
   if (!isRecord(payload) || !Array.isArray(payload.assertions)) return [];
   const features = new Set<string>();
@@ -547,6 +543,14 @@ export function upgradeDatasetHistory1To2(
   return withDeclaration;
 }
 
+export function preflightDatasetHistory1To2(
+  dataset: Dataset,
+  targetObjectId: string,
+  update: History2PositionUpdate,
+): void {
+  upgradeDatasetHistory1To2(dataset, targetObjectId, update);
+}
+
 export function updateEventHistory2Position(
   dataset: Dataset,
   eventId: string,
@@ -629,6 +633,6 @@ export function updateEventHistory2Position(
   return updateHistoryDeclaration(
     nextDataset,
     HISTORY_2_CANDIDATE_VERSION,
-    history2Features(update.approximation),
+    history2FeaturesForDataset(nextDataset),
   );
 }

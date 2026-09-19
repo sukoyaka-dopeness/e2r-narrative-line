@@ -44,6 +44,27 @@ const stableDataset = JSON.stringify({
   },
 });
 
+const unsafeDataset = JSON.stringify({
+  version: "1.0",
+  entities: [],
+  events: [
+    {
+      id: "event-unsafe",
+      name: "Unsafe Event",
+      extensions: { history: { time: { year: 1899, future: true } } },
+    },
+    {
+      id: "event-target",
+      name: "Target Event",
+      extensions: { history: { time: { year: 1900 } } },
+    },
+  ],
+  relations: [],
+  extensions: {
+    metadata: { datasetId: "dataset-unsafe" },
+  },
+});
+
 function buttonByText(document, text) {
   return [...document.querySelectorAll("button")].find(
     (button) => button.textContent?.trim() === text,
@@ -180,8 +201,17 @@ test("real Event Detail save upgrades a Stable History Event to H2 circa", async
     assert.ok(save);
     act(() => save.click());
 
-    const confirm = buttonByText(rendered.document, "Use approximate date and time");
+    const confirm = buttonByText(rendered.document, "Save as approximate");
     assert.ok(confirm);
+    const dialog = rendered.document.querySelector('[role="alertdialog"]');
+    assert.ok(dialog);
+    assert.equal(dialog.querySelector("h2")?.textContent, "Record this date and time as approximate?");
+    assert.equal(
+      dialog.querySelector("p")?.textContent,
+      "Saving this change will update compatible recorded dates and times in this Dataset to the History 2 representation. Their meaning and precision will be preserved; no precise date/time range will be inferred. Canceling leaves the Dataset unchanged.",
+    );
+    assert.ok(dialog.querySelector(".history-upgrade-actions"));
+    assert.equal(dialog.querySelector(".history-upgrade-actions")?.children[0]?.textContent, "Cancel");
     assert.match(
       rendered.document.body.textContent ?? "",
       /compatible recorded dates/,
@@ -194,6 +224,41 @@ test("real Event Detail save upgrades a Stable History Event to H2 circa", async
     rendered.cleanup();
   }
 });
+
+for (const [language, refusalCopy] of [
+  ["en", "This Dataset contains History data that cannot be safely upgraded to History 2. No changes were saved."],
+  ["ja", "このDatasetには安全にHistory 2形式へ更新できないHistoryデータが含まれています。変更は保存されませんでした。"],
+]) {
+  test(`unsafe Dataset refusal stays in Event Detail with ${language} feedback`, async () => {
+    const rendered = await renderCandidateApp(language, unsafeDataset);
+    try {
+      openCandidateEvent(rendered.document, "Target Event");
+      const approximation = rendered.document.querySelector('input[type="checkbox"]');
+      assert.ok(approximation);
+      act(() => approximation.click());
+
+      const save = buttonByText(rendered.document, language === "ja" ? "できごとを保存" : "Save Event");
+      assert.ok(save);
+      act(() => save.click());
+
+      assert.equal(rendered.document.querySelector('[role="alertdialog"]'), null);
+      assert.equal(rendered.document.querySelector('[role="alert"]')?.textContent, refusalCopy);
+      assert.ok(rendered.document.querySelector(".detail-screen--event"));
+      assert.equal(rendered.document.querySelector(".timeline-screen"), null);
+      assert.equal(approximation.checked, true);
+
+      const persisted = JSON.parse(rendered.window.localStorage.getItem("narrativeline.lastDataset"));
+      assert.equal(persisted.events[0].extensions.history.time.future, true);
+      assert.deepEqual(persisted.events[0].extensions.history, {
+        time: { year: 1899, future: true },
+      });
+      assert.deepEqual(persisted.events[1].extensions.history, { time: { year: 1900 } });
+      assert.equal(persisted.extensions["draft.github.sukoyaka-dopeness.specification"], undefined);
+    } finally {
+      rendered.cleanup();
+    }
+  });
+}
 
 test("Cancel and Escape preserve the Event draft during Dataset-wide upgrade confirmation", async () => {
   const rendered = await renderCandidateApp("en", stableDataset);
@@ -261,6 +326,32 @@ test("backdrop dismissal cancels the Dataset-wide upgrade confirmation without m
     const persisted = JSON.parse(rendered.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.deepEqual(persisted.events[0].extensions.history, { time: { year: 1900 } });
     assert.equal(persisted.extensions["draft.github.sukoyaka-dopeness.specification"], undefined);
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("Japanese History upgrade confirmation uses the approved copy and right-aligned actions", async () => {
+  const rendered = await renderCandidateApp("ja", stableDataset);
+  try {
+    openCandidateEvent(rendered.document, "Stable Event");
+    const approximation = rendered.document.querySelector('input[type="checkbox"]');
+    assert.ok(approximation);
+    act(() => approximation.click());
+
+    const save = buttonByText(rendered.document, "できごとを保存");
+    assert.ok(save);
+    act(() => save.click());
+
+    const dialog = rendered.document.querySelector('[role="alertdialog"]');
+    assert.ok(dialog);
+    assert.equal(dialog.querySelector("h2")?.textContent, "日付と時刻をおおよその値として記録しますか？");
+    assert.equal(
+      dialog.querySelector("p")?.textContent,
+      "この変更を保存すると、このDataset内の互換性のある記録日時もHistory 2形式へ更新されます。記録日時の意味と精度は保持され、正確な日時範囲は推測されません。キャンセルした場合、Dataset全体は変更されません。",
+    );
+    assert.ok(dialog.querySelector(".history-upgrade-actions"));
+    assert.equal(dialog.querySelector(".history-upgrade-actions")?.children[0]?.textContent, "キャンセル");
   } finally {
     rendered.cleanup();
   }

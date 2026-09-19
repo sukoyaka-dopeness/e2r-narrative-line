@@ -2,7 +2,7 @@
 
 Date: 2026-09-19
 
-Status: **IMPLEMENTED / AUTOMATED GREEN / BROWSER INFRASTRUCTURE DIAGNOSIS NEXT**
+Status: **IMPLEMENTED / AUTOMATED GREEN / BOUNDED REAL-BROWSER AND HUMAN ACCEPTANCE COMPLETE**
 
 Scope: NarrativeLine implementation and automated migration gate for the
 approved Dataset-wide History `1.0.0` to `2.0.0` Candidate upgrade.
@@ -11,8 +11,8 @@ Authority: The approved scope is defined by the E2R-SPEC
 [scope-closure result](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/history-2-dataset-wide-h1-to-h2-upgrade-scope-closure-result.md).
 Current application source and tests are the implementation authority.
 
-This result does not claim Real Browser or Human acceptance and does not
-promote History 2.0.0 Candidate to Stable.
+This result records acceptance for the bounded H2-POSITION-CIRCA capability;
+it does not promote History 2.0.0 Candidate to Stable.
 
 ## Implemented boundary
 
@@ -96,6 +96,10 @@ added.
 
 ## Automated evidence
 
+The counts in this historical implementation section are the interim baseline
+for this checkpoint. The final closure gate is recorded in the bounded closure
+records as 24 focused tests and 251 full-suite tests passing.
+
 Focused migration coverage: **15/15 PASS**.
 
 The focused and application-path tests cover:
@@ -140,8 +144,32 @@ approximation Feature, and restores opener focus. This is a bounded
 interaction consistency fix; it does not establish a global policy that every
 dialog must dismiss on backdrop click.
 
-## Next boundary
+## Bounded acceptance closure
 
-The next checkpoint is browser connector timeout diagnosis, followed by fresh
-Real Browser acceptance and Human acceptance. The implementation is not
-`ACCEPTED / CLOSED` until those steps complete.
+The implementation was subsequently verified through the original Real
+Browser acceptance paths and is closed for the bounded H2-POSITION-CIRCA
+scope. Evidence includes safe and unsafe Dataset-wide upgrade flows, draft and
+Dataset atomicity, confirmation dismissal/focus behavior, Option A Timeline
+presentation, circa removal, History removal, EN/JA and locale switching,
+narrow layout, export/reload/re-import, the multi-H2 exact-edit declaration
+regression, and the unknown/unsupported/mixed History boundary.
+
+The canonical Relative Time fixture was also loaded through the real file
+input. NarrativeLine kept its 11 Events undated in the Timeline, did not use
+Relative Time Relations for History dates or ordering, left the Dataset clean,
+and produced no console/runtime error. Relative Time payload preservation and
+export validation remain covered by the exact automated JSON round-trip. A raw
+browser download artifact was not directly captured in one live run because
+the download observer timed out; that limitation is recorded as an evidence
+boundary and is not treated as an application export failure.
+
+The final bounded status is:
+
+```text
+H2-POSITION-CIRCA: ACCEPTED / CLOSED
+History 2.0.0: Candidate / NON-STABLE
+```
+
+Bounded-point, temporal-extent, multiple-assertion, Relative Time authoring or
+solving, H2 to H1 conversion, Entity/Relation History authoring, History 2
+Stable promotion, and release/deployment remain outside this result.

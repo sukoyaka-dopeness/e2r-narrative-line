@@ -858,6 +858,10 @@ button:disabled {
   margin-top: 16px;
 }
 
+.history-upgrade-actions {
+  justify-content: flex-end;
+}
+
 .modal-actions button:focus {
   outline: 3px solid var(--accent);
   outline-offset: 3px;

@@ -36,9 +36,10 @@ const englishMessages = {
   cancel: "Cancel",
   historyApproximationLabel: "Mark the date and time as approximate",
   historyApproximationNotice: "This date and time is approximate. The Timeline uses the entered date and time without creating a range or midpoint.",
-  historyUpgradeHeading: "Use an approximate date and time?",
-  historyUpgradeDescription: "Saving this approximate date and time will update this Dataset's compatible recorded dates to the History 2 representation. Their recorded meaning and precision will be preserved; no exact day or range will be inferred. Cancel makes no Dataset-wide change.",
-  historyUpgradeConfirm: "Use approximate date and time",
+  historyUpgradeHeading: "Record this date and time as approximate?",
+  historyUpgradeDescription: "Saving this change will update compatible recorded dates and times in this Dataset to the History 2 representation. Their meaning and precision will be preserved; no precise date/time range will be inferred. Canceling leaves the Dataset unchanged.",
+  historyUpgradeConfirm: "Save as approximate",
+  historyUpgradeRefusal: "This Dataset contains History data that cannot be safely upgraded to History 2. No changes were saved.",
 } as const;
 
 type MessageKey = keyof typeof englishMessages;
@@ -80,9 +81,10 @@ const japaneseMessages: PresentationMessages = {
   cancel: "キャンセル",
   historyApproximationLabel: "日付と時刻をおおよその値として記録",
   historyApproximationNotice: "この日付と時刻はおおよその値です。Timelineでは入力した日付と時刻を使い、範囲や中央値は作成しません。",
-  historyUpgradeHeading: "おおよその日付と時刻として保存しますか？",
-  historyUpgradeDescription: "おおよその日付と時刻として保存すると、このDatasetの互換性がある記録日時もHistory 2形式へ更新されます。記録日時の意味と精度は保持され、正確な日や範囲は推測されません。キャンセルした場合、Dataset全体は変更されません。",
+  historyUpgradeHeading: "日付と時刻をおおよその値として記録しますか？",
+  historyUpgradeDescription: "この変更を保存すると、このDataset内の互換性のある記録日時もHistory 2形式へ更新されます。記録日時の意味と精度は保持され、正確な日時範囲は推測されません。キャンセルした場合、Dataset全体は変更されません。",
   historyUpgradeConfirm: "おおよその日付と時刻として保存",
+  historyUpgradeRefusal: "このDatasetには安全にHistory 2形式へ更新できないHistoryデータが含まれています。変更は保存されませんでした。",
 };
 
 export const messages: Record<Locale, PresentationMessages> = {

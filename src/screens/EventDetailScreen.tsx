@@ -13,6 +13,7 @@ import {
 } from "../services/HistoryService";
 import {
   getHistory2PositionEditorValues,
+  preflightDatasetHistory1To2,
 } from "../services/History2Service.ts";
 import type { EventUpdates } from "../services/EventService.ts";
 import {
@@ -203,6 +204,7 @@ export function EventDetailScreen({
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
   const [historyUpgradeAction, setHistoryUpgradeAction] = useState<"save" | "add" | null>(null);
+  const [historyUpgradeRefusal, setHistoryUpgradeRefusal] = useState(false);
   const [entityPendingRemoval, setEntityPendingRemoval] = useState<Entity | null>(
     null,
   );
@@ -321,11 +323,21 @@ export function EventDetailScreen({
     }
   };
   const requestSave = (addRelatedEntity: boolean) => {
+    setHistoryUpgradeRefusal(false);
     if (historyDateValidationError) {
       return;
     }
 
     if (needsHistoryUpgradeConfirmation) {
+      try {
+        preflightDatasetHistory1To2(dataset, event.id, {
+          position: editedHistoryDate,
+          approximation,
+        });
+      } catch {
+        setHistoryUpgradeRefusal(true);
+        return;
+      }
       setHistoryUpgradeAction(addRelatedEntity ? "add" : "save");
       return;
     }
@@ -419,6 +431,12 @@ export function EventDetailScreen({
         {historyDateValidationError && (
           <p role="alert" style={{ color: "#b00020", marginBottom: 0 }}>
             {copy[historyDateValidationMessageKeys[historyDateValidationError]]}
+          </p>
+        )}
+
+        {historyUpgradeRefusal && (
+          <p role="alert" style={{ color: "#b00020", marginBottom: 0 }}>
+            {copy.historyUpgradeRefusal}
           </p>
         )}
 
@@ -644,7 +662,7 @@ export function EventDetailScreen({
             {copy.historyUpgradeHeading}
           </h2>
           <p>{copy.historyUpgradeDescription}</p>
-          <div className="modal-actions">
+          <div className="modal-actions history-upgrade-actions">
             <button
               type="button"
               onClick={() => setHistoryUpgradeAction(null)}
