@@ -37,7 +37,7 @@ const englishMessages = {
   historyApproximationLabel: "Mark the date and time as approximate",
   historyApproximationNotice: "This date and time is approximate. The Timeline uses the entered date and time without creating a range or midpoint.",
   historyUpgradeHeading: "Use an approximate date and time?",
-  historyUpgradeDescription: "Saving this approximate date and time will use the History 2 representation. Your entered date and time will be preserved; no exact day or range will be inferred.",
+  historyUpgradeDescription: "Saving this approximate date and time will update this Dataset's compatible recorded dates to the History 2 representation. Their recorded meaning and precision will be preserved; no exact day or range will be inferred. Cancel makes no Dataset-wide change.",
   historyUpgradeConfirm: "Use approximate date and time",
 } as const;
 
@@ -81,7 +81,7 @@ const japaneseMessages: PresentationMessages = {
   historyApproximationLabel: "日付と時刻をおおよその値として記録",
   historyApproximationNotice: "この日付と時刻はおおよその値です。Timelineでは入力した日付と時刻を使い、範囲や中央値は作成しません。",
   historyUpgradeHeading: "おおよその日付と時刻として保存しますか？",
-  historyUpgradeDescription: "おおよその日付と時刻として保存すると、History 2形式に変更されます。入力した日付と時刻は保持され、正確な日や範囲は推測されません。",
+  historyUpgradeDescription: "おおよその日付と時刻として保存すると、このDatasetの互換性がある記録日時もHistory 2形式へ更新されます。記録日時の意味と精度は保持され、正確な日や範囲は推測されません。キャンセルした場合、Dataset全体は変更されません。",
   historyUpgradeConfirm: "おおよその日付と時刻として保存",
 };
 

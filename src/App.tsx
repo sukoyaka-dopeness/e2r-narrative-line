@@ -702,19 +702,19 @@ function App() {
     eventId: string,
     updates: EventUpdates,
   ) => {
+    setDataset(updateEvent(dataset, eventId, updates));
     setEventDraft(undefined);
     setPendingSource("eventDetail", false);
-    setDataset(updateEvent(dataset, eventId, updates));
   };
   const handleSaveAndOpenEntityPicker = (
     eventId: string,
     updates: EventUpdates,
   ) => {
-    setEventDraft(undefined);
-    setPendingSource("eventDetail", false);
     setDataset((currentDataset) =>
       updateEvent(currentDataset, eventId, updates),
     );
+    setEventDraft(undefined);
+    setPendingSource("eventDetail", false);
     setState((currentState) =>
       navigate(
         {

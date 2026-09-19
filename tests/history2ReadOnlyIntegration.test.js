@@ -182,10 +182,37 @@ test("real Event Detail save upgrades a Stable History Event to H2 circa", async
 
     const confirm = buttonByText(rendered.document, "Use approximate date and time");
     assert.ok(confirm);
+    assert.match(
+      rendered.document.body.textContent ?? "",
+      /compatible recorded dates/,
+    );
     act(() => confirm.click());
 
     assert.ok(rendered.document.querySelector(".timeline-screen"));
     assert.ok(rendered.document.body.textContent.includes("circa 1900"));
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("canceling the Dataset-wide upgrade confirmation preserves the Event draft", async () => {
+  const rendered = await renderCandidateApp("en", stableDataset);
+  try {
+    openCandidateEvent(rendered.document, "Stable Event");
+    const approximation = rendered.document.querySelector('input[type="checkbox"]');
+    assert.ok(approximation);
+    act(() => approximation.click());
+
+    const save = buttonByText(rendered.document, "Save Event");
+    assert.ok(save);
+    act(() => save.click());
+    const cancel = buttonByText(rendered.document, "Cancel");
+    assert.ok(cancel);
+    act(() => cancel.click());
+
+    assert.equal(rendered.document.querySelector(".timeline-screen"), null);
+    assert.equal(approximation.checked, true);
+    assert.ok(rendered.document.querySelector(".detail-screen--event"));
   } finally {
     rendered.cleanup();
   }

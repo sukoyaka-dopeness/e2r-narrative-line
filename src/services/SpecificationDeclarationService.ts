@@ -111,16 +111,20 @@ function historyCandidateFeatures(payload: Record<string, unknown>): string[] {
 function getHistoryDeclarationInfo(
   dataset: Dataset,
 ): HistoryDeclarationInfo | undefined {
-  const historyEvents = dataset.events.filter(
-    (event) => event.extensions?.history !== undefined,
+  const historyObjects = [
+    ...dataset.entities,
+    ...dataset.events,
+    ...dataset.relations,
+  ].filter(
+    (object) => object.extensions?.history !== undefined,
   );
-  if (historyEvents.length === 0) return undefined;
+  if (historyObjects.length === 0) return undefined;
 
   let version: string | undefined;
   const features = new Set<string>();
 
-  for (const event of historyEvents) {
-    const capability = classifyHistoryCapability(dataset, event);
+  for (const object of historyObjects) {
+    const capability = classifyHistoryCapability(dataset, object);
     if (capability.capability !== "stable" && capability.capability !== "candidate") {
       return undefined;
     }
@@ -130,7 +134,7 @@ function getHistoryDeclarationInfo(
     version = nextVersion;
 
     if (capability.capability === "candidate") {
-      const payload = event.extensions?.history;
+      const payload = object.extensions?.history;
       if (isRecord(payload)) {
         for (const feature of historyCandidateFeatures(payload)) {
           features.add(feature);

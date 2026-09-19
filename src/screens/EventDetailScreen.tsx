@@ -312,11 +312,11 @@ export function EventDetailScreen({
     approximation && !history2Editable && editedHistoryDate.year !== undefined;
   const commitSave = (addRelatedEntity: boolean) => {
     disposingDraftRef.current = true;
-    onClearDraft(event.id);
     if (addRelatedEntity) {
       onSaveAndOpenEntityPicker(event.id, getChangedEventUpdates());
     } else {
       onUpdateEvent(event.id, getChangedEventUpdates());
+      onClearDraft(event.id);
       onCancel(event.id, false);
     }
   };

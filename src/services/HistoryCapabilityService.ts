@@ -1,5 +1,5 @@
 import type { Dataset } from "../models/Dataset";
-import type { Event } from "../models/Event";
+import type { CoreObject } from "../models/CoreObject";
 
 export const HISTORY_EXTENSION_ID = "history";
 export const STABLE_HISTORY_VERSION = "1.0.0";
@@ -24,7 +24,7 @@ export interface HistoryCapabilityResult {
 
 type JsonRecord = Record<string, unknown>;
 
-type HistoryDeclaration =
+export type HistoryDeclaration =
   | { status: "absent" }
   | { status: "invalid" }
   | { status: "declared"; version: string; features: string[] };
@@ -41,7 +41,7 @@ function onlyKnownKeys(value: JsonRecord, knownKeys: readonly string[]): boolean
   return Object.keys(value).every((key) => knownKeys.includes(key));
 }
 
-function readHistoryDeclaration(dataset: Dataset): HistoryDeclaration {
+export function readHistoryDeclaration(dataset: Dataset): HistoryDeclaration {
   const specification = dataset.extensions?.[SPECIFICATION_EXTENSION_ID];
   if (specification === undefined) return { status: "absent" };
   if (!isRecord(specification) || !Array.isArray(specification.uses)) {
@@ -230,10 +230,10 @@ export function classifyHistoryPayload(
 
 export function classifyHistoryCapability(
   dataset: Dataset,
-  event: Event | null | undefined,
+  object: CoreObject | null | undefined,
 ): HistoryCapabilityResult {
-  if (!event) return result("none");
-  const payload = event.extensions?.[HISTORY_EXTENSION_ID];
+  if (!object) return result("none");
+  const payload = object.extensions?.[HISTORY_EXTENSION_ID];
   const declaration = readHistoryDeclaration(dataset);
   const payloadResult = classifyHistoryPayload(payload, declaration);
   if (payloadResult.capability === "mixed") return payloadResult;
@@ -244,11 +244,15 @@ export function classifyHistoryCapability(
     declaration.version === HISTORY_2_CANDIDATE_VERSION
   ) {
     const datasetFeatures = new Set<string>();
-    const candidateEvents = dataset.events.filter(
+    const candidateObjects = [
+      ...dataset.entities,
+      ...dataset.events,
+      ...dataset.relations,
+    ].filter(
       (candidate) => candidate.extensions?.[HISTORY_EXTENSION_ID] !== undefined,
     );
 
-    for (const candidate of candidateEvents) {
+    for (const candidate of candidateObjects) {
       const candidatePayload = candidate.extensions?.[HISTORY_EXTENSION_ID];
       if (
         !isRecord(candidatePayload) ||
