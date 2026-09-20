@@ -74,11 +74,12 @@ function getExtensionId(path: string): string | undefined {
 }
 
 function formatTimelineEventTime(
+  dataset: Dataset,
   event: Dataset["events"][number],
   ja: boolean,
   includeSeconds: boolean,
 ): string | undefined {
-  const time = getEventHistoryTime(event);
+  const time = getEventHistoryTime(event) ?? getHistory2PositionEditorValues(dataset, event)?.date;
   if (
     !time ||
     time.hour === undefined ||
@@ -428,9 +429,9 @@ export function TimelineScreen({
                         : `circa ${formatEventTimelineDate(dataset, event) ?? "----/--/--"}`
                       : formatEventHistoryDate(event) ?? formatEventTimelineDate(dataset, event) ?? "----/--/--"}
                   </div>
-                  {formatTimelineEventTime(event, ja, isSelected) && (
+                  {formatTimelineEventTime(dataset, event, ja, isSelected) && (
                     <small className="timeline-event-time">
-                      {formatTimelineEventTime(event, ja, isSelected)}
+                      {formatTimelineEventTime(dataset, event, ja, isSelected)}
                     </small>
                   )}
                 </div>

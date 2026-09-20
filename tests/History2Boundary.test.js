@@ -11,6 +11,7 @@ import {
   compareEventsByHistoryDate,
   formatEventTimelineDate,
 } from "../src/services/HistoryService.ts";
+import { upgradeDatasetHistory1To2 } from "../src/services/History2Service.ts";
 
 async function readSpecExample(path) {
   return readFile(new URL(`../../e2r-spec/${path}`, import.meta.url), "utf8");
@@ -212,7 +213,12 @@ test("Dataset-wide upgrade converts all eligible H1 Core Object History payloads
           },
         },
       },
-      { id: "event-sibling", extensions: { history: { time: { year: 1901 } } } },
+      {
+        id: "event-sibling",
+        extensions: {
+          history: { time: { year: 1901, month: 2, day: 3, hour: 4, minute: 5 } },
+        },
+      },
     ],
     relations: [{
       id: "relation-h1",
@@ -254,6 +260,13 @@ test("Dataset-wide upgrade converts all eligible H1 Core Object History payloads
     },
     temporalOrder: 4,
   });
+  assert.deepEqual(upgraded.events[1].extensions.history.assertions[0].position, {
+    year: 1901,
+    month: 2,
+    day: 3,
+    hour: 4,
+    minute: 5,
+  });
   assert.deepEqual(upgraded.extensions["draft.github.sukoyaka-dopeness.specification"].uses, [
     { extension: "metadata", version: "1.0.0" },
     { extension: "history", version: "2.0.0", features: ["approximation"] },
@@ -262,6 +275,34 @@ test("Dataset-wide upgrade converts all eligible H1 Core Object History payloads
   const roundTrip = importDatasetJson(exportDatasetJson(upgraded).json);
   assert.equal(roundTrip.isValid, true);
   assert.deepEqual(roundTrip.dataset, upgraded);
+});
+
+test("circa upgrade creates a preserved H2 position for a new Event without H1 history", () => {
+  const dataset = {
+    version: "1.0",
+    entities: [],
+    events: [{ id: "new-event" }],
+    relations: [],
+  };
+
+  const upgraded = upgradeDatasetHistory1To2(dataset, "new-event", {
+    position: { year: 1989, month: 11, day: 9, hour: 18, minute: 53 },
+    approximation: true,
+  });
+
+  assert.deepEqual(upgraded.events[0].extensions.history.assertions[0].position, {
+    year: 1989,
+    month: 11,
+    day: 9,
+    hour: 18,
+    minute: 53,
+    approximation: "circa",
+  });
+  assert.equal(upgraded.events[0].extensions.history.time, undefined);
+  assert.equal(upgraded.entities.length, 0);
+  assert.equal(upgraded.relations.length, 0);
+  assert.equal(exportDatasetJson(upgraded).isValid, true);
+  assert.deepEqual(importDatasetJson(exportDatasetJson(upgraded).json).dataset, upgraded);
 });
 
 test("explicit circa upgrade refuses an invalid H1/H2 mixed Dataset without mutation", () => {

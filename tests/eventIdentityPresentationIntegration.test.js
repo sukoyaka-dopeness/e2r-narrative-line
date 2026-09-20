@@ -23,6 +23,29 @@ function historyEvent(id, name, year, day, hour, temporalOrder) {
   };
 }
 
+function history2ApproximateEvent(id, name, year, day, hour, minute) {
+  return {
+    id,
+    name,
+    extensions: {
+      history: {
+        assertions: [{
+          id: `history-position-${id}`,
+          type: "position",
+          position: {
+            year,
+            month: 8,
+            day,
+            hour,
+            minute,
+            approximation: "circa",
+          },
+        }],
+      },
+    },
+  };
+}
+
 async function renderTimeline(dataset, language = "en") {
   const environment = createDomTestEnvironment(`https://narrativeline.test/#locale=${language}`);
   environment.document.documentElement.lang = language;
@@ -194,6 +217,36 @@ test("T2 distinct chronology does not duplicate Timeline chronology", async () =
     assert.equal(rendered.document.querySelectorAll(".timeline-event-time").length, 2);
   } finally {
     await rendered.cleanup();
+  }
+});
+
+test("H2 circa Timeline preserves recorded time in EN and JA", async () => {
+  const dataset = {
+    version: "1.0",
+    ...emptyRelations,
+    events: [
+      history2ApproximateEvent("event-circa", "Approximate inspection", 2026, 28, 9, 5),
+      history2ApproximateEvent("event-circa-2", "Second approximate inspection", 2026, 29, 20, 0),
+    ],
+    extensions: {
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "1.0.0",
+        uses: [{ extension: "history", version: "2.0.0", features: ["approximation"] }],
+      },
+    },
+  };
+
+  for (const language of ["en", "ja"]) {
+    const rendered = await renderTimeline(dataset, language);
+    try {
+      assert.equal(rendered.document.querySelectorAll(".timeline-event-time").length, 2);
+      assert.deepEqual(
+        [...rendered.document.querySelectorAll(".timeline-event-time")].map((node) => node.textContent),
+        language === "ja" ? ["09時05分", "20時00分"] : ["09h 05m", "20h 00m"],
+      );
+    } finally {
+      await rendered.cleanup();
+    }
   }
 });
 

@@ -507,7 +507,6 @@ export function upgradeDatasetHistory1To2(
 
   const nextObject = (object: CoreObject): CoreObject => {
     const current = object.extensions?.history;
-    if (current === undefined) return object;
     const assertionId = `history-position-${object.id}`;
     if (object.id === targetObjectId) {
       const { ...position } = targetNextPosition;
@@ -522,6 +521,7 @@ export function upgradeDatasetHistory1To2(
         extensions: { ...(object.extensions ?? {}), history: { assertions: [assertion] } },
       };
     }
+    if (current === undefined) return object;
     return convertHistory1Object(object, assertionId);
   };
 
