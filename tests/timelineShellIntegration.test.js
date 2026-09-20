@@ -22,7 +22,7 @@ function findHeaderButton(document, label) {
 
 function findToolbarAction(document, label) {
   return Array.from(document.querySelectorAll(".timeline-toolbar button")).find(
-    (button) => button.textContent === label,
+    (button) => button.getAttribute("aria-label") === label || button.textContent === label,
   );
 }
 
@@ -32,6 +32,7 @@ async function renderApp() {
   const environment = createDomTestEnvironment({ url: "https://narrativeline.test/" });
   environment.document.documentElement.lang = "en";
   environment.window.scrollTo = () => {};
+  const scrollIntoViewCalls = [];
   let intersectionCallback;
   environment.window.IntersectionObserver = class {
     constructor(callback) {
@@ -40,7 +41,9 @@ async function renderApp() {
     observe() {}
     disconnect() {}
   };
-  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = function (options) {
+    scrollIntoViewCalls.push({ id: this.id, options });
+  };
   environment.window.requestAnimationFrame = (callback) => {
     callback(0);
     return 0;
@@ -71,8 +74,11 @@ async function renderApp() {
   return {
     ...environment,
     root,
+    scrollIntoViewCalls,
     setTopIntersection: (isIntersecting) =>
-      intersectionCallback([{ isIntersecting }]),
+      intersectionCallback([{ target: environment.document.querySelector(".timeline-screen > div"), isIntersecting }]),
+    setFooterIntersection: (isIntersecting) =>
+      intersectionCallback([{ target: environment.document.getElementById("timeline-footer"), isIntersecting }]),
     async cleanup() {
       await environment.cleanup();
     },
@@ -87,37 +93,60 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     assert.equal(rendered.document.documentElement.lang, "en");
 
     const headerHome = findHeaderButton(rendered.document, "Home");
-    const localeButton = findHeaderButton(rendered.document, "日本語");
+    const localeButton = findHeaderButton(rendered.document, "\u65e5\u672c\u8a9e");
     assert.ok(headerHome);
     assert.ok(localeButton);
+    assert.ok(rendered.document.getElementById("timeline-footer"));
+
     const toolbar = rendered.document.querySelector(".timeline-toolbar");
     assert.ok(toolbar);
     const toolbarButtons = [...toolbar.querySelectorAll("button")];
-    assert.equal(toolbarButtons.length, 2);
+    assert.equal(toolbarButtons.length, 3);
     assert.equal(toolbarButtons[0].textContent, "Add Event");
-    assert.equal(toolbarButtons[1].textContent, "More");
-    assert.equal(findToolbarAction(rendered.document, "↑ Top"), undefined);
+    assert.equal(toolbarButtons[1].getAttribute("aria-label"), "Bottom");
+    assert.equal(toolbarButtons[2].textContent, "More");
+    assert.equal(findToolbarAction(rendered.document, "Top"), undefined);
     assert.equal(findToolbarAction(rendered.document, "Export E2R JSON"), undefined);
     assert.equal(findToolbarAction(rendered.document, "Home"), undefined);
     assert.equal(rendered.document.body.textContent.includes("Shell evidence event"), true);
 
     await act(async () => rendered.setTopIntersection(false));
-    const backToTop = findToolbarAction(rendered.document, "↑ Top");
+    await act(async () => rendered.setFooterIntersection(false));
+    const backToTop = findToolbarAction(rendered.document, "Top");
+    const backToBottom = findToolbarAction(rendered.document, "Bottom");
     assert.ok(backToTop);
+    assert.ok(backToBottom);
     assert.deepEqual(
       [...rendered.document.querySelectorAll(".timeline-toolbar__actions button")].map(
-        (button) => button.textContent,
+        (button) => button.getAttribute("aria-label") ?? button.textContent,
       ),
-      ["Add Event", "↑ Top", "More"],
+      ["Add Event", "Top", "Bottom", "More"],
     );
+
     const scrollCalls = [];
     rendered.window.scrollTo = (options) => scrollCalls.push(options);
+    backToTop.focus();
+    const focusedBeforeTopNavigation = rendered.document.activeElement;
     await act(async () => backToTop.click());
     assert.deepEqual(scrollCalls, [{ top: 0, left: 0, behavior: "auto" }]);
-    assert.equal(rendered.document.activeElement?.tagName, "H1");
+    assert.equal(rendered.document.activeElement, focusedBeforeTopNavigation);
+
+    backToBottom.focus();
+    const focusedBeforeBottomNavigation = rendered.document.activeElement;
+    await act(async () => backToBottom.click());
+    assert.deepEqual(rendered.scrollIntoViewCalls.at(-1), {
+      id: "timeline-footer",
+      options: { block: "end", behavior: "auto" },
+    });
+    assert.equal(rendered.document.activeElement, focusedBeforeBottomNavigation);
+
+    await act(async () => rendered.setFooterIntersection(true));
+    assert.equal(findToolbarAction(rendered.document, "Bottom"), undefined);
+    assert.ok(findToolbarAction(rendered.document, "Top"));
 
     await act(async () => rendered.setTopIntersection(true));
-    assert.equal(findToolbarAction(rendered.document, "↑ Top"), undefined);
+    assert.equal(findToolbarAction(rendered.document, "Top"), undefined);
+    assert.equal(findToolbarAction(rendered.document, "Bottom"), undefined);
 
     await act(async () => headerHome.click());
     assert.equal(rendered.document.querySelector("h1")?.textContent, "Get Started");
@@ -130,18 +159,21 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     assert.equal(rendered.document.querySelector("h1")?.textContent, "Timeline");
     assert.equal(rendered.document.body.textContent.includes("Shell evidence event"), true);
 
-    await act(async () => findHeaderButton(rendered.document, "日本語")?.click());
+    await act(async () => findHeaderButton(rendered.document, "\u65e5\u672c\u8a9e")?.click());
     assert.equal(rendered.document.documentElement.lang, "ja");
-    assert.equal(findHeaderButton(rendered.document, "ホーム")?.textContent, "ホーム");
+    assert.equal(findHeaderButton(rendered.document, "\u30db\u30fc\u30e0")?.textContent, "\u30db\u30fc\u30e0");
     assert.equal(findHeaderButton(rendered.document, "English")?.textContent, "English");
-    assert.equal(findLowerAction(rendered.document, "できごとを追加")?.textContent, "できごとを追加");
-    assert.equal(findLowerAction(rendered.document, "ホーム"), undefined);
+    assert.equal(findLowerAction(rendered.document, "\u3067\u304d\u3054\u3068\u3092\u8ffd\u52a0")?.textContent, "\u3067\u304d\u3054\u3068\u3092\u8ffd\u52a0");
+    assert.equal(findLowerAction(rendered.document, "\u30db\u30fc\u30e0"), undefined);
     await act(async () => rendered.setTopIntersection(false));
+    await act(async () => rendered.setFooterIntersection(false));
+    assert.ok(findLowerAction(rendered.document, "\u4e0a\u3078"));
+    assert.ok(findLowerAction(rendered.document, "\u4e0b\u3078"));
     assert.deepEqual(
       [...rendered.document.querySelectorAll(".timeline-toolbar__actions button")].map(
-        (button) => button.textContent,
+        (button) => button.getAttribute("aria-label") ?? button.textContent,
       ),
-      ["できごとを追加", "↑ 上へ", "その他"],
+      ["\u3067\u304d\u3054\u3068\u3092\u8ffd\u52a0", "\u4e0a\u3078", "\u4e0b\u3078", "\u305d\u306e\u4ed6"],
     );
   } finally {
     await rendered.cleanup();

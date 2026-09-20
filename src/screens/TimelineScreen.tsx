@@ -117,7 +117,6 @@ export function TimelineScreen({
   const ja = language === "ja";
   const copy = getPresentationMessages(language);
   const selectedEventRef = useRef<HTMLLIElement>(null);
-  const timelineHeadingRef = useRef<HTMLHeadingElement>(null);
   const timelineTopSentinelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -129,23 +128,35 @@ export function TimelineScreen({
     dataset.extensions?.metadata?.title ?? "",
   );
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [showBackToBottom, setShowBackToBottom] = useState(true);
 
   useEffect(() => {
     const sentinel = timelineTopSentinelRef.current;
+    const footer = document.getElementById("timeline-footer");
 
-    if (!sentinel || typeof window.IntersectionObserver === "undefined") return;
+    if (!sentinel || !footer || typeof window.IntersectionObserver === "undefined") return;
 
-    const observer = new window.IntersectionObserver(([entry]) => {
-      setShowBackToTop(!entry.isIntersecting);
+    const observer = new window.IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === sentinel) setShowBackToTop(!entry.isIntersecting);
+        if (entry.target === footer) setShowBackToBottom(!entry.isIntersecting);
+      }
     });
 
     observer.observe(sentinel);
+    observer.observe(footer);
     return () => observer.disconnect();
   }, []);
 
   const handleBackToTop = () => {
-    timelineHeadingRef.current?.focus();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  };
+
+  const handleBackToBottom = () => {
+    document.getElementById("timeline-footer")?.scrollIntoView({
+      block: "end",
+      behavior: "auto",
+    });
   };
 
   useEffect(() => {
@@ -226,7 +237,7 @@ export function TimelineScreen({
       data-dataset-modified={datasetModified ? "true" : "false"}
     >
       <div ref={timelineTopSentinelRef} aria-hidden="true" />
-      <h1 id="timeline-heading" className="visually-hidden" ref={timelineHeadingRef} tabIndex={-1}>
+      <h1 id="timeline-heading" className="visually-hidden">
         {ja ? "タイムライン" : "Timeline"}
       </h1>
 
@@ -266,8 +277,29 @@ export function TimelineScreen({
         <div className="timeline-toolbar__actions">
           <button type="button" onClick={onAddEvent}>{ja ? "できごとを追加" : "Add Event"}</button>
           {showBackToTop && (
-            <button type="button" onClick={handleBackToTop}>
-              {ja ? "↑ 上へ" : "↑ Top"}
+            <button
+              type="button"
+              className="timeline-navigation-action"
+              aria-label={ja ? "上へ" : "Top"}
+              onClick={handleBackToTop}
+            >
+              <span className="timeline-navigation-action__full" aria-hidden="true">
+                {ja ? "↑ 上へ" : "↑ Top"}
+              </span>
+              <span className="timeline-navigation-action__compact" aria-hidden="true">↑</span>
+            </button>
+          )}
+          {showBackToBottom && (
+            <button
+              type="button"
+              className="timeline-navigation-action"
+              aria-label={ja ? "下へ" : "Bottom"}
+              onClick={handleBackToBottom}
+            >
+              <span className="timeline-navigation-action__full" aria-hidden="true">
+                {ja ? "↓ 下へ" : "↓ Bottom"}
+              </span>
+              <span className="timeline-navigation-action__compact" aria-hidden="true">↓</span>
             </button>
           )}
           <WorkspaceMoreMenu

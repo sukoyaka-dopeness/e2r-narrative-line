@@ -7,6 +7,7 @@ import { ModalDialog } from "./ModalDialog";
 type AppFrameProps = {
   children: ReactNode;
   showFooter?: boolean;
+  footerId?: string;
   onHome?: () => void;
   onLanguageChange?: (language: "en" | "ja") => void;
   headerNavigationAction?: {
@@ -18,6 +19,7 @@ type AppFrameProps = {
 export function AppFrame({
   children,
   showFooter = false,
+  footerId,
   onHome,
   onLanguageChange,
   headerNavigationAction,
@@ -57,7 +59,7 @@ export function AppFrame({
       <div className="app-content">{children}</div>
 
       {showFooter && (
-        <footer className="app-footer">
+        <footer id={footerId} className="app-footer">
           <small>{ja ? "E2R\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u30a8\u30c7\u30a3\u30bf\u30fc" : "E2R timeline editor"}</small>
           <button
             type="button"

@@ -1151,6 +1151,8 @@ function App() {
   }
   return (
     <AppFrame
+      showFooter
+      footerId="timeline-footer"
       onHome={handleNavigateHome}
       onLanguageChange={handleManualLanguageChange}
       headerNavigationAction={{
