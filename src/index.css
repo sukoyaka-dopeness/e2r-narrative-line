@@ -1140,7 +1140,8 @@ button:disabled {
 .detail-primary-actions button,
 .modal-actions button,
 .detail-actions button,
-.detail-header button {
+.detail-header button,
+.danger-zone button {
   min-height: 36px;
   padding: 5px 9px;
   border-radius: 4px;
