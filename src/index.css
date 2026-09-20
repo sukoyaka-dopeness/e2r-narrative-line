@@ -1135,6 +1135,8 @@ button:disabled {
 .workspace-more-item,
 .app-footer .credits-button,
 .dataset-title-editor button,
+.related-card__actions > button,
+.related-card__header > button,
 .detail-primary-actions button,
 .modal-actions button,
 .detail-actions button,
