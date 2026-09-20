@@ -23,7 +23,7 @@ function historyEvent(id, name, year, day, hour, temporalOrder) {
   };
 }
 
-function history2ApproximateEvent(id, name, year, day, hour, minute) {
+function history2EventAt(id, name, position, approximation = false) {
   return {
     id,
     name,
@@ -33,17 +33,27 @@ function history2ApproximateEvent(id, name, year, day, hour, minute) {
           id: `history-position-${id}`,
           type: "position",
           position: {
-            year,
-            month: 8,
-            day,
-            hour,
-            minute,
-            approximation: "circa",
+            ...position,
+            ...(approximation ? { approximation: "circa" } : {}),
           },
         }],
       },
     },
   };
+}
+
+function history2ApproximateEventAt(id, name, position) {
+  return history2EventAt(id, name, position, true);
+}
+
+function history2ApproximateEvent(id, name, year, day, hour, minute) {
+  return history2ApproximateEventAt(id, name, {
+    year,
+    month: 8,
+    day,
+    hour,
+    minute,
+  });
 }
 
 async function renderTimeline(dataset, language = "en") {
@@ -242,8 +252,82 @@ test("H2 circa Timeline preserves recorded time in EN and JA", async () => {
       assert.equal(rendered.document.querySelectorAll(".timeline-event-time").length, 2);
       assert.deepEqual(
         [...rendered.document.querySelectorAll(".timeline-event-time")].map((node) => node.textContent),
-        language === "ja" ? ["09時05分", "20時00分"] : ["09h 05m", "20h 00m"],
+        language === "ja" ? ["09時05分頃", "20時00分頃"] : ["circa 09h 05m", "circa 20h 00m"],
       );
+    } finally {
+      await rendered.cleanup();
+    }
+  }
+});
+
+test("H2 circa Timeline puts one marker on the most specific visible time unit", async () => {
+  const dataset = {
+    version: "1.0",
+    ...emptyRelations,
+    events: [
+      history2ApproximateEventAt("event-year", "Year only", { year: 1989 }),
+      history2ApproximateEventAt("event-month", "Year and month", { year: 1990, month: 11 }),
+      history2ApproximateEventAt("event-date", "Full date", { year: 1991, month: 11, day: 9 }),
+      history2ApproximateEventAt("event-date-time", "Full date and time", {
+        year: 1992,
+        month: 11,
+        day: 9,
+        hour: 18,
+        minute: 53,
+      }),
+      history2EventAt("event-exact", "Exact date and time", {
+        year: 1993,
+        month: 8,
+        day: 9,
+        hour: 7,
+        minute: 0,
+      }),
+    ],
+    extensions: {
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "1.0.0",
+        uses: [{ extension: "history", version: "2.0.0", features: ["approximation"] }],
+      },
+    },
+  };
+
+  function readCard(document, name) {
+    const card = [...document.querySelectorAll(".timeline-card")]
+      .find((node) => node.querySelector(".timeline-event-name")?.textContent === name);
+    assert.ok(card, `missing Timeline card: ${name}`);
+    return {
+      date: card.querySelector(".timeline-card__row > div:first-child > div")?.textContent,
+      time: card.querySelector(".timeline-event-time")?.textContent,
+    };
+  }
+
+  for (const language of ["en", "ja"]) {
+    const rendered = await renderTimeline(dataset, language);
+    try {
+      const values = {
+        year: readCard(rendered.document, "Year only"),
+        month: readCard(rendered.document, "Year and month"),
+        date: readCard(rendered.document, "Full date"),
+        dateTime: readCard(rendered.document, "Full date and time"),
+        exact: readCard(rendered.document, "Exact date and time"),
+      };
+      if (language === "ja") {
+        assert.deepEqual(values, {
+          year: { date: "1989頃", time: undefined },
+          month: { date: "1990-11頃", time: undefined },
+          date: { date: "1991-11-09頃", time: undefined },
+          dateTime: { date: "1992-11-09", time: "18時53分頃" },
+          exact: { date: "1993-08-09", time: "07時00分" },
+        });
+      } else {
+        assert.deepEqual(values, {
+          year: { date: "circa 1989", time: undefined },
+          month: { date: "circa 1990-11", time: undefined },
+          date: { date: "circa 1991-11-09", time: undefined },
+          dateTime: { date: "1992-11-09", time: "circa 18h 53m" },
+          exact: { date: "1993-08-09", time: "07h 00m" },
+        });
+      }
     } finally {
       await rendered.cleanup();
     }

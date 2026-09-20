@@ -102,6 +102,10 @@ function formatTimelineEventTime(
   return parts.join(ja ? "" : " ");
 }
 
+function formatTimelineApproximateValue(value: string, ja: boolean): string {
+  return ja ? `${value}頃` : `circa ${value}`;
+}
+
 export function TimelineScreen({
   dataset,
   datasetModified,
@@ -399,6 +403,19 @@ export function TimelineScreen({
         {timelineEvents.map((event) => {
           const isSelected = event.id === selectedEvent;
           const identity = eventIdentity.get(event.id);
+          const history2Position = getHistory2PositionEditorValues(dataset, event);
+          const isApproximate = history2Position?.approximation ?? false;
+          const timelineDate = formatEventTimelineDate(dataset, event);
+          const dateText = isApproximate
+            ? timelineDate ?? "----/--/--"
+            : formatEventHistoryDate(event) ?? timelineDate ?? "----/--/--";
+          const timelineTime = formatTimelineEventTime(dataset, event, ja, isSelected);
+          const dateDisplay = isApproximate && !timelineTime
+            ? formatTimelineApproximateValue(dateText, ja)
+            : dateText;
+          const timeDisplay = isApproximate && timelineTime
+            ? formatTimelineApproximateValue(timelineTime, ja)
+            : timelineTime;
 
           return (
             <li
@@ -417,21 +434,13 @@ export function TimelineScreen({
                   }}
                 >
                   <div
-                    aria-label={
-                      getHistory2PositionEditorValues(dataset, event)?.approximation
-                        ? `${ja ? "頃" : "circa"} ${formatEventTimelineDate(dataset, event) ?? "----/--/--"}`
-                        : undefined
-                    }
+                    aria-label={isApproximate && !timelineTime ? dateDisplay : undefined}
                   >
-                    {getHistory2PositionEditorValues(dataset, event)?.approximation
-                      ? ja
-                        ? `${formatEventTimelineDate(dataset, event) ?? "----/--/--"}頃`
-                        : `circa ${formatEventTimelineDate(dataset, event) ?? "----/--/--"}`
-                      : formatEventHistoryDate(event) ?? formatEventTimelineDate(dataset, event) ?? "----/--/--"}
+                    {dateDisplay}
                   </div>
-                  {formatTimelineEventTime(dataset, event, ja, isSelected) && (
+                  {timeDisplay && (
                     <small className="timeline-event-time">
-                      {formatTimelineEventTime(dataset, event, ja, isSelected)}
+                      {timeDisplay}
                     </small>
                   )}
                 </div>
