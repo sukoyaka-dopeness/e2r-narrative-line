@@ -226,24 +226,32 @@ export function TimelineScreen({
       data-dataset-modified={datasetModified ? "true" : "false"}
     >
       <div ref={timelineTopSentinelRef} aria-hidden="true" />
-      <h1 ref={timelineHeadingRef} tabIndex={-1}>{ja ? "タイムライン" : "Timeline"}</h1>
+      <h1 id="timeline-heading" className="visually-hidden" ref={timelineHeadingRef} tabIndex={-1}>
+        {ja ? "タイムライン" : "Timeline"}
+      </h1>
 
-      <div className="dataset-title-editor">
-        <input
-          type="text"
-          value={titleDraft}
-          onChange={(event) => setTitleDraft(event.target.value)}
-          placeholder={ja ? "タイトルを入力してください" : "Enter dataset title"}
-          aria-label={copy.datasetTitleLabel}
-        />
-        <button
-          type="button"
-          onClick={() => onUpdateDatasetTitle(titleDraft)}
-          disabled={titleDraft === (dataset.extensions?.metadata?.title ?? "")}
-        >
-          {ja ? "タイトルを適用" : "Apply title"}
-        </button>
-      </div>
+      <section className="dataset-identity" aria-labelledby="timeline-heading">
+        <label className="dataset-title-editor__label" htmlFor="dataset-title-input">
+          {copy.datasetTitleLabel}
+        </label>
+        <div className="dataset-title-editor">
+          <input
+            id="dataset-title-input"
+            type="text"
+            value={titleDraft}
+            onChange={(event) => setTitleDraft(event.target.value)}
+            placeholder={ja ? "タイトルを入力してください" : "Enter dataset title"}
+            aria-label={copy.datasetTitleLabel}
+          />
+          <button
+            type="button"
+            onClick={() => onUpdateDatasetTitle(titleDraft)}
+            disabled={titleDraft === (dataset.extensions?.metadata?.title ?? "")}
+          >
+            {ja ? "タイトルを適用" : "Apply title"}
+          </button>
+        </div>
+      </section>
 
       <input
         ref={fileInputRef}

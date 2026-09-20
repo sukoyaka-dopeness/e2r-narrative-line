@@ -525,27 +525,27 @@ export function EventDetailScreen({
 
       <br />
 
-      <div>
-        <label>{ja ? "名前" : "Name"}</label>
-        <br />
-        <input
-          type="text"
-          value={name}
-          placeholder={ja ? "できごとの名前を入力してください" : "Enter event name"}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
+      <div className="event-text-fields">
+        <div>
+          <label>{ja ? "名前" : "Name"}</label>
+          <br />
+          <input
+            type="text"
+            value={name}
+            placeholder={ja ? "できごとの名前を入力してください" : "Enter event name"}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
 
-      <br />
-
-      <div>
-        <label>{ja ? "説明" : "Description"}</label>
-        <br />
-        <textarea
-          rows={5}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <div>
+          <label>{ja ? "説明" : "Description"}</label>
+          <br />
+          <textarea
+            rows={5}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
       </div>
       <CoordinatePanel key={event.id} dataset={dataset} object={event} />
 
