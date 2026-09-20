@@ -1126,18 +1126,28 @@ button:disabled {
   min-width: 0;
 }
 
-/* Bounded ordinary-control density experiment. Keep title, dialogs, detail actions,
-   destructive controls, and timeline content typography on their existing contracts. */
+/* Bounded ordinary-control density experiment. Keep title input prominence,
+   content typography, and destructive treatment on their existing contracts. */
 .app-header > button,
 .home-screen .home-actions button,
 .timeline-toolbar__actions > button,
 .workspace-more-trigger,
 .workspace-more-item,
-.app-footer .credits-button {
-  min-height: 38px;
-  padding: 6px 10px;
-  border-radius: 5px;
-  font-size: 16px;
+.app-footer .credits-button,
+.dataset-title-editor button,
+.detail-primary-actions button,
+.modal-actions button,
+.detail-actions button,
+.detail-header button {
+  min-height: 36px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 120%;
+}
+
+.workspace-more-trigger {
+  color: var(--text-h);
 }
 
 
