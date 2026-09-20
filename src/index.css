@@ -1126,6 +1126,20 @@ button:disabled {
   min-width: 0;
 }
 
+/* Bounded ordinary-control density experiment. Keep title, dialogs, detail actions,
+   destructive controls, and timeline content typography on their existing contracts. */
+.app-header > button,
+.home-screen .home-actions button,
+.timeline-toolbar__actions > button,
+.workspace-more-trigger,
+.workspace-more-item,
+.app-footer .credits-button {
+  min-height: 38px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
 
 @media (max-width: 600px) {
   .app-header,
