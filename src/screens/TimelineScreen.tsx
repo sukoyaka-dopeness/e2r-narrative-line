@@ -459,6 +459,7 @@ export function TimelineScreen({
 
                     {isSelected && (
                       <button
+                        className="timeline-card__edit-action"
                         onClick={(e) => {
                           e.stopPropagation();
                           onEditEvent(event.id);

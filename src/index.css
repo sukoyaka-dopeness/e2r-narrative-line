@@ -473,6 +473,13 @@ button:disabled {
   max-width: 100%;
 }
 
+.entity-text-field__control {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
 .date-fields {
   display: flex;
   align-items: flex-start;
@@ -1141,7 +1148,8 @@ button:disabled {
 .modal-actions button,
 .detail-actions button,
 .detail-header button,
-.danger-zone button {
+.danger-zone button,
+.timeline-card__edit-action {
   min-height: 36px;
   padding: 5px 9px;
   border-radius: 4px;

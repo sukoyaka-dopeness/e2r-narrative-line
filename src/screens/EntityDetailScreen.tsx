@@ -153,6 +153,7 @@ export function EntityDetailScreen({
         <label>{ja ? "名前" : "Name"}</label>
         <br />
         <input
+          className="entity-text-field__control"
           type="text"
           value={name}
           placeholder={ja ? "人物・組織・場所などを入力してください" : "Enter a person, organization, place, or other entity"}
@@ -166,6 +167,7 @@ export function EntityDetailScreen({
         <label>{ja ? "説明" : "Description"}</label>
         <br />
         <textarea
+          className="entity-text-field__control"
           rows={5}
           value={description}
           onChange={(event) => setDescription(event.target.value)}
