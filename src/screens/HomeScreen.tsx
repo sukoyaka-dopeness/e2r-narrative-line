@@ -7,6 +7,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-sample-provenance.md";
+const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
 
 type Props = {
   onOpenTimeline: () => void;
@@ -143,6 +144,10 @@ export function HomeScreen({
         rel="noreferrer"
       >
         {ja ? "日本語ユーザーガイド" : "English user guide"}
+      </a>
+
+      <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
+        {copy.supportE2r}
       </a>
 
       {fileReadError && <p role="alert">{copy.localFileReadFailure}</p>}

@@ -169,6 +169,26 @@ test("uses Japanese presentation for the startup Handoff loading status", async 
   }
 });
 
+test("renders the low-prominence GitHub Sponsors support link on Home", async () => {
+  const rendered = await renderApp({ persistedLocale: "en" });
+  try {
+    const link = rendered.document.querySelector(".support-link");
+    assert.ok(link);
+    assert.equal(link.textContent, "Support E2R on GitHub Sponsors");
+    assert.equal(link.getAttribute("href"), "https://github.com/sponsors/sukoyaka-dopeness");
+    assert.equal(link.getAttribute("target"), "_blank");
+    assert.equal(link.getAttribute("rel"), "noreferrer");
+    assert.equal(rendered.document.querySelector(".app-footer")?.contains(link), false);
+
+    const localeButton = findHeaderLocaleButton(rendered.document, "日本語");
+    assert.ok(localeButton);
+    await act(async () => localeButton.click());
+    assert.equal(rendered.document.querySelector(".support-link")?.textContent, "GitHub SponsorsでE2Rを支援する");
+  } finally {
+    rendered.cleanup();
+  }
+});
+
 test("uses Japanese presentation in the Credits dialog body", async () => {
   const rendered = await renderApp({ persistedLocale: "ja" });
   try {
