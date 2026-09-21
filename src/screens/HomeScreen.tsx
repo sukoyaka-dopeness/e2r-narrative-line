@@ -6,6 +6,8 @@ import type {
 import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
 
+const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-sample-provenance.md";
+
 type Props = {
   onOpenTimeline: () => void;
   onCreateDataset?: () => void;
@@ -127,6 +129,9 @@ export function HomeScreen({
           <button type="button" onClick={onOpenTimeline} disabled={handoffLoading} style={{ width: "100%" }}>
            {ja ? "サンプルDatasetを開く" : "Open Sample Dataset"}
           </button>
+          <a href={SAMPLE_PROVENANCE_URL} target="_blank" rel="noreferrer">
+            {copy.sampleInfo}
+          </a>
         </div>
       </div>
 
