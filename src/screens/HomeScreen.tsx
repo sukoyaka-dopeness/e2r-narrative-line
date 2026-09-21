@@ -137,6 +137,7 @@ export function HomeScreen({
       </div>
 
       <a
+        className="home-guide-link"
         href={ja
           ? "https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/user-guide-ja.md"
           : "https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/user-guide-en.md"}

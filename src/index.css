@@ -147,7 +147,8 @@ body {
 .home-screen .home-actions { width: 100%; gap: 12px; }
 .home-screen .home-actions button { width: 100%; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--sans); font-size: 16px; font-weight: 400; line-height: 120%; }
 .home-screen .home-actions button:first-child { color: var(--text-h); background: var(--bg); }
-.home-screen .sample-info-link { display: block; width: 100%; margin-top: 12px; text-align: center; }
+.home-screen .sample-info-link { display: block; width: 100%; margin-top: 12px; font-size: 0.875rem; text-align: center; }
+.home-screen .home-guide-link { font-size: 0.875rem; }
 .home-screen .support-link { display: block; margin-top: 0; color: var(--text); font-size: 0.875rem; text-align: center; text-underline-offset: 0.18em; }
 
 .app-footer {
