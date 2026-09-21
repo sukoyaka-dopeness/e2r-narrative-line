@@ -147,6 +147,7 @@ body {
 .home-screen .home-actions { width: 100%; gap: 12px; }
 .home-screen .home-actions button { width: 100%; min-height: 40px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--sans); font-size: 16px; font-weight: 400; line-height: 120%; }
 .home-screen .home-actions button:first-child { color: var(--text-h); background: var(--bg); }
+.home-screen .sample-info-link { display: block; width: 100%; text-align: center; }
 
 .app-footer {
   border-top: 1px solid var(--border);

@@ -129,7 +129,7 @@ export function HomeScreen({
           <button type="button" onClick={onOpenTimeline} disabled={handoffLoading} style={{ width: "100%" }}>
            {ja ? "サンプルDatasetを開く" : "Open Sample Dataset"}
           </button>
-          <a href={SAMPLE_PROVENANCE_URL} target="_blank" rel="noreferrer">
+          <a className="sample-info-link" href={SAMPLE_PROVENANCE_URL} target="_blank" rel="noreferrer">
             {copy.sampleInfo}
           </a>
         </div>
