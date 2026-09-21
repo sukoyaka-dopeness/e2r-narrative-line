@@ -54,11 +54,17 @@
       "description": "Mikhail Gorbachev became General Secretary of the Communist Party of the Soviet Union.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1985,
-            "month": 3,
-            "day": 11
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1985,
+                "month": 3,
+                "day": 11
+              }
+            }
+          ]
         }
       }
     },
@@ -68,11 +74,17 @@
       "description": "A speech at the Brandenburg Gate made the Berlin Wall a prominent symbol of divided Europe.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1987,
-            "month": 6,
-            "day": 12
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1987,
+                "month": 6,
+                "day": 12
+              }
+            }
+          ]
         }
       }
     },
@@ -82,11 +94,17 @@
       "description": "Citizens challenged the official results of the GDR local elections and demanded truthful counting.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 5,
-            "day": 7
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 5,
+                "day": 7
+              }
+            }
+          ]
         }
       }
     },
@@ -96,11 +114,17 @@
       "description": "A border picnic near Sopron provided an opening through which East German visitors escaped to the West.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 8,
-            "day": 19
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 8,
+                "day": 19
+              }
+            }
+          ]
         }
       }
     },
@@ -110,11 +134,17 @@
       "description": "A Monday demonstration after the peace prayer became an early public expression of the peaceful movement.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 9,
-            "day": 4
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 9,
+                "day": 4
+              }
+            }
+          ]
         }
       }
     },
@@ -124,11 +154,17 @@
       "description": "Hungary opened its border with Austria, accelerating the movement of GDR citizens to the West.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 9,
-            "day": 11
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 9,
+                "day": 11
+              }
+            }
+          ]
         }
       }
     },
@@ -138,11 +174,17 @@
       "description": "Neues Forum submitted its application to become an official political association in the GDR.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 9,
-            "day": 19
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 9,
+                "day": 19
+              }
+            }
+          ]
         }
       }
     },
@@ -152,11 +194,17 @@
       "description": "Gorbachev visited East Berlin for the fortieth anniversary of the GDR and urged reform.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 10,
-            "day": 7
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 10,
+                "day": 7
+              }
+            }
+          ]
         }
       }
     },
@@ -166,11 +214,17 @@
       "description": "A large peaceful demonstration showed that the movement could not be contained by threats of force.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 10,
-            "day": 9
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 10,
+                "day": 9
+              }
+            }
+          ]
         }
       }
     },
@@ -180,11 +234,17 @@
       "description": "Erich Honecker resigned as SED General Secretary and was replaced by Egon Krenz.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 10,
-            "day": 18
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 10,
+                "day": 18
+              }
+            }
+          ]
         }
       }
     },
@@ -194,11 +254,17 @@
       "description": "A mass gathering in East Berlin demanded freedom of expression and political change.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 4
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 4
+              }
+            }
+          ]
         }
       }
     },
@@ -208,15 +274,21 @@
       "description": "At a press conference, Schabowski announced new travel regulations and answered that they took effect immediately.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 9,
-            "hour": 18,
-            "minute": 53,
-            "timeZone": "Europe/Berlin",
-            "offset": "+01:00"
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 9,
+                "hour": 18,
+                "minute": 53,
+                "timeZone": "Europe/Berlin",
+                "offset": "+01:00"
+              }
+            }
+          ]
         }
       }
     },
@@ -226,15 +298,21 @@
       "description": "The 20:00 ARD Tagesschau led with the report that the GDR border was open, spreading the news widely.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 9,
-            "hour": 20,
-            "minute": 0,
-            "timeZone": "Europe/Berlin",
-            "offset": "+01:00"
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 9,
+                "hour": 20,
+                "minute": 0,
+                "timeZone": "Europe/Berlin",
+                "offset": "+01:00"
+              }
+            }
+          ]
         }
       }
     },
@@ -244,15 +322,21 @@
       "description": "Under pressure from the crowd, officials allowed the first East Berliners to pass at Bornholmer Straße; this was a limited crossing, not yet the later full opening.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 9,
-            "hour": 21,
-            "minute": 20,
-            "timeZone": "Europe/Berlin",
-            "offset": "+01:00"
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 9,
+                "hour": 21,
+                "minute": 20,
+                "timeZone": "Europe/Berlin",
+                "offset": "+01:00"
+              }
+            }
+          ]
         }
       }
     },
@@ -262,11 +346,17 @@
       "description": "Other border crossings opened as the night continued, spreading the opening across Berlin.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 10
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 10
+              }
+            }
+          ]
         }
       }
     }
@@ -409,7 +499,7 @@
         },
         {
           "extension": "history",
-          "version": "1.0.0"
+          "version": "2.0.0"
         }
       ]
     }

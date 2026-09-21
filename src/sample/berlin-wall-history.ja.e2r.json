@@ -54,11 +54,17 @@
       "description": "ミハイル・ゴルバチョフがソ連共産党書記長に選出された。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1985,
-            "month": 3,
-            "day": 11
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1985,
+                "month": 3,
+                "day": 11
+              }
+            }
+          ]
         }
       }
     },
@@ -68,11 +74,17 @@
       "description": "ブランデンブルク門での演説が、分断された欧州の象徴として壁への注目を集めた。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1987,
-            "month": 6,
-            "day": 12
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1987,
+                "month": 6,
+                "day": 12
+              }
+            }
+          ]
         }
       }
     },
@@ -82,11 +94,17 @@
       "description": "東ドイツの地方選挙の公式結果に対し、市民が正確な開票を求めた。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 5,
-            "day": 7
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 5,
+                "day": 7
+              }
+            }
+          ]
         }
       }
     },
@@ -96,11 +114,17 @@
       "description": "ショプロン近郊の国境集会を通じ、東ドイツ市民が西側へ脱出した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 8,
-            "day": 19
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 8,
+                "day": 19
+              }
+            }
+          ]
         }
       }
     },
@@ -110,11 +134,17 @@
       "description": "平和の祈りの後の月曜デモが、平和的な市民運動の初期の表現となった。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 9,
-            "day": 4
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 9,
+                "day": 4
+              }
+            }
+          ]
         }
       }
     },
@@ -124,11 +154,17 @@
       "description": "ハンガリーがオーストリアとの国境を開き、西側への移動が加速した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 9,
-            "day": 11
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 9,
+                "day": 11
+              }
+            }
+          ]
         }
       }
     },
@@ -138,11 +174,17 @@
       "description": "ノイエス・フォルムが東ドイツで政治団体としての公認を申請した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 9,
-            "day": 19
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 9,
+                "day": 19
+              }
+            }
+          ]
         }
       }
     },
@@ -152,11 +194,17 @@
       "description": "東ドイツ建国40周年にゴルバチョフが東ベルリンを訪れ、改革を促した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 10,
-            "day": 7
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 10,
+                "day": 7
+              }
+            }
+          ]
         }
       }
     },
@@ -166,11 +214,17 @@
       "description": "大規模な平和的デモが、運動を抑えられないことを示した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 10,
-            "day": 9
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 10,
+                "day": 9
+              }
+            }
+          ]
         }
       }
     },
@@ -180,11 +234,17 @@
       "description": "エーリッヒ・ホーネッカーがSED書記長を辞任し、エゴン・クレンツが後任となった。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 10,
-            "day": 18
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 10,
+                "day": 18
+              }
+            }
+          ]
         }
       }
     },
@@ -194,11 +254,17 @@
       "description": "東ベルリンに市民が集まり、表現の自由と政治変革を求めた。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 4
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 4
+              }
+            }
+          ]
         }
       }
     },
@@ -208,15 +274,21 @@
       "description": "記者会見で新しい旅行規則を発表し、即時発効と答えた。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 9,
-            "hour": 18,
-            "minute": 53,
-            "timeZone": "Europe/Berlin",
-            "offset": "+01:00"
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 9,
+                "hour": 18,
+                "minute": 53,
+                "timeZone": "Europe/Berlin",
+                "offset": "+01:00"
+              }
+            }
+          ]
         }
       }
     },
@@ -226,15 +298,21 @@
       "description": "20時のTagesschauが東ドイツの国境開放をトップで報じ、ニュースが広がった。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 9,
-            "hour": 20,
-            "minute": 0,
-            "timeZone": "Europe/Berlin",
-            "offset": "+01:00"
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 9,
+                "hour": 20,
+                "minute": 0,
+                "timeZone": "Europe/Berlin",
+                "offset": "+01:00"
+              }
+            }
+          ]
         }
       }
     },
@@ -244,15 +322,21 @@
       "description": "群衆の圧力を受け、当局が最初の東ベルリン市民の通過を許可した。後の全面開放とは区別される。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 9,
-            "hour": 21,
-            "minute": 20,
-            "timeZone": "Europe/Berlin",
-            "offset": "+01:00"
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 9,
+                "hour": 21,
+                "minute": 20,
+                "timeZone": "Europe/Berlin",
+                "offset": "+01:00"
+              }
+            }
+          ]
         }
       }
     },
@@ -262,11 +346,17 @@
       "description": "夜が進むにつれ他の検問所も開き、壁の開放がベルリン全体へ広がった。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1989,
-            "month": 11,
-            "day": 10
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1989,
+                "month": 11,
+                "day": 10
+              }
+            }
+          ]
         }
       }
     }
@@ -409,7 +499,7 @@
         },
         {
           "extension": "history",
-          "version": "1.0.0"
+          "version": "2.0.0"
         }
       ]
     }
