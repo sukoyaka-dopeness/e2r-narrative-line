@@ -22,6 +22,13 @@ to an Event named “Apollo 11 Moon landing.”
 
 From Home, choose **Open Sample Dataset** to explore the built-in sample, or choose **Resume Editing** to return to the Dataset you were editing. The Timeline is the main workspace for selecting Events and opening their details.
 
+The Timeline toolbar stays available while you work. Choose **Add Event** to
+create a new Event. When the page is long, **↑ Top** and **↓ Bottom** provide
+quick navigation. The **More** menu contains **Open E2R Dataset** for opening
+another local file and **Export E2R JSON** for saving the current Dataset;
+opening replaces the current Dataset only after the replacement-safety checks,
+whereas export downloads a copy and keeps the current workspace open.
+
 ```text
 Home
   ↓ Open a Dataset
@@ -53,6 +60,12 @@ Entities may share the same name; NarrativeLine does not merge them automaticall
 
 From Home, choose **New Dataset** to start from an empty Dataset, or choose **Open E2R Dataset** to import an E2R JSON file. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset.
 
+Home also provides **Open Sample Dataset** and **Sample info**. The former opens
+the built-in sample for the current application; the latter opens the central
+E2R specification provenance record. The public Gallery has five ordinary
+sample families. E2R Self-Description is a separate non-normative dogfood and
+technical entry, not a sixth Gallery sample.
+
 ## Save or share a Dataset
 
 To name the timeline, enter a title at the top of the Timeline and choose **Apply title**. The title is included in the exported JSON.
@@ -60,6 +73,11 @@ To name the timeline, enter a title at the top of the Timeline and choose **Appl
 Choose **Export E2R JSON** to save the Dataset. A title is used for the filename; without a title, the fallback is `e2r-dataset.e2r.json`.
 
 Before export, NarrativeLine validates the Dataset. The exported file keeps the information needed to open and edit the Dataset in another compatible E2R application.
+
+The language control in the Header shows the current language and lets you
+switch between English and Japanese. The Header Home link returns to Home, and
+the bottom **Back** action returns to the previous workspace in detail and
+creation flows.
 
 ## Share a timeline with a link
 
@@ -104,9 +122,22 @@ NarrativeLine uses the Timeline as its central workspace. Working screens
 place **Back** on the left side of the bottom action bar and save or creation
 actions on the right. Delete actions remain separate from this primary group.
 
+For a History 2 Event with an exact Civil Time position, Event Detail can offer
+**Mark the date and time as approximate**. Saving it keeps the entered date and
+time and shows the approximation marker in the Timeline; it does not create a
+range or midpoint. The marker describes the position as a whole, not a separate
+time-only meaning. The public samples use the bounded
+`history@2.0.0 / position-circa` Stable profile; the full `history@2.0.0`
+extension remains Candidate, so this wording does not claim that every History
+2 capability is Stable.
+
 When an imported Dataset contains the experimental `linkscape-graph` Coordinate in an exact supported graph format, Entity Detail offers **Edit Recorded Coordinate**. It changes only the existing numeric `x` and `y` values. Other Spaces, missing values, and Event Coordinates remain read-only.
 
 Errors prevent a Dataset from opening. Import information explains legacy migration and other non-blocking conditions. NarrativeLine converts its legacy Event date representation to the current History representation during import. The selected source file is not changed, and dates in a newly exported file use the current History representation. A legacy Dataset whose Extension specification versions are undeclared can still be read and edited. Exact diagnostic codes and JSON Pointer locations remain available under **Diagnostic details**.
+
+On narrow screens, the Timeline remains usable with its responsive layout and
+compact navigation controls. The same editing and export actions are available;
+scroll the page to reach the workspace content and toolbar actions.
 
 ## Future possibilities
 
