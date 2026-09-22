@@ -12,6 +12,7 @@ import {
   type HistoryDateValidationError,
 } from "../services/HistoryService";
 import {
+  hasExistingHistoryData,
   getHistory2PositionEditorValues,
   preflightDatasetHistory1To2,
 } from "../services/History2Service.ts";
@@ -311,7 +312,10 @@ export function EventDetailScreen({
     ...(description === (event.description ?? "") ? {} : { description }),
   });
   const needsHistoryUpgradeConfirmation =
-    approximation && !history2Editable && editedHistoryDate.year !== undefined;
+    approximation &&
+    !history2Editable &&
+    editedHistoryDate.year !== undefined &&
+    hasExistingHistoryData(dataset);
   const commitSave = (addRelatedEntity: boolean) => {
     disposingDraftRef.current = true;
     if (addRelatedEntity) {

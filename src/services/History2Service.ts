@@ -125,6 +125,14 @@ function historyObjectsWithPayload(dataset: Dataset): CoreObject[] {
   );
 }
 
+export function hasExistingHistoryData(dataset: Dataset): boolean {
+  const declaration = readHistoryDeclaration(dataset);
+  return (
+    historyObjectsWithPayload(dataset).length > 0 ||
+    declaration.status !== "absent"
+  );
+}
+
 function readPositionDate(position: JsonRecord): HistoryDate {
   return {
     ...(typeof position.year === "number" ? { year: position.year } : {}),

@@ -44,6 +44,14 @@ const stableDataset = JSON.stringify({
   },
 });
 
+const newDatasetWithoutHistory = JSON.stringify({
+  version: "1.0",
+  entities: [],
+  events: [{ id: "event-new", name: "New Event" }],
+  relations: [],
+  extensions: { metadata: { datasetId: "dataset-new" } },
+});
+
 const unsafeDataset = JSON.stringify({
   version: "1.0",
   entities: [],
@@ -220,6 +228,49 @@ test("real Event Detail save upgrades a Stable History Event to H2 circa", async
 
     assert.ok(rendered.document.querySelector(".timeline-screen"));
     assert.ok(rendered.document.body.textContent.includes("circa 1900"));
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("new Dataset initializes H2 circa without Dataset-wide migration confirmation", async () => {
+  const rendered = await renderCandidateApp("en", newDatasetWithoutHistory);
+  try {
+    openCandidateEvent(rendered.document, "New Event");
+    const year = rendered.document.querySelector('input[type="number"]');
+    const approximation = rendered.document.querySelector('input[type="checkbox"]');
+    assert.ok(year);
+    assert.ok(approximation);
+    const valueSetter = Object.getOwnPropertyDescriptor(
+      rendered.window.HTMLInputElement.prototype,
+      "value",
+    )?.set;
+    assert.ok(valueSetter);
+    act(() => {
+      valueSetter.call(year, "1989");
+      year.dispatchEvent(new rendered.window.Event("input", { bubbles: true }));
+      year.dispatchEvent(new rendered.window.Event("change", { bubbles: true }));
+      approximation.click();
+    });
+
+    const save = buttonByText(rendered.document, "Save Event");
+    assert.ok(save);
+    act(() => save.click());
+
+    assert.equal(rendered.document.querySelector('[role="alertdialog"]'), null);
+    assert.ok(rendered.document.querySelector(".timeline-screen"));
+    const persisted = JSON.parse(rendered.window.localStorage.getItem("narrativeline.lastDataset"));
+    assert.deepEqual(persisted.events[0].extensions.history.assertions[0].position, {
+      year: 1989,
+      approximation: "circa",
+    });
+    assert.deepEqual(
+      persisted.extensions["draft.github.sukoyaka-dopeness.specification"].uses,
+      [
+        { extension: "metadata", version: "1.0.0" },
+        { extension: "history", version: "2.0.0", features: ["approximation"] },
+      ],
+    );
   } finally {
     rendered.cleanup();
   }
