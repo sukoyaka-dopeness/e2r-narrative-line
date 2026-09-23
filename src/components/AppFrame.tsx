@@ -31,7 +31,7 @@ export function AppFrame({
 
   return (
     <div className="app-frame">
-      <header className="app-header">
+      <header className={headerNavigationAction ? "app-header app-header--with-navigation-action" : "app-header"}>
         <a
           className="app-brand"
           href={import.meta.env.BASE_URL}
