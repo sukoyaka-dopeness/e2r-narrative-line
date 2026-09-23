@@ -45,7 +45,7 @@ async function renderEntityDetail(dataset, getRelationHandoffHref = undefined, l
   const container = environment.document.createElement("div");
   environment.document.body.append(container);
   const root = createRoot(container);
-  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, port: 0, strictPort: false }, appType: "custom" });
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false }, appType: "custom" });
   try {
     const [{ EntityDetailScreen }, { LanguageProvider }] = await Promise.all([
       server.ssrLoadModule("/src/screens/EntityDetailScreen.tsx"),

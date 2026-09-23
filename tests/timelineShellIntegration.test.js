@@ -56,7 +56,7 @@ async function renderApp() {
   environment.document.body.append(container);
   const server = await createServer({
     root: process.cwd(),
-    server: { middlewareMode: true, hmr: false },
+    server: { middlewareMode: true, hmr: false, ws: false },
     appType: "custom",
   });
   environment.addCleanup(() => server.close());

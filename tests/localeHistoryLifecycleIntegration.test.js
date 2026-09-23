@@ -35,7 +35,7 @@ async function renderApp({ hash = "", persistedLocale, browserLanguage = "en-US"
   const container = environment.document.createElement("div");
   environment.document.body.append(container);
   const root = createRoot(container);
-  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
   try {
     const [{ default: App }, { LanguageProvider }] = await Promise.all([
       server.ssrLoadModule("/src/App.tsx"),

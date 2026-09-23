@@ -59,7 +59,7 @@ test("successful startup Handoff creates a Home entry before pushing Timeline", 
   const root = createRoot(container);
   const server = await createServer({
     root: process.cwd(),
-    server: { middlewareMode: true, hmr: false },
+    server: { middlewareMode: true, hmr: false, ws: false },
     appType: "custom",
   });
 

@@ -32,7 +32,7 @@ async function createHarness(importResult, fileText = "") {
   try {
     server = await createServer({
       root: process.cwd(),
-      server: { middlewareMode: true, hmr: false, port: 0, strictPort: false },
+      server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false },
       appType: "custom",
     });
     ({ TimelineScreen } = await server.ssrLoadModule("/src/screens/TimelineScreen.tsx"));

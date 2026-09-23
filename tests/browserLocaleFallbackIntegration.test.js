@@ -14,7 +14,7 @@ async function renderApp({ hash = "", languages, language, persistedLocale }) {
   if (persistedLocale) environment.window.localStorage.setItem("narrativeline.language", persistedLocale);
   const container = environment.document.createElement("div"); environment.document.body.append(container);
   const root = createRoot(container);
-  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
   try {
     const [{ default: App }, { LanguageProvider }] = await Promise.all([server.ssrLoadModule("/src/App.tsx"), server.ssrLoadModule("/src/i18n/LanguageContext.tsx")]);
     await act(async () => root.render(React.createElement(LanguageProvider, null, React.createElement(App))));

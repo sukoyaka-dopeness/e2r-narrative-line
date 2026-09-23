@@ -34,7 +34,7 @@ async function renderApp() {
   environment.document.body.append(container);
   const { createRoot } = await import("react-dom/client");
   const root = createRoot(container);
-  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, port: 0, strictPort: false }, appType: "custom" });
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false }, appType: "custom" });
   try {
     const [{ default: App }, { LanguageProvider }] = await Promise.all([
       server.ssrLoadModule("/src/App.tsx"),

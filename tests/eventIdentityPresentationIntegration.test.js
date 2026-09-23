@@ -74,7 +74,7 @@ async function renderTimeline(dataset, language = "en") {
   let setSelectedEvent;
   const server = await createServer({
     root: process.cwd(),
-    server: { middlewareMode: true, hmr: false, port: 0, strictPort: false },
+    server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false },
     appType: "custom",
   });
 
@@ -136,7 +136,7 @@ async function renderEntityDetail(dataset, language = "en") {
   const selectedIds = [];
   const server = await createServer({
     root: process.cwd(),
-    server: { middlewareMode: true, hmr: false, port: 0, strictPort: false },
+    server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false },
     appType: "custom",
   });
 

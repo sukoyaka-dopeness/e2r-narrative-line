@@ -82,7 +82,7 @@ async function renderApp(storedDataset = dataset) {
   let LanguageProvider = null;
   async function remountApp() {
     root = createRoot(container);
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, port: 0, strictPort: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false }, appType: "custom" });
     try {
       const [appModule, languageModule] = await Promise.all([
         server.ssrLoadModule("/src/App.tsx"),

@@ -9,7 +9,7 @@ import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
 async function withViteServer(callback) {
   const server = await createServer({
     root: process.cwd(),
-    server: { middlewareMode: true, hmr: false },
+    server: { middlewareMode: true, hmr: false, ws: false },
     appType: "custom",
   });
 
