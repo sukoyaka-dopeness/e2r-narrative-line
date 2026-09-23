@@ -961,9 +961,15 @@ button:disabled {
   min-width: 5.5rem;
 }
 
-.button-danger {
+.dataset-replacement-actions .button-danger {
   border-color: #b91c1c;
-  color: #991b1b;
+  color: #fff;
+  background: #b91c1c;
+}
+
+.dataset-replacement-actions .button-danger:hover:not(:disabled) {
+  border-color: #991b1b;
+  background: #991b1b;
 }
 
 @media (max-width: 700px) {
