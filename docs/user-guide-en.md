@@ -2,7 +2,7 @@
 
 NarrativeLine is an application for editing E2R Datasets as timelines of Events. This guide is organized around common tasks rather than screen names.
 
-For an introduction to E2R, see the [E2R Overview](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/e2r-overview-en.md).
+For an introduction to E2R, see the [E2R Overview](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/guides/e2r-overview-en.md).
 
 ## What can you do with NarrativeLine?
 

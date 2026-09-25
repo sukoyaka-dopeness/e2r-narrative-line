@@ -2,7 +2,7 @@
 
 NarrativeLineは、E2Rデータセットを年表として見たり編集したりするアプリケーションです。このガイドでは、画面の名前ではなく、ユーザーが行いたいことを中心に説明します。
 
-E2Rの概要は、[E2R入門ガイド](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/e2r-overview-ja.md)をご覧ください。
+E2Rの概要は、[E2R入門ガイド](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/guides/e2r-overview-ja.md)をご覧ください。
 
 ## NarrativeLineでできること
 
