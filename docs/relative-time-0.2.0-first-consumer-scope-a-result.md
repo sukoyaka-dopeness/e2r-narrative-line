@@ -1,7 +1,7 @@
 # Relative Time 0.2.0 First-Consumer Scope A Result
 
 Date: 2026-09-26
-Status: **LOCAL IMPLEMENTATION VERIFIED / BOUNDED READ-ONLY SUPPORT; NO APPLICATION RELEASE**
+Status: **IMPLEMENTATION VERIFIED / MANUAL ACCEPTANCE PASS / BOUNDED READ-ONLY SUPPORT; NO APPLICATION RELEASE**
 
 NarrativeLine now resolves the normally published
 `@sukoyaka-dopeness/e2r-validator@0.7.0` through its exact package dependency
@@ -29,14 +29,15 @@ test confirms Timeline ordering is unchanged by the Relation data. Existing
 UI integration tests cover the generic diagnostics presentation path; this
 checkpoint did not perform a separate real-browser manual acceptance run.
 
-## Real-browser manual acceptance attempt (2026-09-26)
+## Earlier real-browser attempt (2026-09-26; superseded by the closure below)
 
-Status: **PARTIAL EVIDENCE; MANUAL ACCEPTANCE NOT CLOSED**. In local Edge
-against the Vite development server, the canonical `0.2.0` all-families
-Dataset opened through the real file picker. Its 13 undated Events remained
-visible without a Relative Time-specific UI or apparent Relative Time-driven
-Timeline ordering. An unrelated Event description edit saved in the browser.
-The existing `0.1.0` all-families Dataset also opened (11 Events).
+Status at that attempt: **PARTIAL EVIDENCE; MANUAL ACCEPTANCE NOT CLOSED**.
+In local Edge against the Vite development server, the canonical `0.2.0`
+all-families Dataset opened through the real file picker. Its 13 undated
+Events remained visible without a Relative Time-specific UI or apparent
+Relative Time-driven Timeline ordering. An unrelated Event description edit
+saved in the browser. The existing `0.1.0` all-families Dataset also opened
+(11 Events).
 
 Separate browser imports showed generic diagnostics for an invalid `0.2.0`
 Feature declaration (`relative_time_feature_declaration_mismatch`), invalid
@@ -49,18 +50,38 @@ both Japanese and English. No dedicated Relative Time guidance was added.
 The first browser attempt did not produce a completed downloadable Dataset.
 On a second attempt, the ordinary `More → Export E2R JSON` action also
 produced no browser download event within 20 seconds. No page-level warning or
-error was present in the captured console logs. Consequently, browser export,
-re-import, and structural preservation of the exact declaration, Relation
-payloads, unknown sibling data, and unrelated edit were **not manually
-verified**. The focused automated round-trip tests above remain separate
-evidence, not a substitute for that browser check. The available evidence
-does not determine whether this is caused by the browser/download environment
-or the application's export path.
-This attempt does not establish full scope A manual acceptance, application
-release readiness, or any semantic presentation acceptance. Follow-up needs
-an ordinary completed browser export and re-import without changing the
-read-only scope or treating a browser/download-environment failure as a
-Dataset contract decision.
+error was present in the captured console logs. At that point, browser export,
+re-import, and structural preservation had not been verified; the evidence
+did not determine whether the observation came from the browser/download
+environment or the application export path.
+
+## Final real-browser manual acceptance (Human-confirmed 2026-09-26)
+
+Status: **PASS / ACCEPTED / CLOSED for first-consumer scope A**. The Human
+confirmed that a normal browser Export created an actual Dataset file, even
+though Codex did not capture a download-completion event. The Human obtained
+that artifact and confirmed it retained the exact Relative Time `0.2.0`
+Specification declaration, Relative Time Relation payloads, intentional
+unknown sibling data, and the unrelated Event description saved during the
+browser session. The artifact was re-imported through Edge's ordinary Import;
+13 Events returned, and Event Detail showed the saved description
+`Browser acceptance: unrelated description`.
+
+This Human-confirmed artifact inspection and re-import completes the
+round-trip evidence that was missing in the earlier attempt. It is distinct
+from the fixture-backed automated round-trip tests described above. Together
+with the earlier browser observations in this record, the manual acceptance
+covers valid `0.2.0` and existing `0.1.0` imports, generic diagnostics for
+invalid `0.2.0` Feature/payload data in EN/JA, an unsupported `0.3.0` warning
+without observed semantic fallback, unrelated Event editing, preservation
+through export/re-import, and the absence of Relative Time-specific UI or
+Relative Time-driven Timeline ordering.
+
+Closure remains limited to exact-version read-only recognition, existing
+generic diagnostics, and round-trip preservation. Relative Time `0.2.0`
+remains a Candidate, not Stable. This acceptance does not add semantic
+presentation, authoring, Derived reasoning, solver behavior, conflict
+resolution, migration, or application release readiness.
 
 Verification: focused tests **5/5 PASS**; full `npm test` **264/264 PASS**,
 `npm run lint` **PASS**, and `npm run build` **PASS** after the package update.
