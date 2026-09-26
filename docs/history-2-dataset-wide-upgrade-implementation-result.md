@@ -173,3 +173,15 @@ History 2.0.0: Candidate / NON-STABLE
 Bounded-point, temporal-extent, multiple-assertion, Relative Time authoring or
 solving, H2 to H1 conversion, Entity/Relation History authoring, History 2
 Stable promotion, and release/deployment remain outside this result.
+
+## Empty-Dataset H2 initialization clarification
+
+On 2026-09-26, Human acceptance confirmed the bounded behavior implemented in
+`0600465df14e561bcf176d23c5ba9c471bc45027`: a new Dataset with no existing
+History data may begin recording History 2 circa directly, without an H1-to-H2
+migration confirmation. The existing confirmation remains required when the
+Dataset contains History data that must be converted. Automated integration
+coverage for this distinction is included in the accepted implementation;
+the confirmation requirement and atomic Dataset-wide conversion boundary for
+existing History are unchanged. This clarification does not promote History
+2.0.0 from Candidate or alter the bounded H2-POSITION-CIRCA scope.
