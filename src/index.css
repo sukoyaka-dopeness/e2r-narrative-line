@@ -691,10 +691,42 @@ button:disabled {
 }
 
 .relative-time-assertions > li {
+  display: block;
+}
+
+.relative-time-assertion {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(10rem, auto) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, auto);
   align-items: center;
+  gap: 6px 12px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+}
+
+.relative-time-assertion h4,
+.relative-time-assertion__summary,
+.relative-time-assertion__identity {
+  margin: 0;
+  grid-column: 1;
+}
+
+.relative-time-assertion__identity code {
+  overflow-wrap: anywhere;
+}
+
+.relative-time-assertion__edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
   gap: 8px;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+
+.relative-time-assertion__edit label {
+  display: grid;
+  gap: 4px;
 }
 
 .relative-time-assertions select,
@@ -709,6 +741,12 @@ button:disabled {
   align-items: end;
   gap: 8px;
   margin-top: 12px;
+}
+
+.relative-time-create h3,
+.relative-time-create p {
+  flex-basis: 100%;
+  margin-block: 0;
 }
 
 .relative-time-create label {
@@ -761,8 +799,13 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .relative-time-assertions > li {
+  .relative-time-assertion {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .relative-time-assertion__edit {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .relative-time-display-band {

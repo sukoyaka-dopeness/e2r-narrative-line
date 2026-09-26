@@ -124,6 +124,34 @@ test("separate imported assertions remain individually editable and preserve sib
   assert.equal(updated.dataset.relations[1].extensions[RELATIVE_TIME_EXTENSION_ID].relation, "after");
 });
 
+test("reversing one Recorded assertion through its other endpoint replaces that Relation without a duplicate", () => {
+  const source = blankDataset();
+  const first = createRelativeTimeAssertion(source, "a", "b", true, "relation-ab");
+  assert.equal(first.ok, true);
+  const chain = createRelativeTimeAssertion(first.dataset, "b", "c", true, "relation-bc");
+  assert.equal(chain.ok, true);
+
+  const updated = updateRelativeTimeAssertion(chain.dataset, "relation-ab", "b", true);
+
+  assert.equal(updated.ok, true);
+  assert.deepEqual(updated.dataset.relations.map(({ id }) => id), ["relation-ab", "relation-bc"]);
+  assert.equal(updated.dataset.relations[0].sourceId, "a");
+  assert.equal(updated.dataset.relations[0].targetId, "b");
+  assert.equal(
+    updated.dataset.relations[0].extensions[RELATIVE_TIME_EXTENSION_ID].relation,
+    "before",
+  );
+  assert.equal(
+    updated.dataset.relations[1].extensions[RELATIVE_TIME_EXTENSION_ID].relation,
+    "after",
+  );
+  assert.deepEqual(projectRelativeTimeForTimeline(updated.dataset).conflictedEventIds, []);
+  assert.deepEqual(projectRelativeTimeForTimeline(updated.dataset).groups[0].eventIdsByDisplayBand, [
+    ["b"],
+    ["a", "c"],
+  ]);
+});
+
 test("projection follows qualitative direction, uses constraint chains for presentation, and retains incomparability", () => {
   const dataset = declaredDataset(undefined, [
     assertion("ab", "a", "b", "after"), // A before B

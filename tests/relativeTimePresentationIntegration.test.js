@@ -15,7 +15,45 @@ function datasetWithUndatedEvents() {
   };
 }
 
-async function renderAuthoring(language) {
+function datasetWithAssertions(relations) {
+  const relativeTimeId = "draft.github.sukoyaka-dopeness.relative-time";
+  return {
+    version: "1.0",
+    entities: [],
+    events: [
+      { id: "a", name: "First" },
+      { id: "b", name: "Second" },
+      { id: "c", name: "Third" },
+    ],
+    relations,
+    extensions: {
+      metadata: { datasetId: "relative-time-ui" },
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "0.1.0",
+        uses: [
+          { extension: "metadata", version: "1.0.0" },
+          { extension: relativeTimeId, version: "0.2.0", features: ["relative-position"] },
+        ],
+      },
+    },
+  };
+}
+
+function relativePositionRelation(id, sourceId, targetId, relation) {
+  return {
+    id,
+    sourceId,
+    targetId,
+    extensions: {
+      "draft.github.sukoyaka-dopeness.relative-time": {
+        type: "relative-position",
+        relation,
+      },
+    },
+  };
+}
+
+async function renderAuthoring(language, initialDataset = datasetWithUndatedEvents(), eventId = "event-a") {
   const environment = createDomTestEnvironment(`https://narrativeline.test/#locale=${language}`);
   environment.document.documentElement.lang = language;
   environment.window.localStorage.setItem("narrativeline.language", language);
@@ -38,14 +76,14 @@ async function renderAuthoring(language) {
     const { LanguageProvider } = context;
     const { applyRelativeTimeOperation } = service;
     function Harness() {
-      const [dataset, setDataset] = React.useState(datasetWithUndatedEvents);
+      const [dataset, setDataset] = React.useState(initialDataset);
       currentDataset = dataset;
       return React.createElement(
         LanguageProvider,
         null,
         React.createElement(RelativeTimeAuthoringPanel, {
           dataset,
-          eventId: "event-a",
+          eventId,
           onOperation: (operation) => setDataset((current) => {
             const result = applyRelativeTimeOperation(current, operation);
             return result.ok ? result.dataset : current;
@@ -89,7 +127,7 @@ test("English authoring creates a declared assertion and does not add inverse or
     const selects = [...rendered.document.querySelectorAll("select")];
     setSelectValue(rendered, selects[0], "event-b");
     const add = [...rendered.document.querySelectorAll("button")].find(
-      (button) => button.textContent?.trim() === "Add Relative Time",
+      (button) => button.textContent?.trim() === "Add new assertion",
     );
     assert.ok(add);
     act(() => add.click());
@@ -102,7 +140,73 @@ test("English authoring creates a declared assertion and does not add inverse or
       extension === "draft.github.sukoyaka-dopeness.relative-time" &&
       version === "0.2.0" && features.includes("relative-position"),
     ));
-    assert.match(rendered.document.body.textContent, /Relative Time saved/);
+    assert.match(rendered.document.body.textContent, /Added a new assertion as a separate Relation/);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("Event Detail separates recorded Relation edits from new assertions and keeps identity on a direction change", async () => {
+  const initial = datasetWithAssertions([
+    relativePositionRelation("relation-ab", "a", "b", "after"),
+    relativePositionRelation("relation-bc", "b", "c", "after"),
+  ]);
+  const rendered = await renderAuthoring("en", initial, "b");
+  try {
+    assert.match(rendered.document.body.textContent, /Recorded assertions/);
+    assert.match(rendered.document.body.textContent, /Adding creates a separate Relation/);
+    const rows = [...rendered.document.querySelectorAll("[data-relative-time-relation-id]")];
+    assert.equal(rows.length, 2);
+    assert.deepEqual(rows.map((row) => row.getAttribute("data-relative-time-relation-id")), [
+      "relation-ab",
+      "relation-bc",
+    ]);
+    assert.match(rows[0].textContent, /Second is after First/);
+    assert.match(rows[0].textContent, /Relation ID: relation-ab/);
+
+    const direction = rendered.document.querySelector(
+      'select[aria-label="Direction for Relation relation-ab"]',
+    );
+    assert.ok(direction);
+    setSelectValue(rendered, direction, "before");
+    const save = [...rendered.document.querySelectorAll("button")].find(
+      (button) => button.getAttribute("aria-label") === "Save edit to Relation relation-ab",
+    );
+    assert.ok(save);
+    act(() => save.click());
+
+    assert.equal(rendered.dataset.relations.length, 2);
+    assert.deepEqual(rendered.dataset.relations.map(({ id }) => id), ["relation-ab", "relation-bc"]);
+    assert.equal(rendered.dataset.relations[0].sourceId, "a");
+    assert.equal(rendered.dataset.relations[0].targetId, "b");
+    assert.equal(
+      rendered.dataset.relations[0].extensions["draft.github.sukoyaka-dopeness.relative-time"].relation,
+      "before",
+    );
+    assert.equal(
+      rendered.dataset.relations[1].extensions["draft.github.sukoyaka-dopeness.relative-time"].relation,
+      "after",
+    );
+    assert.match(rendered.document.body.textContent, /Updated this assertion; its Relation ID is unchanged/);
+    assert.match(rendered.document.body.textContent, /Second is before First/);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("separate imported assertions for one Event pair remain separately identified in Event Detail", async () => {
+  const initial = datasetWithAssertions([
+    relativePositionRelation("claim-forward", "a", "b", "after"),
+    relativePositionRelation("claim-reverse", "b", "a", "after"),
+  ]);
+  const originalRelations = structuredClone(initial.relations);
+  const rendered = await renderAuthoring("en", initial, "a");
+  try {
+    const rows = [...rendered.document.querySelectorAll("[data-relative-time-relation-id]")];
+    assert.equal(rows.length, 2);
+    assert.match(rows[0].textContent, /Relation ID: claim-forward/);
+    assert.match(rows[1].textContent, /Relation ID: claim-reverse/);
+    assert.deepEqual(rendered.dataset.relations, originalRelations);
   } finally {
     await rendered.cleanup();
   }
@@ -111,6 +215,8 @@ test("English authoring creates a declared assertion and does not add inverse or
 test("Japanese authoring localizes the first user-facing controls", async () => {
   const rendered = await renderAuthoring("ja");
   try {
+    assert.match(rendered.document.body.textContent, /記録された主張/);
+    assert.match(rendered.document.body.textContent, /新しい主張を追加/);
     assert.match(rendered.document.body.textContent, /相対時間/);
     assert.match(rendered.document.body.textContent, /相手のできごと/);
     assert.ok([...rendered.document.querySelectorAll("button")].some(

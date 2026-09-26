@@ -26,9 +26,16 @@ The selected first slice is:
 - A new writer creates at most one Relative Time `relative-position`
   Relation per Event pair. Existing independent assertions remain separate
   and individually editable. No inverse Relation is created.
-- An obvious direct contradiction is refused for a new assertion or an edit;
-  existing imported Relations are preserved. No Relation deletion, bulk edit,
-  Entity endpoint, or other Relative Time Feature is included.
+- Editing an existing Relation may replace its `before`/`after` direction while
+  retaining that Relation ID. This replacement is distinct from adding a new
+  independent Relation; only a resulting conflict with another independent
+  assertion is a direct contradiction. The first-slice one-new-assertion-per-
+  pair limit is an application product boundary, not an E2R model constraint.
+- An edit may replace the direction on its same Relation ID. Creating or
+  editing an assertion is refused only when the resulting assertion directly
+  conflicts with another independent Relation; existing imported Relations are
+  preserved. No Relation deletion, bulk edit, Entity endpoint, or other
+  Relative Time Feature is included.
 - The first explicit write declares the exact Relative Time Extension identity
   at `0.2.0` and includes `relative-position` in the used Feature set. Existing
   known exact uses are preserved. An opaque undeclared Relative Time payload,
@@ -58,7 +65,10 @@ records the selected implementation boundary.
   eligibility, cycle detection, and display-only partial-order placement.
 - Added bilingual Event Detail controls using native select/button controls.
   Existing History, partial/approximate, dated, old-version, and unsupported
-  data are not editable through this panel.
+  data are not editable through this panel. Recorded assertions now appear as
+  individually identified list items with full Relation IDs and explicit
+  edit controls, separate from a headed new-assertion form. The UI explains
+  that editing replaces the same Relation and adding creates another one.
 - Added a separate Timeline projection panel. It leaves the pre-existing
   History/date comparator and event list order unchanged, names recorded
   pairwise assertions, identifies incomparable pairs, and suppresses cyclic
@@ -71,12 +81,31 @@ records the selected implementation boundary.
   unrelated sibling-data preservation, qualitative direction, chains,
   incomparability, cycle suppression, History exclusion, and EN/JA UI.
 
+## Human clarification and Manual Acceptance unblock
+
+- Date: 2026-09-27.
+- The Human reviewed the previously reported browser sequence and clarified
+  that reversing the direction from the opposite Event's detail is an edit to
+  the same Recorded Relation, not creation of a second conflicting Relation.
+  The edit is allowed when it does not conflict with another independent
+  assertion. Existing imported multiple Relations remain separate and are not
+  merged or normalized.
+- The earlier browser stop was therefore an incorrect expectation about that
+  same-Relation replacement, not evidence that the service duplicated or
+  retained both directions. Event Detail presentation was clarified to make
+  Relation identity, per-record editing, and the separate add flow explicit.
+- A regression now exercises the reported three-Event sequence, verifies that
+  changing the `a`/`b` assertion from Event `b` preserves its Relation ID and
+  the separate `b`/`c` Relation, and checks that imported same-pair claims are
+  still independently listed. This checkpoint does not claim real-browser
+  acceptance; the remaining manual matrix must be resumed against this UI.
+
 ## Verification and remaining acceptance
 
-- Focused service and UI integration tests: **9/9 PASS**.
-- Full NarrativeLine test suite: **273/273 PASS**.
+- Focused service and UI integration tests: **12/12 PASS**.
+- Full NarrativeLine test suite: **276/276 PASS**.
+- NarrativeLine lint: **PASS**; production build: **PASS**.
 - E2R-SPEC `npm run validate`: **PASS** after the minimal Roadmap sync.
-- Lint/build are rerun for this final source state below before commit.
 - No real-browser acceptance was performed in this checkpoint. Human visual
   and keyboard/focus acceptance, including narrow viewport and ordinary
   author/edit/export/re-import, remains required before calling the user-facing
