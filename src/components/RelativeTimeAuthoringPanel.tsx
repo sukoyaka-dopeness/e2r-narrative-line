@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
+import { formatRelativeTimeSummary, getPresentationMessages } from "../i18n/messages";
 import {
   canStartRelativeTimeAuthoring,
   createRelativeTimeAssertion,
@@ -18,6 +19,9 @@ type RelativeTimeAuthoringPanelProps = {
   onOperation: (operation: RelativeTimeOperation) => void;
 };
 
+type UpdateFeedbackKind = "contradiction" | "unsupported" | "updated";
+type CreateFeedbackKind = "contradiction" | "unsupported" | "added";
+
 export function RelativeTimeAuthoringPanel({
   dataset,
   eventId,
@@ -25,6 +29,7 @@ export function RelativeTimeAuthoringPanel({
 }: RelativeTimeAuthoringPanelProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const event = dataset.events.find(({ id }) => id === eventId);
   const canAuthor = canStartRelativeTimeAuthoring(dataset);
   const eligible = event !== undefined && isRelativeTimeEligibleEvent(dataset, event);
@@ -35,33 +40,49 @@ export function RelativeTimeAuthoringPanel({
   const [otherEventId, setOtherEventId] = useState("");
   const [currentBeforeOther, setCurrentBeforeOther] = useState(true);
   const [drafts, setDrafts] = useState<Record<string, boolean>>({});
-  const [feedback, setFeedback] = useState("");
+  const [updateFeedback, setUpdateFeedback] = useState<Record<string, UpdateFeedbackKind>>({});
+  const [createFeedback, setCreateFeedback] = useState<CreateFeedbackKind | "">("");
+  const updateFeedbackText = (kind: UpdateFeedbackKind) => {
+    if (kind === "contradiction") {
+      return ja
+        ? "反対向きの記録があるため変更できません。既存データは保持されています。"
+        : "A direct opposite assertion prevents this change. Existing data was preserved.";
+    }
+    if (kind === "unsupported") {
+      return ja
+        ? "このDatasetでは相対時間を安全に編集できません。"
+        : "Relative Time cannot be safely edited in this Dataset.";
+    }
+    return ja ? "選択した記録を更新しました。" : "Updated the selected recorded relation.";
+  };
+  const createFeedbackText = (kind: CreateFeedbackKind) => {
+    if (kind === "contradiction") {
+      return ja
+        ? "反対向きの記録があるため追加できません。既存データは保持されています。"
+        : "A direct opposite assertion prevents this addition. Existing data was preserved.";
+    }
+    if (kind === "unsupported") {
+      return ja
+        ? "このEventの組み合わせには追加できません。既存データは保持されています。"
+        : "This Event pair cannot be edited in this Dataset. Existing data was preserved.";
+    }
+    return ja ? "新しい前後関係を追加しました。" : "Added a new time relation.";
+  };
   const otherEvents = dataset.events.filter(
     (candidate) => candidate.id !== eventId &&
       isRelativeTimeEligibleEvent(dataset, candidate),
   );
 
   if (!event || (!eligible && !supportsRelativeTimeAuthoring(dataset))) return null;
-  if (!eligible) {
-    return (
-      <section className="relative-time-authoring" aria-labelledby="relative-time-heading">
-        <h2 id="relative-time-heading">{ja ? "相対時間" : "Relative Time"}</h2>
-        <p role="status">
-          {ja
-            ? "日付またはHistory情報があるできごとでは、この最初の入力機能を利用できません。既存データは変更されません。"
-            : "This first authoring slice is unavailable for Events with dates or History data. Existing data is unchanged."}
-        </p>
-      </section>
-    );
-  }
-  if (!canAuthor) return null;
+  if (eligible && !canAuthor) return null;
 
   const applyUpdate = (relationId: string, value: boolean) => {
     const result = updateRelativeTimeAssertion(dataset, relationId, eventId, value);
     if (!result.ok) {
-      setFeedback(result.reason === "contradiction"
-        ? (ja ? "反対向きの記録があるため変更できません。既存データは保持されています。" : "A direct opposite assertion prevents this change. Existing data was preserved.")
-        : (ja ? "このDatasetでは相対時間を安全に編集できません。" : "Relative Time cannot be safely edited in this Dataset."));
+      setUpdateFeedback((current) => ({
+        ...current,
+        [relationId]: result.reason === "contradiction" ? "contradiction" : "unsupported",
+      }));
       return;
     }
     onOperation({
@@ -70,11 +91,7 @@ export function RelativeTimeAuthoringPanel({
       currentEventId: eventId,
       currentBeforeOther: value,
     });
-    setFeedback(
-      ja
-        ? "同じRelationの記録を更新しました。"
-        : "Updated this assertion; its Relation ID is unchanged.",
-    );
+    setUpdateFeedback((current) => ({ ...current, [relationId]: "updated" }));
   };
 
   const addAssertion = () => {
@@ -87,9 +104,7 @@ export function RelativeTimeAuthoringPanel({
       relationId,
     );
     if (!result.ok) {
-      setFeedback(result.reason === "contradiction"
-        ? (ja ? "反対向きの記録があるため追加できません。既存データは保持されています。" : "A direct opposite assertion prevents this addition. Existing data was preserved.")
-        : (ja ? "このEventの組み合わせには追加できません。既存データは保持されています。" : "This Event pair cannot be edited in this Dataset. Existing data was preserved."));
+      setCreateFeedback(result.reason === "contradiction" ? "contradiction" : "unsupported");
       return;
     }
     onOperation({
@@ -100,127 +115,144 @@ export function RelativeTimeAuthoringPanel({
       relationId,
     });
     setOtherEventId("");
-    setFeedback(
-      ja
-        ? "新しいRelationとして記録を追加しました。"
-        : "Added a new assertion as a separate Relation.",
-    );
+    setCreateFeedback("added");
   };
 
   return (
-    <section className="relative-time-authoring" aria-labelledby="relative-time-heading">
-      <h2 id="relative-time-heading">{ja ? "相対時間" : "Relative Time"}</h2>
-      <p>
-        {ja
-          ? "記録するのはできごと間の定性的な順序です。日付、期間、Historyの順序は作成しません。"
-          : "Record a qualitative relation between Events. This does not create dates, durations, or History ordering."}
-      </p>
-      <section aria-labelledby="relative-time-recorded-heading">
-        <h3 id="relative-time-recorded-heading">
-          {ja ? "記録された主張" : "Recorded assertions"}
-        </h3>
-        <p>
-          {ja
-            ? "各項目は独立したRelationです。編集は同じRelationの記録を置き換えます。新しいRelationの追加は下のフォームから行います。"
-            : "Each item is one independent Relation. Editing replaces that same recorded assertion; use the separate form below to add a new Relation."}
-        </p>
-        {assertions.length > 0 ? (
-          <ul className="relative-time-assertions">
-            {assertions.map(({ relation, otherEventId: otherId, currentBeforeOther: value }) => {
-              const other = dataset.events.find(({ id }) => id === otherId);
-              return (
-                <li key={relation.id} data-relative-time-relation-id={relation.id}>
-                  <article className="relative-time-assertion">
-                    <h4>{ja ? "記録された主張" : "Recorded assertion"}</h4>
-                    <span>
-                      {event.name || (ja ? "名前のないできごと" : "Unnamed Event")}
-                      {value ? (ja ? " は " : " is before ") : (ja ? " は " : " is after ")}
-                      {other?.name || (ja ? "名前のないできごと" : "Unnamed Event")}
-                      <small> — Relation ID: {relation.id}</small>
-                    </span>
-                    <label>
-                      <span className="visually-hidden">
-                        {ja
-                          ? `${event.name || "名前のないできごと"}と${other?.name || "名前のないできごと"}の順序（Relation ${relation.id}）`
-                          : `Relative order for ${event.name || "Unnamed Event"} and ${other?.name || "Unnamed Event"} (Relation ${relation.id})`}
-                      </span>
-                      <select
-                        aria-label={ja ? `Relation ${relation.id} の内容` : `Direction for Relation ${relation.id}`}
-                        value={(drafts[relation.id] ?? value) ? "before" : "after"}
-                        onChange={(change) => setDrafts((current) => ({
-                          ...current,
-                          [relation.id]: change.target.value === "before",
-                        }))}
-                      >
-                        <option value="before">{ja ? "このできごとが先" : "This Event is before"}</option>
-                        <option value="after">{ja ? "このできごとが後" : "This Event is after"}</option>
-                      </select>
-                    </label>
-                    <button
-                      type="button"
-                      aria-label={ja ? `Relation ${relation.id} を更新` : `Save edit to Relation ${relation.id}`}
-                      disabled={(drafts[relation.id] ?? value) === value}
-                      onClick={() => {
-                        const next = drafts[relation.id] ?? value;
-                        applyUpdate(relation.id, next);
-                        setDrafts((current) => {
-                          const nextDrafts = { ...current };
-                          delete nextDrafts[relation.id];
-                          return nextDrafts;
-                        });
-                      }}
-                    >
-                      {ja ? "この記録を更新" : "Save this assertion"}
-                    </button>
-                  </article>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p>{ja ? "記録された主張はありません。" : "No recorded assertions yet."}</p>
-        )}
-      </section>
-      <div className="relative-time-create">
-        <h3>{ja ? "新しい主張を追加" : "Add a new assertion"}</h3>
-        <p>
-          {ja
-            ? "新しい主張は別のRelationとして追加されます。この最初の入力範囲では、同じEvent pairへの新規Relative Time assertionは1件までです。"
-            : "Adding creates a separate Relation. In this first authoring slice, only one new Relative Time assertion may be created for an Event pair."}
-        </p>
-        <label>
-          {ja ? "相手のできごと" : "Other Event"}
-          <select value={otherEventId} onChange={(change) => setOtherEventId(change.target.value)}>
-            <option value="">{ja ? "選択してください" : "Choose an Event"}</option>
-            {otherEvents.map((candidate) => (
-              <option key={candidate.id} value={candidate.id}>
-                {candidate.name || (ja ? "名前のないできごと" : "Unnamed Event")}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          {ja ? "順序" : "Position"}
-          <select
-            value={currentBeforeOther ? "before" : "after"}
-            onChange={(change) => setCurrentBeforeOther(change.target.value === "before")}
-          >
-            <option value="before">{ja ? "このできごとが先" : "This Event is before"}</option>
-            <option value="after">{ja ? "このできごとが後" : "This Event is after"}</option>
-          </select>
-        </label>
-        <button type="button" disabled={!otherEventId} onClick={addAssertion}>
-          {ja ? "相対時間を追加" : "Add new assertion"}
-        </button>
-      </div>
-      {feedback && <p role="status">{feedback}</p>}
-      {assertions.length > 0 && (
-        <p className="relative-time-boundary">
-          {ja
-            ? "各記録は個別に保持されます。アプリは逆向きのRelationを作成せず、既存の複数記録を統合しません。"
-            : "Existing assertions remain separate and individually editable. Editing keeps the same Relation; adding creates a new one. The app does not create inverse Relations or merge assertions."}
-        </p>
-      )}
-    </section>
+    <div className="relative-time-authoring">
+      <details className="relative-time-authoring__details relative-time-authoring__details--recorded">
+        <summary>
+          <span>{copy.relativeTimeRecordedHeading}</span>
+          <span className="relative-time-authoring__count">
+            {formatRelativeTimeSummary(language, assertions.length)}
+          </span>
+        </summary>
+        <div className="relative-time-authoring__content">
+          {assertions.length > 0 ? (
+            <ul className="relative-time-assertions">
+              {assertions.map(({ relation, otherEventId: otherId, currentBeforeOther: value }) => {
+                const other = dataset.events.find(({ id }) => id === otherId);
+                const otherName = other?.name || copy.unnamedEvent;
+                const pairLabel = `${event.name || copy.unnamedEvent} / ${otherName}`;
+                return (
+                  <li key={relation.id} data-relative-time-relation-id={relation.id}>
+                    <article className="relative-time-assertion">
+                      <div className={`relative-time-assertion__sentence${ja ? " relative-time-assertion__sentence--ja" : ""}`}>
+                        <span>{copy.relativeTimeCurrentEventIs}</span>
+                        <span className="relative-time-assertion__reference">{otherName}</span>
+                        {ja && <span>より</span>}
+                        <select
+                          aria-label={`${copy.relativeTimeCurrentEventIs}: ${pairLabel}`}
+                          value={(drafts[relation.id] ?? value) ? "before" : "after"}
+                          onChange={(change) => setDrafts((current) => ({
+                            ...current,
+                            [relation.id]: change.target.value === "before",
+                          }))}
+                        >
+                          <option value="before">{copy.relativeTimeRecordedBeforeOption}</option>
+                          <option value="after">{copy.relativeTimeRecordedAfterOption}</option>
+                        </select>
+                        <button
+                          type="button"
+                          aria-label={ja ? `${pairLabel}の記録を更新` : `Update recorded relation: ${pairLabel}`}
+                          disabled={(drafts[relation.id] ?? value) === value}
+                          onClick={() => {
+                            const next = drafts[relation.id] ?? value;
+                            applyUpdate(relation.id, next);
+                            setDrafts((current) => {
+                              const nextDrafts = { ...current };
+                              delete nextDrafts[relation.id];
+                              return nextDrafts;
+                            });
+                          }}
+                        >
+                          {ja ? "更新" : "Update"}
+                        </button>
+                      </div>
+                      {updateFeedback[relation.id] && (
+                        <p role="status" className="relative-time-boundary relative-time-assertion__feedback">
+                          {updateFeedbackText(updateFeedback[relation.id])}
+                        </p>
+                      )}
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>{ja ? "記録済みの時間関係はありません。" : "No recorded time relations yet."}</p>
+          )}
+          {assertions.length > 0 && (
+            <p className="relative-time-boundary">
+              {(ja
+                ? [
+                    "この記録はできごとの前後関係を保存します。",
+                    "日付やHistoryの順序は作成しません。",
+                    "各記録は個別に保持され、逆向きの記録を自動作成したり、既存記録を統合したりしません。",
+                  ]
+                : [
+                    "These records preserve qualitative Event relations.",
+                    "They do not create dates or History ordering.",
+                    "Each record remains separate; the app does not create inverse relations or merge records.",
+                  ]
+              ).map((sentence) => <span key={sentence}>{sentence}</span>)}
+            </p>
+          )}
+        </div>
+      </details>
+
+      <details className="relative-time-authoring__details relative-time-authoring__details--create">
+        <summary>{copy.relativeTimeAddOptional}</summary>
+        <div className="relative-time-authoring__content">
+          {!eligible ? (
+            <p role="status" className="relative-time-boundary">
+              {ja
+                ? "日付またはHistory情報があるできごとには、前後関係を追加できません。既存データは変更されません。"
+                : "A relation cannot be added to an Event with date or History data. Existing data is unchanged."}
+            </p>
+          ) : (
+            <>
+              <p className="relative-time-create__boundary relative-time-boundary">
+                {ja
+                  ? "同じできごとの組み合わせに新しい前後関係を追加できるのは1件までです。"
+                  : "Only one new relation can be added for an Event pair in this authoring slice."}
+              </p>
+              <div className={`relative-time-create__sentence${ja ? " relative-time-create__sentence--ja" : ""}`}>
+                {!ja && <span>{copy.relativeTimeReferencePrefix}</span>}
+                <select
+                  aria-label={copy.relativeTimeReferenceEvent}
+                  value={otherEventId}
+                  onChange={(change) => setOtherEventId(change.target.value)}
+                >
+                  <option value="">{copy.relativeTimeReferencePlaceholder}</option>
+                  {otherEvents.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {candidate.name || copy.unnamedEvent}
+                    </option>
+                  ))}
+                </select>
+                <span>{copy.relativeTimeReferenceSuffix}</span>
+                <select
+                  aria-label={copy.relativeTimeCurrentEventIs}
+                  value={currentBeforeOther ? "before" : "after"}
+                  onChange={(change) => setCurrentBeforeOther(change.target.value === "before")}
+                >
+                  <option value="before">{copy.relativeTimeBefore}</option>
+                  <option value="after">{copy.relativeTimeAfter}</option>
+                </select>
+                <button type="button" disabled={!otherEventId} onClick={addAssertion}>
+                  {ja ? "追加" : "Add"}
+                </button>
+              </div>
+              {createFeedback && (
+                <p role="status" className="relative-time-boundary relative-time-create__feedback">
+                  {createFeedbackText(createFeedback)}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      </details>
+    </div>
   );
 }

@@ -527,18 +527,33 @@ button:disabled {
   color: var(--text-h);
 }
 
-.event-time-fields {
+.event-time-fields,
+.relative-time-authoring__details {
   margin-top: 16px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--social-bg);
+  border-radius: 0;
+  background: transparent;
 }
 
-.event-time-fields summary {
+.event-time-fields > summary,
+.relative-time-authoring__details > summary {
   cursor: pointer;
   color: var(--text-h);
   font-weight: 600;
+}
+
+.relative-time-authoring {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  max-width: 100%;
+  margin-top: 16px;
+}
+
+.relative-time-authoring__details {
+  min-width: 0;
+  margin: 0;
 }
 
 .event-time-fields .date-fields {
@@ -668,7 +683,6 @@ button:disabled {
   margin-top: 4px;
 }
 
-.relative-time-authoring,
 .relative-time-timeline {
   box-sizing: border-box;
   max-width: 100%;
@@ -676,6 +690,18 @@ button:disabled {
   padding: 12px;
   border: 1px solid var(--border);
   background: var(--bg);
+}
+
+.relative-time-authoring__count {
+  margin-inline-start: 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.relative-time-authoring__content {
+  min-width: 0;
+  padding-top: 8px;
 }
 
 .relative-time-authoring p,
@@ -695,67 +721,54 @@ button:disabled {
 }
 
 .relative-time-assertion {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(12rem, auto);
-  align-items: center;
-  gap: 6px 12px;
   min-width: 0;
   padding: 10px;
   border: 1px solid var(--border);
 }
 
-.relative-time-assertion h4,
-.relative-time-assertion__summary,
-.relative-time-assertion__identity {
-  margin: 0;
-  grid-column: 1;
+.relative-time-assertion__sentence,
+.relative-time-create__sentence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.relative-time-create__sentence {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.relative-time-assertion__sentence:not(.relative-time-assertion__sentence--ja) select {
+  order: 1;
+}
+
+.relative-time-assertion__sentence:not(.relative-time-assertion__sentence--ja) .relative-time-assertion__reference {
+  order: 2;
+}
+
+.relative-time-assertion__sentence:not(.relative-time-assertion__sentence--ja) button {
+  order: 3;
 }
 
 .relative-time-assertion__identity code {
   overflow-wrap: anywhere;
 }
 
-.relative-time-assertion__edit {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: 8px;
-  grid-column: 2;
-  grid-row: 1 / span 3;
-}
-
-.relative-time-assertion__edit label {
-  display: grid;
-  gap: 4px;
-}
-
-.relative-time-assertions select,
-.relative-time-create select {
+.relative-time-assertion__sentence select,
+.relative-time-create__sentence select {
+  min-width: 0;
   max-width: 100%;
   min-height: 2.5rem;
 }
 
-.relative-time-create {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: 8px;
-  margin-top: 12px;
+.relative-time-create__boundary {
+  max-width: 72ch;
+  margin: 0 0 8px;
 }
 
-.relative-time-create h3,
-.relative-time-create p {
-  flex-basis: 100%;
-  margin-block: 0;
-}
-
-.relative-time-create label {
-  display: grid;
-  gap: 4px;
-}
-
-.relative-time-create button,
-.relative-time-assertions button,
 .relative-time-display-band button,
 .relative-time-recorded-assertions button {
   min-height: 2.5rem;
@@ -765,6 +778,10 @@ button:disabled {
 .relative-time-display-band__label {
   color: var(--text);
   font-size: 0.9rem;
+}
+
+.relative-time-boundary > span {
+  display: block;
 }
 
 .relative-time-projection-group {
@@ -799,15 +816,6 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .relative-time-assertion {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .relative-time-assertion__edit {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
   .relative-time-display-band {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1307,6 +1315,24 @@ button:disabled {
   min-height: 36px;
   padding: 5px 9px;
   border-radius: 4px;
+  font-size: 15px;
+  line-height: 120%;
+}
+
+.relative-time-create__sentence button,
+.relative-time-assertion__sentence button,
+.relative-time-assertions button {
+  min-height: 36px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 120%;
+}
+
+.relative-time-authoring select {
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 5px 8px;
   font-size: 15px;
   line-height: 120%;
 }

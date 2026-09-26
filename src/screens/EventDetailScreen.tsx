@@ -531,6 +531,12 @@ export function EventDetailScreen({
         </p>
       )}
 
+      <RelativeTimeAuthoringPanel
+        dataset={dataset}
+        eventId={event.id}
+        onOperation={onRelativeTimeOperation}
+      />
+
       <br />
 
       <div className="event-text-fields">
@@ -556,12 +562,6 @@ export function EventDetailScreen({
         </div>
       </div>
       <CoordinatePanel key={event.id} dataset={dataset} object={event} />
-
-      <RelativeTimeAuthoringPanel
-        dataset={dataset}
-        eventId={event.id}
-        onOperation={onRelativeTimeOperation}
-      />
 
       <br />
 

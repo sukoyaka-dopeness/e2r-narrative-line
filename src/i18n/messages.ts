@@ -42,6 +42,18 @@ const englishMessages = {
   historyUpgradeDescription: "Saving this change will update compatible recorded dates and times in this Dataset to the History 2 representation. Their meaning and precision will be preserved; no precise date/time range will be inferred. Canceling leaves the Dataset unchanged.",
   historyUpgradeConfirm: "Save as approximate",
   historyUpgradeRefusal: "This Dataset contains History data that cannot be safely upgraded to History 2. No changes were saved.",
+  relativeTimeRecordedHeading: "Recorded time relations",
+  relativeTimeRecordedCount: " ({count})",
+  relativeTimeAddOptional: "Add a new time relation (optional)",
+  relativeTimeBefore: "before it",
+  relativeTimeAfter: "after it",
+  relativeTimeRecordedBeforeOption: "before",
+  relativeTimeRecordedAfterOption: "after",
+  relativeTimeReferenceEvent: "Reference Event",
+  relativeTimeReferencePlaceholder: "Choose a Reference Event",
+  relativeTimeReferencePrefix: "With",
+  relativeTimeReferenceSuffix: "as the reference, this Event happened",
+  relativeTimeCurrentEventIs: "This Event is",
 } as const;
 
 type MessageKey = keyof typeof englishMessages;
@@ -89,6 +101,18 @@ const japaneseMessages: PresentationMessages = {
   historyUpgradeDescription: "この変更を保存すると、このDataset内の互換性のある記録日時もHistory 2形式へ更新されます。記録日時の意味と精度は保持され、正確な日時範囲は推測されません。キャンセルした場合、Dataset全体は変更されません。",
   historyUpgradeConfirm: "おおよその日付と時刻として保存",
   historyUpgradeRefusal: "このDatasetには安全にHistory 2形式へ更新できないHistoryデータが含まれています。変更は保存されませんでした。",
+  relativeTimeRecordedHeading: "記録済みの時間関係",
+  relativeTimeRecordedCount: "　{count}件",
+  relativeTimeAddOptional: "新しい前後関係を追加（任意）",
+  relativeTimeBefore: "前に起こった",
+  relativeTimeAfter: "後に起こった",
+  relativeTimeRecordedBeforeOption: "前に起こった",
+  relativeTimeRecordedAfterOption: "後に起こった",
+  relativeTimeReferenceEvent: "基準にするできごと",
+  relativeTimeReferencePlaceholder: "基準にするできごとを選択",
+  relativeTimeReferencePrefix: "基準",
+  relativeTimeReferenceSuffix: "を基準に、このできごとは",
+  relativeTimeCurrentEventIs: "このできごとは",
 };
 
 export const messages: Record<Locale, PresentationMessages> = {
@@ -102,4 +126,8 @@ export function getPresentationMessages(locale: Locale): PresentationMessages {
 
 export function formatEventCount(locale: Locale, count: number): string {
   return locale === "ja" ? `${count}件のできごと` : `${count} events`;
+}
+
+export function formatRelativeTimeSummary(locale: Locale, count: number): string {
+  return messages[locale].relativeTimeRecordedCount.replace("{count}", String(count));
 }
