@@ -29,6 +29,34 @@ test confirms Timeline ordering is unchanged by the Relation data. Existing
 UI integration tests cover the generic diagnostics presentation path; this
 checkpoint did not perform a separate real-browser manual acceptance run.
 
+## Real-browser manual acceptance attempt (2026-09-26)
+
+Status: **PARTIAL EVIDENCE; MANUAL ACCEPTANCE NOT CLOSED**. In local Edge
+against the Vite development server, the canonical `0.2.0` all-families
+Dataset opened through the real file picker. Its 13 undated Events remained
+visible without a Relative Time-specific UI or apparent Relative Time-driven
+Timeline ordering. An unrelated Event description edit saved in the browser.
+The existing `0.1.0` all-families Dataset also opened (11 Events).
+
+Separate browser imports showed generic diagnostics for an invalid `0.2.0`
+Feature declaration (`relative_time_feature_declaration_mismatch`), invalid
+Relation payload (`relative_time_relation_invalid`), and an unsupported
+`0.3.0` exact version (`specification_version_unsupported`). The unsupported
+Dataset remained viewable with the warning; this observation does not assert
+semantic support or fallback. The generic import-failure path was visible in
+both Japanese and English. No dedicated Relative Time guidance was added.
+
+The browser export attempt did not produce a completed downloadable Dataset
+in this run. Consequently, browser export, re-import, and byte-/structure-level
+preservation of the exact declaration, Relation payloads, and unknown sibling
+data were **not manually verified**. The focused automated round-trip tests
+above remain separate evidence, not a substitute for that browser check.
+This attempt does not establish full scope A manual acceptance, application
+release readiness, or any semantic presentation acceptance. Follow-up needs
+an ordinary completed browser export and re-import without changing the
+read-only scope or treating a browser/download-environment failure as a
+Dataset contract decision.
+
 Verification: focused tests **5/5 PASS**; full `npm test` **264/264 PASS**,
 `npm run lint` **PASS**, and `npm run build` **PASS** after the package update.
 The npm install reported two high-severity audit findings; dependency
