@@ -61,7 +61,7 @@ fact, and it does not author `temporalOrder`. Existing recorded
 
 The counts in this historical implementation section are the initial baseline
 at commit `72582d3`. The final closure gate is recorded in the [e2r-spec
-closure result](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/history-2-dataset-wide-h1-to-h2-upgrade-scope-closure-result.md)
+closure result](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/temporal/history-2-dataset-wide-h1-to-h2-upgrade-scope-closure-result.md)
 as 24 focused tests and 251 full-suite tests passing.
 
 The following gates passed after the implementation commit:

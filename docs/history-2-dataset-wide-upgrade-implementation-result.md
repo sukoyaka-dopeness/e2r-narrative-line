@@ -8,7 +8,7 @@ Scope: NarrativeLine implementation and automated migration gate for the
 approved Dataset-wide History `1.0.0` to `2.0.0` Candidate upgrade.
 
 Authority: The approved scope is defined by the E2R-SPEC
-[scope-closure result](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/history-2-dataset-wide-h1-to-h2-upgrade-scope-closure-result.md).
+[scope-closure result](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/temporal/history-2-dataset-wide-h1-to-h2-upgrade-scope-closure-result.md).
 Current application source and tests are the implementation authority.
 
 This result records acceptance for the bounded H2-POSITION-CIRCA capability;

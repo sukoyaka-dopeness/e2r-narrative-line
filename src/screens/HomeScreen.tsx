@@ -6,7 +6,7 @@ import type {
 import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
 
-const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-sample-provenance.md";
+const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
 
 type Props = {
