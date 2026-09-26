@@ -46,11 +46,16 @@ Dataset remained viewable with the warning; this observation does not assert
 semantic support or fallback. The generic import-failure path was visible in
 both Japanese and English. No dedicated Relative Time guidance was added.
 
-The browser export attempt did not produce a completed downloadable Dataset
-in this run. Consequently, browser export, re-import, and byte-/structure-level
-preservation of the exact declaration, Relation payloads, and unknown sibling
-data were **not manually verified**. The focused automated round-trip tests
-above remain separate evidence, not a substitute for that browser check.
+The first browser attempt did not produce a completed downloadable Dataset.
+On a second attempt, the ordinary `More → Export E2R JSON` action also
+produced no browser download event within 20 seconds. No page-level warning or
+error was present in the captured console logs. Consequently, browser export,
+re-import, and structural preservation of the exact declaration, Relation
+payloads, unknown sibling data, and unrelated edit were **not manually
+verified**. The focused automated round-trip tests above remain separate
+evidence, not a substitute for that browser check. The available evidence
+does not determine whether this is caused by the browser/download environment
+or the application's export path.
 This attempt does not establish full scope A manual acceptance, application
 release readiness, or any semantic presentation acceptance. Follow-up needs
 an ordinary completed browser export and re-import without changing the
