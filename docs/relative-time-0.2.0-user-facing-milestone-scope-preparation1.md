@@ -1,7 +1,12 @@
 # NarrativeLine Relative Time 0.2.0 User-Facing Milestone Scope Preparation 1
 
 - Date: 2026-09-26
-- Status: **DESIGN PREPARATION COMPLETE / NO RUNTIME IMPLEMENTATION AUTHORIZED**
+- Status: **PREPARATION SUPERSEDED BY HUMAN ADOPTION / IMPLEMENTATION RESULT**
+
+The proposal alternatives and decision packet below preserve the preparation
+snapshot. The Human-selected choices and bounded implementation status are
+recorded in the [user-facing slice result](./relative-time-0.2.0-user-facing-slice-implementation-result1.md);
+the older proposal text is no longer pending authority.
 
 ## Human direction recorded
 
@@ -192,7 +197,7 @@ Relative Time.
 - Dataset migration, conversion of `0.1.0`, application version/release,
   Credits date, push, tag, GitHub Release, or Pages deployment.
 
-## Next checkpoint
+## Historical next checkpoint (at preparation time)
 
 Human should select or revise decisions 1–5 above. After those choices are
 recorded, a separate implementation authorization can define acceptance
@@ -201,3 +206,7 @@ preservation, mixed/unsupported Dataset refusal, undated projection,
 incomparability, conflict behavior, keyboard access, EN/JA, and narrow layout.
 Until then the current `0.2.0` local candidate remains undeployed, and scope A
 remains its only accepted Relative Time capability.
+
+> The preceding Next checkpoint describes the state before the Human's
+> subsequent implementation authorization. See the linked implementation
+> result for the adopted design and current acceptance status.

@@ -668,6 +668,108 @@ button:disabled {
   margin-top: 4px;
 }
 
+.relative-time-authoring,
+.relative-time-timeline {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 20px 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.relative-time-authoring p,
+.relative-time-timeline p {
+  max-width: 72ch;
+}
+
+.relative-time-assertions,
+.relative-time-recorded-assertions {
+  display: grid;
+  gap: 10px;
+  padding-inline-start: 22px;
+}
+
+.relative-time-assertions > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, auto) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.relative-time-assertions select,
+.relative-time-create select {
+  max-width: 100%;
+  min-height: 2.5rem;
+}
+
+.relative-time-create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.relative-time-create label {
+  display: grid;
+  gap: 4px;
+}
+
+.relative-time-create button,
+.relative-time-assertions button,
+.relative-time-display-band button,
+.relative-time-recorded-assertions button {
+  min-height: 2.5rem;
+}
+
+.relative-time-boundary,
+.relative-time-display-band__label {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.relative-time-projection-group {
+  display: grid;
+  gap: 10px;
+  margin-block: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+}
+
+.relative-time-display-band {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--accent-bg);
+}
+
+.relative-time-display-band ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relative-time-conflict {
+  padding: 8px;
+  border-inline-start: 4px solid var(--accent-border);
+}
+
+@media (max-width: 640px) {
+  .relative-time-assertions > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .relative-time-display-band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .related-card,
 .timeline-card {
   box-sizing: border-box;

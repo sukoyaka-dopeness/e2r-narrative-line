@@ -9,6 +9,7 @@ import type {
 } from "../services/DatasetService";
 import { downloadDatasetExport } from "../services/DatasetService";
 import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
+import { RelativeTimeTimelineProjection } from "../components/RelativeTimeTimelineProjection";
 import {
   compareEventsByHistoryDate,
   formatEventHistoryDate,
@@ -398,6 +399,11 @@ export function TimelineScreen({
           </ul>
         </section>
       )}
+
+      <RelativeTimeTimelineProjection
+        dataset={dataset}
+        onEditEvent={onEditEvent}
+      />
 
       <ul style={{ listStyle: "none", padding: 0 }}>
         {timelineEvents.map((event) => {

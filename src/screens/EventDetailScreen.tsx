@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
+import { RelativeTimeAuthoringPanel } from "../components/RelativeTimeAuthoringPanel";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
@@ -17,6 +18,7 @@ import {
   preflightDatasetHistory1To2,
 } from "../services/History2Service.ts";
 import type { EventUpdates } from "../services/EventService.ts";
+import type { RelativeTimeOperation } from "../services/RelativeTimeService.ts";
 import {
   classifyHistoryCapability,
   isHistoryEditable,
@@ -85,6 +87,7 @@ type EventDetailScreenProps = {
     eventId: string,
     updates: EventUpdates,
   ) => void;
+  onRelativeTimeOperation: (operation: RelativeTimeOperation) => void;
   onPendingWorkChange: (pending: boolean) => void;
   pendingDraft?: EventDetailDraft;
   onDraftChange: (eventId: string, draft: EventDetailDraft) => void;
@@ -117,6 +120,7 @@ export function EventDetailScreen({
   selectedEvent,
   focusedRelatedEntityId,
   onUpdateEvent,
+  onRelativeTimeOperation,
   onPendingWorkChange,
   pendingDraft,
   onDraftChange,
@@ -552,6 +556,12 @@ export function EventDetailScreen({
         </div>
       </div>
       <CoordinatePanel key={event.id} dataset={dataset} object={event} />
+
+      <RelativeTimeAuthoringPanel
+        dataset={dataset}
+        eventId={event.id}
+        onOperation={onRelativeTimeOperation}
+      />
 
       <br />
 

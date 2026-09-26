@@ -45,6 +45,10 @@ import {
 import { addEntity, deleteEntity, updateEntity } from "./services/EntityService";
 import { updateObjectCoordinate } from "./services/CoordinateService";
 import {
+  applyRelativeTimeOperation,
+  type RelativeTimeOperation,
+} from "./services/RelativeTimeService.ts";
+import {
   isDatasetModified,
   serializeDatasetBaseline,
 } from "./services/DatasetBaselineService";
@@ -706,6 +710,12 @@ function App() {
     setEventDraft(undefined);
     setPendingSource("eventDetail", false);
   };
+  const handleRelativeTimeOperation = (operation: RelativeTimeOperation) => {
+    setDataset((currentDataset) => {
+      const result = applyRelativeTimeOperation(currentDataset, operation);
+      return result.ok ? result.dataset : currentDataset;
+    });
+  };
   const handleSaveAndOpenEntityPicker = (
     eventId: string,
     updates: EventUpdates,
@@ -1086,6 +1096,7 @@ function App() {
           selectedEvent={state.selectedEvent}
           focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
+          onRelativeTimeOperation={handleRelativeTimeOperation}
           onPendingWorkChange={handleEventPendingWork}
           pendingDraft={
             eventDraft?.eventId === state.selectedEvent
