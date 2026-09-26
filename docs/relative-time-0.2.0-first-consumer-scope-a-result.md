@@ -26,8 +26,9 @@ existing `0.1.0` fixture, invalid `0.2.0` Feature/payload diagnostics,
 unsupported exact-version warning and opaque preservation without fallback,
 and refusal to invent an undeclared Relative Time declaration. A comparison
 test confirms Timeline ordering is unchanged by the Relation data. Existing
-UI integration tests cover the generic diagnostics presentation path; this
-checkpoint did not perform a separate real-browser manual acceptance run.
+UI integration tests cover the generic diagnostics presentation path. The
+separate Real Browser Manual Acceptance was completed later and is recorded
+below.
 
 ## Earlier real-browser attempt (2026-09-26; superseded by the closure below)
 
