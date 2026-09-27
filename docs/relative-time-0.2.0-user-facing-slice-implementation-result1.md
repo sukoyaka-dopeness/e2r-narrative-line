@@ -220,5 +220,23 @@ push, tag, release, or deploy was performed.
   behavior changed in this audit.
 - Audit verification: NarrativeLine **284/284 tests PASS**, lint, production
   build, and `git diff --check` **PASS**; E2R-SPEC `npm run validate`
-  **PASS**. Final milestone closure and release remain subject to Human's
-  acceptance decision.
+  **PASS**. At that audit checkpoint, the remaining presentation acceptance
+  was still pending.
+
+## Current projection presentation and Event identity status (2026-09-27)
+
+Human subsequently completed Real Browser Acceptance for the Relative Time
+Timeline projection presentation and collision-safe Event identity correction.
+The accepted projection shows distinct lightly framed multi-Event bands,
+separates those unordered derived groups from the Recorded pair list, and
+preserves the accepted wide/narrow pair layouts and EN/JA behavior. The
+dedicated multi-band fixture remains an application Acceptance fixture, not a
+Hub or public sample. Event identity uses the shared prefix resolver: unique
+names remain uncluttered, collisions receive a prefix from eight characters,
+extended only as required. It is not UUIDv7-specific.
+
+The bounded presentation and identity correction is **FORMALLY ACCEPTED /
+COMPLETE / CLOSED**. This does not reopen the broader Relative Time milestone
+or deferred mixed Timeline, diagnostic, inference, quantitative, or manual
+ordering work. The detailed browser evidence and preserved boundaries are in
+the [E2R-SPEC acceptance record](../../e2r-spec/docs/narrativeline/narrativeline-relative-time-timeline-projection-presentation-follow-up.md#formal-human-browser-acceptance-2026-09-27).
