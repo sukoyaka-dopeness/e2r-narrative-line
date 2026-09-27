@@ -360,7 +360,7 @@ export function EventDetailScreen({
         <h1>{ja ? "できごとの詳細" : "Event Detail"}</h1>
       </div>
 
-      <label className="event-detail-name" htmlFor="event-detail-name-input">
+      <label className="detail-name-field" htmlFor="event-detail-name-input">
         {ja ? "名前" : "Name"}
         <input
           id="event-detail-name-input"

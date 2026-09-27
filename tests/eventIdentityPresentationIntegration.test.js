@@ -516,3 +516,26 @@ test("E7 Related Events retain existing recorded chronology formatting", async (
     await rendered.cleanup();
   }
 });
+
+test("Entity Detail presents its editable Name directly below the heading without a duplicate name", async () => {
+  for (const language of ["en", "ja"]) {
+    const rendered = await renderEntityDetail(relatedDataset([]), language);
+    try {
+      const heading = rendered.document.querySelector(".detail-header h1");
+      const nameField = rendered.document.querySelector(".detail-name-field");
+      const input = rendered.document.querySelector("#entity-detail-name-input");
+      const description = rendered.document.querySelector("textarea");
+
+      assert.ok(heading);
+      assert.equal(heading.textContent, language === "ja" ? "エンティティの詳細" : "Entity Detail");
+      assert.equal(rendered.document.querySelector(".detail-header p"), null);
+      assert.equal(heading.parentElement?.nextElementSibling, nameField);
+      assert.ok(nameField?.textContent?.includes(language === "ja" ? "名前" : "Name"));
+      assert.equal(nameField?.getAttribute("for"), "entity-detail-name-input");
+      assert.equal(input?.value, "Subject");
+      assert.equal(description?.getAttribute("rows"), "5");
+    } finally {
+      await rendered.cleanup();
+    }
+  }
+});

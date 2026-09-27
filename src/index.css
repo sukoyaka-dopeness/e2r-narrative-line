@@ -456,7 +456,7 @@ button:disabled {
   white-space: normal;
 }
 
-.event-detail-name {
+.detail-name-field {
   display: grid;
   gap: 4px;
   width: 100%;
@@ -466,7 +466,7 @@ button:disabled {
   font-weight: 600;
 }
 
-.event-detail-name input {
+.detail-name-field input {
   box-sizing: border-box;
   display: block;
   width: 100%;

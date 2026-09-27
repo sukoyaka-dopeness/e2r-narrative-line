@@ -144,22 +144,19 @@ export function EntityDetailScreen({
     <div className="detail-screen">
       <div className="detail-header">
         <h1>{ja ? "エンティティの詳細" : "Entity Detail"}</h1>
-        <p>
-          {entity.name || copy.unnamedEntity}
-        </p>
       </div>
 
-      <div>
-        <label>{ja ? "名前" : "Name"}</label>
-        <br />
+      <label className="detail-name-field" htmlFor="entity-detail-name-input">
+        {ja ? "名前" : "Name"}
         <input
+          id="entity-detail-name-input"
           className="entity-text-field__control"
           type="text"
           value={name}
           placeholder={ja ? "人物・組織・場所などを入力してください" : "Enter a person, organization, place, or other entity"}
           onChange={(event) => setName(event.target.value)}
         />
-      </div>
+      </label>
 
       <br />
 
