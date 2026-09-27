@@ -1,5 +1,6 @@
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
+import { resolveEventIdentityPresentations } from "../services/EventIdentityPresentationService";
 import { projectRelativeTimeForTimeline } from "../services/RelativeTimeService.ts";
 
 type RelativeTimeTimelineProjectionProps = {
@@ -17,10 +18,23 @@ export function RelativeTimeTimelineProjection({
   if (projection.groups.length === 0 && projection.conflictedEventIds.length === 0) {
     return null;
   }
-  const names = new Map(dataset.events.map((event) => [
-    event.id,
-    event.name || (ja ? "名前のないできごと" : "Unnamed Event"),
+  const projectedEventIds = new Set<string>();
+  projection.groups.forEach((group) => {
+    group.eventIdsByDisplayBand.forEach((band) => band.forEach((id) => projectedEventIds.add(id)));
+  });
+  projection.conflictedEventIds.forEach((group) => group.forEach((id) => projectedEventIds.add(id)));
+  const projectedEvents = dataset.events.filter((event) => projectedEventIds.has(event.id));
+  const identities = resolveEventIdentityPresentations(projectedEvents, {
+    getPrimary: (event) => event.name || (ja ? "名前のないできごと" : "Unnamed Event"),
+    getChronology: () => undefined,
+  });
+  const names = new Map([...identities].map(([eventId, identity]) => [
+    eventId,
+    identity.shortIdHint
+      ? `${identity.primary} (${identity.shortIdHint})`
+      : identity.primary,
   ]));
+  const labelFor = (eventId: string) => names.get(eventId) ?? eventId;
 
   return (
     <details className="relative-time-timeline">
@@ -45,7 +59,7 @@ export function RelativeTimeTimelineProjection({
             </p>
             {projection.conflictedEventIds.map((ids) => (
               <p key={ids.join("|")}>
-                {ids.map((id) => names.get(id) ?? id).join(ja ? "、" : ", ")}
+                {ids.map(labelFor).join(ja ? "、" : ", ")}
               </p>
             ))}
           </div>
@@ -61,7 +75,7 @@ export function RelativeTimeTimelineProjection({
                   {ids.map((id) => (
                     <li key={id}>
                       <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(id)}>
-                        {names.get(id) ?? id}
+                        {labelFor(id)}
                       </button>
                     </li>
                   ))}
@@ -72,11 +86,11 @@ export function RelativeTimeTimelineProjection({
               {group.assertions.map(({ earlierEventId, laterEventId }, index) => (
                 <li key={`${earlierEventId}-${laterEventId}-${index}`}>
                   <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(earlierEventId)}>
-                    {names.get(earlierEventId) ?? earlierEventId}
+                    {labelFor(earlierEventId)}
                   </button>
                   <span aria-label={ja ? "より前" : "before"}> → </span>
                   <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(laterEventId)}>
-                    {names.get(laterEventId) ?? laterEventId}
+                    {labelFor(laterEventId)}
                   </button>
                 </li>
               ))}
@@ -87,7 +101,7 @@ export function RelativeTimeTimelineProjection({
                 <ul>
                   {group.incomparablePairs.map(([left, right]) => (
                     <li key={`${left}-${right}`}>
-                      {names.get(left) ?? left} — {names.get(right) ?? right}
+                      {labelFor(left)} — {labelFor(right)}
                     </li>
                   ))}
                 </ul>

@@ -501,3 +501,99 @@ test("Timeline projection exposes pairwise order and cycle fallback without rewr
     await server.close();
   }
 });
+
+test("projection labels disambiguate duplicate and unnamed Events consistently", async () => {
+  const environment = createDomTestEnvironment("https://narrativeline.test/#locale=en");
+  environment.document.documentElement.lang = "en";
+  environment.window.localStorage.setItem("narrativeline.language", "en");
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({
+    root: process.cwd(),
+    server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false },
+    appType: "custom",
+  });
+  const dataset = {
+    version: "1.0",
+    entities: [],
+    events: [
+      { id: "abcdefgh-alpha", name: "Twin" },
+      { id: "abcdefgh-beta", name: "Twin" },
+      { id: "ijklmnop-c1", name: "" },
+      { id: "ijklmnop-c2" },
+      { id: "event-end", name: "End" },
+      { id: "outside-twin", name: "Twin" },
+    ],
+    relations: [
+      { id: "r-alpha", sourceId: "abcdefgh-alpha", targetId: "ijklmnop-c1", extensions: { "draft.github.sukoyaka-dopeness.relative-time": { type: "relative-position", relation: "after" } } },
+      { id: "r-beta", sourceId: "abcdefgh-beta", targetId: "ijklmnop-c2", extensions: { "draft.github.sukoyaka-dopeness.relative-time": { type: "relative-position", relation: "after" } } },
+      { id: "r-c1-end", sourceId: "ijklmnop-c1", targetId: "event-end", extensions: { "draft.github.sukoyaka-dopeness.relative-time": { type: "relative-position", relation: "after" } } },
+      { id: "r-c2-end", sourceId: "ijklmnop-c2", targetId: "event-end", extensions: { "draft.github.sukoyaka-dopeness.relative-time": { type: "relative-position", relation: "after" } } },
+    ],
+    extensions: {
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "0.1.0",
+        uses: [{ extension: "draft.github.sukoyaka-dopeness.relative-time", version: "0.2.0", features: ["relative-position"] }],
+      },
+    },
+  };
+  const editEventIds = [];
+  try {
+    const [{ RelativeTimeTimelineProjection }, { LanguageProvider, useLanguage }] = await Promise.all([
+      server.ssrLoadModule("/src/components/RelativeTimeTimelineProjection.tsx"),
+      server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+    ]);
+    function Harness() {
+      const { setLanguage } = useLanguage();
+      return React.createElement(React.Fragment, null,
+        React.createElement("button", { id: "switch-language", onClick: () => setLanguage("ja") }, "JA"),
+        React.createElement(RelativeTimeTimelineProjection, {
+          dataset,
+          onEditEvent: (eventId) => editEventIds.push(eventId),
+        }),
+      );
+    }
+    await act(async () => root.render(React.createElement(
+      LanguageProvider,
+      null,
+      React.createElement(Harness),
+    )));
+
+    const disclosure = environment.document.querySelector("details.relative-time-timeline");
+    assert.ok(disclosure);
+    disclosure.open = true;
+    const alpha = "Twin (abcdefgh-a)";
+    const beta = "Twin (abcdefgh-b)";
+    const c1 = "Unnamed Event (ijklmnop-c1)";
+    const c2 = "Unnamed Event (ijklmnop-c2)";
+    const bandButtons = [...environment.document.querySelectorAll(".relative-time-display-band .relative-time-timeline__event")];
+    assert.ok(bandButtons.some((button) => button.textContent === alpha));
+    assert.ok(bandButtons.some((button) => button.textContent === beta));
+    assert.ok(bandButtons.some((button) => button.textContent === c1));
+    assert.ok(bandButtons.some((button) => button.textContent === c2));
+    assert.equal(bandButtons.some((button) => button.textContent === "Twin"), false);
+    assert.equal(bandButtons.some((button) => button.textContent === "outside-twin"), false);
+
+    const alphaButtons = [...environment.document.querySelectorAll(".relative-time-timeline__event")]
+      .filter((button) => button.textContent === alpha);
+    assert.ok(alphaButtons.length >= 2, "the band and recorded edge reuse one label");
+    act(() => alphaButtons[0].click());
+    act(() => alphaButtons[1].click());
+    assert.deepEqual(editEventIds, ["abcdefgh-alpha", "abcdefgh-alpha"]);
+
+    const incomparable = environment.document.querySelector(".relative-time-projection-group details");
+    assert.ok(incomparable);
+    incomparable.open = true;
+    assert.match(incomparable.textContent, /Unnamed Event \(ijklmnop-c1\).*Unnamed Event \(ijklmnop-c2\)/);
+
+    act(() => environment.document.getElementById("switch-language").click());
+    const jaButtons = [...environment.document.querySelectorAll(".relative-time-timeline__event")];
+    assert.ok(jaButtons.some((button) => button.textContent === "名前のないできごと (ijklmnop-c1)"));
+    assert.ok(jaButtons.some((button) => button.textContent === "名前のないできごと (ijklmnop-c2)"));
+  } finally {
+    act(() => root.unmount());
+    environment.cleanup();
+    await server.close();
+  }
+});
