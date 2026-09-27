@@ -405,6 +405,9 @@ export function TimelineScreen({
         onEditEvent={onEditEvent}
       />
 
+      <h2 className="timeline-event-list-heading">
+        {ja ? "タイムライン" : "Timeline"}
+      </h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {timelineEvents.map((event) => {
           const isSelected = event.id === selectedEvent;

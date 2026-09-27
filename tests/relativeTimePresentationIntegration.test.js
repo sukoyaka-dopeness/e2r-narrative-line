@@ -481,6 +481,16 @@ test("Timeline projection exposes pairwise order and cycle fallback without rewr
       null,
       React.createElement(RelativeTimeTimelineProjection, { dataset, onEditEvent() {} }),
     )));
+    const disclosure = environment.document.querySelector("details.relative-time-timeline");
+    assert.ok(disclosure);
+    assert.equal(disclosure.open, false);
+    assert.equal(
+      disclosure.querySelector(":scope > summary")?.textContent,
+      "Relative Time (supplementary view)",
+    );
+    assert.ok(disclosure.querySelector("section[aria-labelledby='relative-time-timeline-heading']"));
+    disclosure.open = true;
+    assert.equal(disclosure.open, true);
     assert.match(environment.document.body.textContent, /display bands are a presentation projection/i);
     assert.match(environment.document.body.textContent, /A/);
     assert.match(environment.document.body.textContent, /C/);

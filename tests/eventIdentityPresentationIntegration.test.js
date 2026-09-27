@@ -539,3 +539,58 @@ test("Entity Detail presents its editable Name directly below the heading withou
     }
   }
 });
+
+test("ordinary Timeline has a visible localized heading and keeps its order when Relative Time opens", async () => {
+  const dataset = {
+    version: "1.0",
+    entities: [],
+    events: [{ id: "z-event", name: "Zeta" }, { id: "a-event", name: "Alpha" }],
+    relations: [{
+      id: "relative-order",
+      sourceId: "z-event",
+      targetId: "a-event",
+      extensions: {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          type: "relative-position",
+          relation: "after",
+        },
+      },
+    }],
+    extensions: {
+      metadata: { datasetId: "timeline-heading" },
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "0.1.0",
+        uses: [
+          { extension: "metadata", version: "1.0.0" },
+          {
+            extension: "draft.github.sukoyaka-dopeness.relative-time",
+            version: "0.2.0",
+            features: ["relative-position"],
+          },
+        ],
+      },
+    },
+  };
+
+  for (const language of ["en", "ja"]) {
+    const rendered = await renderTimeline(dataset, language);
+    try {
+      const heading = rendered.document.querySelector(".timeline-event-list-heading");
+      const disclosure = rendered.document.querySelector("details.relative-time-timeline");
+      const eventNames = () => [...rendered.document.querySelectorAll(".timeline-card .timeline-event-name")]
+        .map(({ textContent }) => textContent);
+
+      assert.equal(heading?.textContent?.trim(), language === "ja" ? "タイムライン" : "Timeline");
+      assert.equal(disclosure?.open, false);
+      assert.deepEqual(eventNames(), ["Alpha", "Zeta"]);
+      disclosure.open = true;
+      assert.deepEqual(eventNames(), ["Alpha", "Zeta"]);
+      assert.equal(
+        disclosure.querySelector(":scope > summary")?.textContent,
+        language === "ja" ? "相対時間（補助表示）" : "Relative Time (supplementary view)",
+      );
+    } finally {
+      await rendered.cleanup();
+    }
+  }
+});
