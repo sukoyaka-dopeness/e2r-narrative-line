@@ -6,8 +6,6 @@ import {
   canStartRelativeTimeAuthoring,
   createRelativeTimeAssertion,
   getEditableRelativeTimeAssertions,
-  isRelativeTimeEligibleEvent,
-  supportsRelativeTimeAuthoring,
   updateRelativeTimeAssertion,
   type RelativeTimeOperation,
 } from "../services/RelativeTimeService.ts";
@@ -32,7 +30,6 @@ export function RelativeTimeAuthoringPanel({
   const copy = getPresentationMessages(language);
   const event = dataset.events.find(({ id }) => id === eventId);
   const canAuthor = canStartRelativeTimeAuthoring(dataset);
-  const eligible = event !== undefined && isRelativeTimeEligibleEvent(dataset, event);
   const assertions = useMemo(
     () => getEditableRelativeTimeAssertions(dataset, eventId),
     [dataset, eventId],
@@ -69,12 +66,10 @@ export function RelativeTimeAuthoringPanel({
     return ja ? "新しい前後関係を追加しました。" : "Added a new time relation.";
   };
   const otherEvents = dataset.events.filter(
-    (candidate) => candidate.id !== eventId &&
-      isRelativeTimeEligibleEvent(dataset, candidate),
+    (candidate) => candidate.id !== eventId,
   );
 
-  if (!event || (!eligible && !supportsRelativeTimeAuthoring(dataset))) return null;
-  if (eligible && !canAuthor) return null;
+  if (!event || !canAuthor) return null;
 
   const applyUpdate = (relationId: string, value: boolean) => {
     const result = updateRelativeTimeAssertion(dataset, relationId, eventId, value);
@@ -204,52 +199,42 @@ export function RelativeTimeAuthoringPanel({
       <details className="relative-time-authoring__details relative-time-authoring__details--create">
         <summary>{copy.relativeTimeAddOptional}</summary>
         <div className="relative-time-authoring__content">
-          {!eligible ? (
-            <p role="status" className="relative-time-boundary">
-              {ja
-                ? "日付またはHistory情報があるできごとには、前後関係を追加できません。既存データは変更されません。"
-                : "A relation cannot be added to an Event with date or History data. Existing data is unchanged."}
+          <p className="relative-time-create__boundary relative-time-boundary">
+            {ja
+              ? "同じできごとの組み合わせに新しい前後関係を追加できるのは1件までです。"
+              : "Only one new relation can be added for an Event pair in this authoring slice."}
+          </p>
+          <div className={`relative-time-create__sentence${ja ? " relative-time-create__sentence--ja" : ""}`}>
+            {!ja && <span>{copy.relativeTimeReferencePrefix}</span>}
+            <select
+              aria-label={copy.relativeTimeReferenceEvent}
+              value={otherEventId}
+              onChange={(change) => setOtherEventId(change.target.value)}
+            >
+              <option value="">{copy.relativeTimeReferencePlaceholder}</option>
+              {otherEvents.map((candidate) => (
+                <option key={candidate.id} value={candidate.id}>
+                  {candidate.name || copy.unnamedEvent}
+                </option>
+              ))}
+            </select>
+            <span>{copy.relativeTimeReferenceSuffix}</span>
+            <select
+              aria-label={copy.relativeTimeCurrentEventIs}
+              value={currentBeforeOther ? "before" : "after"}
+              onChange={(change) => setCurrentBeforeOther(change.target.value === "before")}
+            >
+              <option value="before">{copy.relativeTimeBefore}</option>
+              <option value="after">{copy.relativeTimeAfter}</option>
+            </select>
+            <button type="button" disabled={!otherEventId} onClick={addAssertion}>
+              {ja ? "追加" : "Add"}
+            </button>
+          </div>
+          {createFeedback && (
+            <p role="status" className="relative-time-boundary relative-time-create__feedback">
+              {createFeedbackText(createFeedback)}
             </p>
-          ) : (
-            <>
-              <p className="relative-time-create__boundary relative-time-boundary">
-                {ja
-                  ? "同じできごとの組み合わせに新しい前後関係を追加できるのは1件までです。"
-                  : "Only one new relation can be added for an Event pair in this authoring slice."}
-              </p>
-              <div className={`relative-time-create__sentence${ja ? " relative-time-create__sentence--ja" : ""}`}>
-                {!ja && <span>{copy.relativeTimeReferencePrefix}</span>}
-                <select
-                  aria-label={copy.relativeTimeReferenceEvent}
-                  value={otherEventId}
-                  onChange={(change) => setOtherEventId(change.target.value)}
-                >
-                  <option value="">{copy.relativeTimeReferencePlaceholder}</option>
-                  {otherEvents.map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.name || copy.unnamedEvent}
-                    </option>
-                  ))}
-                </select>
-                <span>{copy.relativeTimeReferenceSuffix}</span>
-                <select
-                  aria-label={copy.relativeTimeCurrentEventIs}
-                  value={currentBeforeOther ? "before" : "after"}
-                  onChange={(change) => setCurrentBeforeOther(change.target.value === "before")}
-                >
-                  <option value="before">{copy.relativeTimeBefore}</option>
-                  <option value="after">{copy.relativeTimeAfter}</option>
-                </select>
-                <button type="button" disabled={!otherEventId} onClick={addAssertion}>
-                  {ja ? "追加" : "Add"}
-                </button>
-              </div>
-              {createFeedback && (
-                <p role="status" className="relative-time-boundary relative-time-create__feedback">
-                  {createFeedbackText(createFeedback)}
-                </p>
-              )}
-            </>
           )}
         </div>
       </details>

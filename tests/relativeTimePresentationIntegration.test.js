@@ -179,6 +179,70 @@ test("English authoring creates a declared assertion and does not add inverse or
   }
 });
 
+test("Event Detail exposes Recorded and Add New controls for a History-bearing Event", async () => {
+  const initial = datasetWithAssertions([
+    relativePositionRelation("existing-bc", "b", "c", "after"),
+  ]);
+  initial.events[0].extensions = { history: { time: { year: 1900, month: 4 } } };
+  initial.extensions["draft.github.sukoyaka-dopeness.specification"].uses.push({
+    extension: "history",
+    version: "1.0.0",
+  });
+  const historyBefore = structuredClone(initial.events[0].extensions.history);
+  const rendered = await renderAuthoring("en", initial, "a");
+  try {
+    const recordedDetails = rendered.document.querySelector(".relative-time-authoring__details--recorded");
+    const createDetails = rendered.document.querySelector(".relative-time-authoring__details--create");
+    assert.ok(recordedDetails);
+    assert.ok(createDetails);
+    assert.match(recordedDetails.querySelector("summary")?.textContent ?? "", /Recorded time relations \(0\)/);
+    assert.doesNotMatch(rendered.document.body.textContent ?? "", /cannot be added to an Event with date or History/);
+
+    openAuthoring(rendered, "create");
+    const selects = [...createDetails.querySelectorAll("select")];
+    assert.deepEqual([...selects[0].options].map(({ value }) => value), ["", "b", "c"]);
+    setSelectValue(rendered, selects[0], "b");
+    const add = [...createDetails.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "Add",
+    );
+    assert.ok(add);
+    act(() => add.click());
+
+    const relation = rendered.dataset.relations.find(
+      ({ sourceId, targetId }) => sourceId === "a" && targetId === "b",
+    );
+    assert.ok(relation);
+    assert.equal(relation.sourceId, "a");
+    assert.equal(relation.targetId, "b");
+    assert.deepEqual(rendered.dataset.events[0].extensions.history, historyBefore);
+    assert.ok(rendered.dataset.extensions["draft.github.sukoyaka-dopeness.specification"].uses.some(
+      ({ extension, version }) => extension === "history" && version === "1.0.0",
+    ));
+    assert.match(recordedDetails.querySelector("summary")?.textContent ?? "", /Recorded time relations \(1\)/);
+
+    openAuthoring(rendered, "recorded");
+    const row = recordedDetails.querySelector("[data-relative-time-relation-id]");
+    assert.ok(row);
+    assert.doesNotMatch(row.textContent ?? "", /rt-[^ ]+|Relation ID/);
+    assert.equal(row.querySelector("select")?.value, "before");
+    setSelectValue(rendered, row.querySelector("select"), "after");
+    act(() => row.querySelector("button").click());
+
+    assert.equal(rendered.dataset.relations.length, 2);
+    const updatedRelation = rendered.dataset.relations.find(({ id }) => id === relation.id);
+    assert.ok(updatedRelation);
+    assert.equal(updatedRelation.sourceId, "a");
+    assert.equal(updatedRelation.targetId, "b");
+    assert.equal(
+      updatedRelation.extensions["draft.github.sukoyaka-dopeness.relative-time"].relation,
+      "before",
+    );
+    assert.deepEqual(rendered.dataset.events[0].extensions.history, historyBefore);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
 test("operation feedback follows the current presentation language", async () => {
   const rendered = await renderAuthoring("ja");
   try {

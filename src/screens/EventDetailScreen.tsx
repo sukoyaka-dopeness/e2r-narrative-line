@@ -358,10 +358,18 @@ export function EventDetailScreen({
     <div className="detail-screen detail-screen--event">
       <div className="detail-header">
         <h1>{ja ? "できごとの詳細" : "Event Detail"}</h1>
-        <p>
-          {event.name || copy.unnamedEvent}
-        </p>
       </div>
+
+      <label className="event-detail-name" htmlFor="event-detail-name-input">
+        {ja ? "名前" : "Name"}
+        <input
+          id="event-detail-name-input"
+          type="text"
+          value={name}
+          placeholder={ja ? "できごとの名前を入力してください" : "Enter event name"}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </label>
 
       {historyFieldsEditable ? (
       <div>
@@ -540,17 +548,6 @@ export function EventDetailScreen({
       <br />
 
       <div className="event-text-fields">
-        <div>
-          <label>{ja ? "名前" : "Name"}</label>
-          <br />
-          <input
-            type="text"
-            value={name}
-            placeholder={ja ? "できごとの名前を入力してください" : "Enter event name"}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-
         <div>
           <label>{ja ? "説明" : "Description"}</label>
           <br />

@@ -141,12 +141,13 @@ function usedRelativeTimeFeatures(dataset: Dataset): Set<string> | undefined {
   return features;
 }
 
-export function isRelativeTimeEligibleEvent(
+export function isRelativeTimeProjectionEligibleEvent(
   dataset: Dataset,
   event: Event,
 ): boolean {
-  // Keep this first slice to truly undated, History-free Events. In particular,
-  // partial/approximate History and temporalOrder never enter this projection.
+  // The current display-only Timeline projection remains limited to truly
+  // undated, History-free Events. This boundary does not limit Recorded
+  // Relative Time authoring or presentation in Event Detail.
   return (
     event.extensions?.history === undefined &&
     getEventHistoryTime(event) === undefined &&
@@ -177,7 +178,7 @@ export function getEditableRelativeTimeAssertions(
 ): RelativeTimeAssertion[] {
   if (!supportsRelativeTimeAuthoring(dataset)) return [];
   const event = dataset.events.find(({ id }) => id === eventId);
-  if (!event || !isRelativeTimeEligibleEvent(dataset, event)) return [];
+  if (!event) return [];
 
   return dataset.relations.flatMap((relation) => {
     const value = readRelativePosition(relation);
@@ -187,7 +188,7 @@ export function getEditableRelativeTimeAssertions(
     if (!isSource && !isTarget) return [];
     const otherEventId = isSource ? relation.targetId : relation.sourceId;
     const otherEvent = dataset.events.find(({ id }) => id === otherEventId);
-    if (!otherEvent || !isRelativeTimeEligibleEvent(dataset, otherEvent)) return [];
+    if (!otherEvent) return [];
     return [{
       relation,
       value,
@@ -344,9 +345,7 @@ export function createRelativeTimeAssertion(
   const current = dataset.events.find(({ id }) => id === currentEventId);
   const other = dataset.events.find(({ id }) => id === otherEventId);
   if (
-    !current || !other || current.id === other.id ||
-    !isRelativeTimeEligibleEvent(dataset, current) ||
-    !isRelativeTimeEligibleEvent(dataset, other)
+    !current || !other || current.id === other.id
   ) {
     return { ok: false, reason: "unsupported_dataset" };
   }
@@ -424,9 +423,7 @@ export function updateRelativeTimeAssertion(
   const current = dataset.events.find(({ id }) => id === currentEventId);
   const other = dataset.events.find(({ id }) => id === otherEventId);
   if (
-    (!isSource && !isTarget) || !current || !other ||
-    !isRelativeTimeEligibleEvent(dataset, current) ||
-    !isRelativeTimeEligibleEvent(dataset, other)
+    (!isSource && !isTarget) || !current || !other
   ) {
     return { ok: false, reason: "unsupported_dataset" };
   }
@@ -461,7 +458,7 @@ export function updateRelativeTimeAssertion(
 function directedEdges(dataset: Dataset): Array<[string, string]> {
   if (!isDeclaredExactRelativeTimePayload(dataset)) return [];
   const eligible = new Set(
-    dataset.events.filter((event) => isRelativeTimeEligibleEvent(dataset, event))
+    dataset.events.filter((event) => isRelativeTimeProjectionEligibleEvent(dataset, event))
       .map(({ id }) => id),
   );
   const unique = new Map<string, [string, string]>();

@@ -317,7 +317,7 @@ test("dirty Entity Detail Browser Back guards and confirmed replay discards only
     const replay = waitForPopStates(rendered.window, rendered.document, () => discard.click(), 1);
     await replay;
     assert.ok(rendered.document.querySelector(".detail-screen--event"));
-    assert.ok(rendered.document.body.textContent.includes("Existing Event"));
+    assert.equal(rendered.document.querySelector(".event-detail-name input")?.value, "Existing Event");
   } finally { rendered.cleanup(); }
 });
 

@@ -161,11 +161,10 @@ Editable fields include:
 Event Detail keeps field edits locally until the user invokes `Save Event` or
 `Save and Add Related Entity`. Invalid date input prevents either action.
 
-The Detail heading uses a compact size and keeps visible spacing between the
-screen title and the current Event name.
-
-The current Event name beneath the Event Detail heading wraps when needed so
-that the complete name remains available in the Detail view.
+The Name field appears directly beneath the Event Detail heading so the
+Event's primary identity is visible and editable near the top of the screen.
+The field contains the current draft value; Event Detail does not repeat that
+name as a separate static heading.
 
 Each related Entity is displayed as an individually bordered card. Selecting a
 card applies the shared accent border and background and exposes its contextual

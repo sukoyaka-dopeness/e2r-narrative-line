@@ -201,7 +201,7 @@ test("clean and dirty Entity Detail Header Back preserves Event context and guar
     assertNestedHeader(rendered.document);
     act(() => headerBack(rendered.document).click());
     assert.ok(rendered.document.querySelector(".detail-screen--event"));
-    assert.ok(rendered.document.body.textContent.includes("Existing Event"));
+    assert.equal(rendered.document.querySelector(".event-detail-name input")?.value, "Existing Event");
     openRelatedEntity(rendered.document);
     const name = rendered.document.querySelector('input[placeholder="Enter a person, organization, place, or other entity"]');
     assert.ok(name);

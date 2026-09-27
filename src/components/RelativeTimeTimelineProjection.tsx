@@ -24,10 +24,10 @@ export function RelativeTimeTimelineProjection({
 
   return (
     <section className="relative-time-timeline" aria-labelledby="relative-time-timeline-heading">
-      <h2 id="relative-time-timeline-heading">
+      <h2 id="relative-time-timeline-heading" className="relative-time-timeline__heading">
         {ja ? "記録された相対順序（表示用）" : "Recorded relative order (display only)"}
       </h2>
-      <p>
+      <p className="relative-time-timeline__description">
         {ja
           ? "表示帯は記録されたbefore/afterとその連鎖に基づく配置です。帯の番号や間隔は保存されず、日付・期間・追加の順序を意味しません。同じ帯の中のできごとの順序は定まりません。"
           : "Display bands are a presentation projection of recorded before/after assertions and their chains. Band positions are not saved and do not represent dates, durations, or extra assertions. Events in the same band are unordered."}
@@ -56,7 +56,7 @@ export function RelativeTimeTimelineProjection({
               <ul>
                 {ids.map((id) => (
                   <li key={id}>
-                    <button type="button" onClick={() => onEditEvent(id)}>
+                    <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(id)}>
                       {names.get(id) ?? id}
                     </button>
                   </li>
@@ -67,11 +67,11 @@ export function RelativeTimeTimelineProjection({
           <ul className="relative-time-recorded-assertions">
             {group.assertions.map(({ earlierEventId, laterEventId }, index) => (
               <li key={`${earlierEventId}-${laterEventId}-${index}`}>
-                <button type="button" onClick={() => onEditEvent(earlierEventId)}>
+                <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(earlierEventId)}>
                   {names.get(earlierEventId) ?? earlierEventId}
                 </button>
                 <span aria-label={ja ? "より前" : "before"}> → </span>
-                <button type="button" onClick={() => onEditEvent(laterEventId)}>
+                <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(laterEventId)}>
                   {names.get(laterEventId) ?? laterEventId}
                 </button>
               </li>
