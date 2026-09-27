@@ -25,9 +25,9 @@ The related E2R specification repository is expected to be available beside this
 
 * `../e2r-spec`
 
-Before making changes to the data model, validation, History Extension handling, or architectural boundaries, read the relevant specification files in that repository.
-
-Important specification documents include:
+When a task changes the data model, validation, History Extension handling, or
+architectural boundaries, read the relevant specification source of truth in
+that repository. The main references are:
 
 * `../e2r-spec/spec/core.md`
 * `../e2r-spec/spec/philosophy.md`
@@ -36,11 +36,13 @@ Important specification documents include:
 * `../e2r-spec/docs/application-design-principles.md`
 * `../e2r-spec/docs/application-recommendations.md`
 
-If the sibling repository is unavailable, report that limitation instead of guessing the specification.
+If the sibling repository is unavailable for a task that depends on it, report
+that limitation instead of guessing the specification.
 
-## Required NarrativeLine Reading
+## Topic-based NarrativeLine Reading
 
-Before making architectural or workflow changes, read the relevant documents, especially:
+For architectural or workflow work, select the documents relevant to the
+actual topic and change scope:
 
 * `README.md`
 * `docs/MVP.md`
@@ -51,7 +53,9 @@ Before making architectural or workflow changes, read the relevant documents, es
 * `docs/services.md`
 * `docs/editing-model.md`
 
-Inspect the current implementation before assuming that documentation and code are synchronized.
+Inspect the current implementation before assuming that documentation and code
+are synchronized. Documentation-only or narrowly scoped guidance changes do
+not require reading unrelated product documents.
 
 ## Product Boundaries
 
@@ -92,34 +96,36 @@ Before changing these types, compare the proposed change with the current E2R sp
 * Entity Detail shows Entity information and related Events.
 * Destructive actions should not be placed where accidental activation is likely.
 
-## Implementation Method
+## Working Method
 
-Before editing:
+Choose source tracing, investigation order, implementation shape, and
+focused validation from the objective and diff scope. Keep intermediate states
+safe and compilable when making runtime changes, preserve existing behavior
+unless the task requires otherwise, avoid unnecessary abstractions, and do not
+modify unrelated files. Stop and report when an important architecture or
+authority decision cannot be made safely from current evidence.
 
-1. Read the relevant source files and documentation.
-2. Explain which file will be changed first.
-3. Identify any additional files that may eventually require changes.
-4. Do not begin with broad multi-file rewriting when a smaller change is possible.
+Research promoted toward a production candidate must retain executable
+provenance sufficient to replay normalized input through current-source
+execution to the reviewed result: relevant entry point, source revision,
+fixture/input identity, parameters and determinism conditions, generation
+method, and output parity evidence.
 
-While editing:
-
-* Change one file at a time.
-* Keep the project compilable after each completed file change.
-* Run the relevant check before moving to the next file.
-* Preserve existing working behavior unless the task requires changing it.
-* Avoid unnecessary abstractions and dependencies.
-* Do not modify unrelated files.
-* A verified local commit is allowed for one bounded logical checkpoint of
-  explicitly requested work. Do not push, publish, or rewrite history without
-  explicit authorization.
+A verified local commit is allowed for one bounded logical checkpoint of
+explicitly requested work. Do not push, publish, or rewrite history without
+explicit authorization.
 
 ## Git Checkpoint Policy
 
 Codex may create local commits for one bounded logical checkpoint when it is
 complete and verified. Before committing, inspect `git status --short`, stage
 only exact owned paths or hunks, inspect `git diff --cached --name-status`, run
-`git diff --cached --check`, and run the relevant NarrativeLine gates:
-`npm test`, `npm run lint`, and `npm run build`.
+`git diff --cached --check`, and complete validation proportional to the
+change. Substantive runtime or application changes normally use the relevant
+NarrativeLine gates: `npm test`, `npm run lint`, and `npm run build`.
+Documentation-only or narrow non-runtime changes still require appropriate
+focused validation and may use `git diff --cached --check` plus applicable
+documentation/configuration checks.
 
 After committing, report the hash, subject, scope, verification results,
 worktree status, and unpushed status. Preserve unrelated dirty work.
@@ -149,23 +155,21 @@ publication always require explicit authorization.
 
 ## Validation
 
-After code changes, run the available checks, normally including:
-
-```text
-npm run build
-```
-
-Also run lint or tests when they are available and relevant.
-
-Do not claim that a change works unless the relevant check has completed successfully.
+Select validation proportional to the change. Substantive runtime or
+application changes normally use the available NarrativeLine gates (`npm test`,
+`npm run lint`, and `npm run build`) when relevant. Documentation-only and
+narrow non-runtime changes may use focused checks, Markdown/config validation,
+or `git diff --check`; do not claim runtime behavior was validated when it was
+not exercised.
 
 ## Completion Criteria
 
 A development task is complete when:
 
-* The requested behavior is implemented.
-* TypeScript compilation succeeds.
-* The production build succeeds.
+* The requested work is complete.
+* Validation appropriate to the change scope succeeds.
+* When runtime or application code changes, the relevant TypeScript, build, and
+  test gates succeed.
 * The implementation follows the documented architecture.
 * The implementation remains compatible with E2R.
 * The final diff contains no unrelated changes.
