@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatRelativeTimeSummary, getPresentationMessages } from "../i18n/messages";
+import { resolveEventIdentityPresentations } from "../services/EventIdentityPresentationService";
 import {
   canStartRelativeTimeAuthoring,
   createRelativeTimeAssertion,
@@ -68,6 +69,17 @@ export function RelativeTimeAuthoringPanel({
   const otherEvents = dataset.events.filter(
     (candidate) => candidate.id !== eventId,
   );
+  const otherEventIdentities = resolveEventIdentityPresentations(otherEvents, {
+    getPrimary: (candidate) => candidate.name || copy.unnamedEvent,
+    getChronology: () => undefined,
+  });
+  const otherEventLabels = new Map([...otherEventIdentities].map(([id, identity]) => [
+    id,
+    identity.shortIdHint
+      ? `${identity.primary} (${identity.shortIdHint})`
+      : identity.primary,
+  ]));
+  const otherEventLabel = (id: string) => otherEventLabels.get(id) ?? copy.unnamedEvent;
 
   if (!event || !canAuthor) return null;
 
@@ -126,8 +138,7 @@ export function RelativeTimeAuthoringPanel({
           {assertions.length > 0 ? (
             <ul className="relative-time-assertions">
               {assertions.map(({ relation, otherEventId: otherId, currentBeforeOther: value }) => {
-                const other = dataset.events.find(({ id }) => id === otherId);
-                const otherName = other?.name || copy.unnamedEvent;
+                const otherName = otherEventLabel(otherId);
                 const pairLabel = `${event.name || copy.unnamedEvent} / ${otherName}`;
                 return (
                   <li key={relation.id} data-relative-time-relation-id={relation.id}>
@@ -214,7 +225,7 @@ export function RelativeTimeAuthoringPanel({
               <option value="">{copy.relativeTimeReferencePlaceholder}</option>
               {otherEvents.map((candidate) => (
                 <option key={candidate.id} value={candidate.id}>
-                  {candidate.name || copy.unnamedEvent}
+                  {otherEventLabel(candidate.id)}
                 </option>
               ))}
             </select>

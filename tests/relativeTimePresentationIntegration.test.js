@@ -243,6 +243,78 @@ test("Event Detail exposes Recorded and Add New controls for a History-bearing E
   }
 });
 
+test("Relative Time authoring uses collision-safe labels for choices and recorded assertions", async () => {
+  const initial = {
+    version: "1.0",
+    entities: [],
+    events: [
+      { id: "current", name: "Current" },
+      { id: "abcdefgh-first", name: "Echo" },
+      { id: "abcdefgh-second", name: "Echo" },
+      { id: "ijklmnop-1", name: "" },
+      { id: "ijklmnop-2" },
+      { id: "unique-event", name: "Unique" },
+    ],
+    relations: [relativePositionRelation("recorded-echo", "current", "abcdefgh-first", "before")],
+    extensions: {
+      metadata: { datasetId: "relative-time-identity-ui" },
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "0.1.0",
+        uses: [
+          { extension: "metadata", version: "1.0.0" },
+          { extension: "draft.github.sukoyaka-dopeness.relative-time", version: "0.2.0", features: ["relative-position"] },
+        ],
+      },
+    },
+  };
+  const rendered = await renderAuthoring("en", initial, "current");
+  try {
+    const recordedDetails = rendered.document.querySelector(".relative-time-authoring__details--recorded");
+    const createDetails = rendered.document.querySelector(".relative-time-authoring__details--create");
+    openAuthoring(rendered, "recorded");
+    const recordedReference = recordedDetails.querySelector(".relative-time-assertion__reference");
+    assert.equal(recordedReference?.textContent, "Echo (abcdefgh-f)");
+
+    openAuthoring(rendered, "create");
+    const referenceSelect = createDetails.querySelector("select");
+    const optionLabels = new Map([...referenceSelect.options].map(({ value, textContent }) => [value, textContent]));
+    assert.equal(optionLabels.get("abcdefgh-first"), "Echo (abcdefgh-f)");
+    assert.equal(optionLabels.get("abcdefgh-second"), "Echo (abcdefgh-s)");
+    assert.equal(optionLabels.get("ijklmnop-1"), "(Unnamed Event) (ijklmnop-1)");
+    assert.equal(optionLabels.get("ijklmnop-2"), "(Unnamed Event) (ijklmnop-2)");
+    assert.equal(optionLabels.get("unique-event"), "Unique");
+
+    setSelectValue(rendered, referenceSelect, "abcdefgh-second");
+    assert.equal(referenceSelect.selectedOptions[0].textContent, optionLabels.get("abcdefgh-second"));
+    const add = [...createDetails.querySelectorAll("button")].find((button) => button.textContent?.trim() === "Add");
+    assert.ok(add);
+    act(() => add.click());
+    const created = rendered.dataset.relations.find(({ id }) => id !== "recorded-echo");
+    assert.ok(created);
+    assert.equal(created.sourceId, "current");
+    assert.equal(created.targetId, "abcdefgh-second");
+    const createdRow = rendered.document.querySelector(`[data-relative-time-relation-id="${created.id}"]`);
+    assert.equal(
+      createdRow?.querySelector(".relative-time-assertion__reference")?.textContent,
+      optionLabels.get("abcdefgh-second"),
+    );
+
+    const languageToggle = rendered.document.querySelector('[aria-label="Toggle test language"]');
+    act(() => languageToggle.click());
+    const japaneseReferenceSelect = createDetails.querySelector("select");
+    const japaneseOptions = new Map([...japaneseReferenceSelect.options].map(({ value, textContent }) => [value, textContent]));
+    assert.equal(japaneseOptions.get("ijklmnop-1"), "（名前のないできごと） (ijklmnop-1)");
+    assert.equal(japaneseOptions.get("ijklmnop-2"), "（名前のないできごと） (ijklmnop-2)");
+    assert.equal(japaneseOptions.get("abcdefgh-second"), optionLabels.get("abcdefgh-second"));
+    assert.equal(
+      createdRow?.querySelector(".relative-time-assertion__reference")?.textContent,
+      optionLabels.get("abcdefgh-second"),
+    );
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
 test("operation feedback follows the current presentation language", async () => {
   const rendered = await renderAuthoring("ja");
   try {
