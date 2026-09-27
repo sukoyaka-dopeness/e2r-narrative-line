@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { createServer } from "vite";
+import { importDatasetJson } from "../src/services/DatasetService.ts";
+import { projectRelativeTimeForTimeline } from "../src/services/RelativeTimeService.ts";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
 
 function datasetWithUndatedEvents() {
@@ -51,6 +54,10 @@ function relativePositionRelation(id, sourceId, targetId, relation) {
       },
     },
   };
+}
+
+async function readSpecExample(path) {
+  return readFile(new URL(`../../e2r-spec/${path}`, import.meta.url), "utf8");
 }
 
 async function renderAuthoring(language, initialDataset = datasetWithUndatedEvents(), eventId = "event-a") {
@@ -578,6 +585,71 @@ test("Timeline projection exposes pairwise order and cycle fallback without rewr
     assert.ok(recordedPairs.every((pair) => pair.querySelector(".relative-time-relation-arrow__narrow")?.textContent === "↓"));
     assert.ok(recordedPairs.every((pair) => pair.querySelector(".visually-hidden")?.textContent === "before"));
     assert.deepEqual(dataset.relations, originalRelations);
+  } finally {
+    act(() => root.unmount());
+    environment.cleanup();
+    await server.close();
+  }
+});
+
+test("multi-band acceptance fixture renders separate unordered bands and recorded pairs", async () => {
+  const dataset = JSON.parse(await readSpecExample(
+    "examples/relative-time-0.2-draft/timeline-projection-multi-band-acceptance.json",
+  ));
+  const imported = importDatasetJson(JSON.stringify(dataset));
+  assert.equal(imported.isValid, true);
+  assert.ok(imported.dataset);
+  const projection = projectRelativeTimeForTimeline(imported.dataset);
+  assert.deepEqual(projection.conflictedEventIds, []);
+  assert.equal(projection.groups.length, 1);
+  assert.deepEqual(projection.groups[0].eventIdsByDisplayBand, [
+    ["opening-signal"],
+    ["east-hall-gathering", "west-hall-gathering"],
+    ["closing-signal"],
+  ]);
+  assert.equal(projection.groups[0].assertions.length, 4);
+  assert.deepEqual(projection.groups[0].incomparablePairs, [["east-hall-gathering", "west-hall-gathering"]]);
+
+  const datasetForRendering = imported.dataset;
+  const original = structuredClone(datasetForRendering);
+  const environment = createDomTestEnvironment("https://narrativeline.test/#locale=en");
+  environment.document.documentElement.lang = "en";
+  environment.window.localStorage.setItem("narrativeline.language", "en");
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({
+    root: process.cwd(),
+    server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false },
+    appType: "custom",
+  });
+  try {
+    const [{ RelativeTimeTimelineProjection }, { LanguageProvider }] = await Promise.all([
+      server.ssrLoadModule("/src/components/RelativeTimeTimelineProjection.tsx"),
+      server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+    ]);
+    await act(async () => root.render(React.createElement(
+      LanguageProvider,
+      null,
+      React.createElement(RelativeTimeTimelineProjection, { dataset: datasetForRendering, onEditEvent() {} }),
+    )));
+    const bands = [...environment.document.querySelectorAll(".relative-time-display-band")];
+    assert.equal(bands.length, 3);
+    assert.ok(bands.every((band) => band.parentElement?.classList.contains("relative-time-projection-group")));
+    assert.deepEqual(bands.map((band) => [...band.querySelectorAll("li")].map((item) => item.textContent)), [
+      ["Opening Signal"],
+      ["East Hall Gathering", "West Hall Gathering"],
+      ["Closing Signal"],
+    ]);
+    assert.equal(environment.document.querySelectorAll(".relative-time-recorded-assertions > li").length, 4);
+    const incomparable = environment.document.querySelector(".relative-time-recorded-relations__group details");
+    assert.ok(incomparable);
+    assert.match(incomparable.textContent, /East Hall Gathering.*West Hall Gathering/);
+    assert.deepEqual(datasetForRendering, original);
+
+    const styles = await readFile(new URL("../src/index.css", import.meta.url), "utf8");
+    assert.match(styles, /\.relative-time-display-band\s*\{[^}]*border:\s*1px solid color-mix\(in srgb, var\(--border\) 70%, var\(--text\)\);[^}]*background:\s*var\(--social-bg\);/s);
+    assert.match(styles, /\.relative-time-projection-group\s*\{[^}]*gap:\s*12px;/s);
   } finally {
     act(() => root.unmount());
     environment.cleanup();

@@ -870,7 +870,7 @@ button:disabled {
 
 .relative-time-projection-group {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   margin-block: 8px;
   padding: 0;
 }
@@ -883,7 +883,7 @@ button:disabled {
   min-width: 0;
   margin: 0;
   padding: 6px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, var(--text));
   background: var(--social-bg);
   list-style: none;
 }
