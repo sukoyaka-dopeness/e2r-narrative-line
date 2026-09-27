@@ -563,9 +563,20 @@ test("Timeline projection exposes pairwise order and cycle fallback without rewr
     assert.ok(disclosure.querySelector("section[aria-labelledby='relative-time-timeline-heading']"));
     disclosure.open = true;
     assert.equal(disclosure.open, true);
-    assert.match(environment.document.body.textContent, /display bands are a presentation projection/i);
+    assert.match(environment.document.body.textContent, /display groups present recorded before\/after assertions/i);
     assert.match(environment.document.body.textContent, /A/);
     assert.match(environment.document.body.textContent, /C/);
+    assert.equal(
+      environment.document.querySelector(".relative-time-recorded-relations__heading")?.textContent,
+      "Recorded before/after relations",
+    );
+    assert.equal(environment.document.querySelectorAll(".relative-time-display-band__label").length, 0);
+    assert.equal(environment.document.querySelectorAll(".relative-time-display-band").length, 3);
+    const recordedPairs = [...environment.document.querySelectorAll(".relative-time-recorded-assertions > li")];
+    assert.equal(recordedPairs.length, 2);
+    assert.ok(recordedPairs.every((pair) => pair.querySelector(".relative-time-relation-arrow__wide")?.textContent === "→"));
+    assert.ok(recordedPairs.every((pair) => pair.querySelector(".relative-time-relation-arrow__narrow")?.textContent === "↓"));
+    assert.ok(recordedPairs.every((pair) => pair.querySelector(".visually-hidden")?.textContent === "before"));
     assert.deepEqual(dataset.relations, originalRelations);
   } finally {
     act(() => root.unmount());
@@ -654,7 +665,7 @@ test("projection labels disambiguate duplicate and unnamed Events consistently",
     act(() => alphaButtons[1].click());
     assert.deepEqual(editEventIds, ["abcdefgh-alpha", "abcdefgh-alpha"]);
 
-    const incomparable = environment.document.querySelector(".relative-time-projection-group details");
+    const incomparable = environment.document.querySelector(".relative-time-recorded-relations__group details");
     assert.ok(incomparable);
     incomparable.open = true;
     assert.match(incomparable.textContent, /Unnamed Event \(ijklmnop-c1\).*Unnamed Event \(ijklmnop-c2\)/);
@@ -663,6 +674,11 @@ test("projection labels disambiguate duplicate and unnamed Events consistently",
     const jaButtons = [...environment.document.querySelectorAll(".relative-time-timeline__event")];
     assert.ok(jaButtons.some((button) => button.textContent === "名前のないできごと (ijklmnop-c1)"));
     assert.ok(jaButtons.some((button) => button.textContent === "名前のないできごと (ijklmnop-c2)"));
+    assert.equal(
+      environment.document.querySelector(".relative-time-recorded-relations__heading")?.textContent,
+      "記録された前後関係",
+    );
+    assert.match(environment.document.body.textContent, /同じまとまりのできごと同士の前後は定まりません/);
   } finally {
     act(() => root.unmount());
     environment.cleanup();

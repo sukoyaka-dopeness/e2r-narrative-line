@@ -47,8 +47,8 @@ export function RelativeTimeTimelineProjection({
         </h2>
         <p className="relative-time-timeline__description">
           {ja
-            ? "表示帯は記録されたbefore/afterとその連鎖に基づく配置です。帯の番号や間隔は保存されず、日付・期間・追加の順序を意味しません。同じ帯の中のできごとの順序は定まりません。"
-            : "Display bands are a presentation projection of recorded before/after assertions and their chains. Band positions are not saved and do not represent dates, durations, or extra assertions. Events in the same band are unordered."}
+            ? "表示上のまとまりは、記録されたbefore/afterとその連鎖を表すためのものです。まとまりの位置は保存されず、日付・期間・追加の前後関係を意味しません。同じまとまりのできごと同士の前後は定まりません。"
+            : "Display groups present recorded before/after assertions and their chains. Group positions are not saved and do not represent dates, durations, or extra assertions. Events in the same group have no recorded order relative to one another."}
         </p>
         {projection.conflictedEventIds.length > 0 && (
           <div role="status" className="relative-time-conflict">
@@ -67,48 +67,58 @@ export function RelativeTimeTimelineProjection({
         {projection.groups.map((group, groupIndex) => (
           <div className="relative-time-projection-group" key={`${groupIndex}-${group.assertions[0]?.earlierEventId}`}>
             {group.eventIdsByDisplayBand.map((ids, bandIndex) => (
-              <div className="relative-time-display-band" key={`${groupIndex}-${bandIndex}`}>
-                <span className="relative-time-display-band__label">
-                  {ja ? "表示用の配置" : "Display placement"}
-                </span>
-                <ul>
-                  {ids.map((id) => (
-                    <li key={id}>
-                      <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(id)}>
-                        {labelFor(id)}
+              <ul className="relative-time-display-band" key={`${groupIndex}-${bandIndex}`}>
+                {ids.map((id) => (
+                  <li key={id}>
+                    <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(id)}>
+                      {labelFor(id)}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        ))}
+        {projection.groups.some((group) => group.assertions.length > 0) && (
+          <section className="relative-time-recorded-relations" aria-labelledby="relative-time-recorded-relations-heading">
+            <h3 id="relative-time-recorded-relations-heading" className="relative-time-recorded-relations__heading">
+              {ja ? "記録された前後関係" : "Recorded before/after relations"}
+            </h3>
+            {projection.groups.map((group, groupIndex) => (
+              <div className="relative-time-recorded-relations__group" key={`${groupIndex}-${group.assertions[0]?.earlierEventId}`}>
+                <ul className="relative-time-recorded-assertions">
+                  {group.assertions.map(({ earlierEventId, laterEventId }, index) => (
+                    <li key={`${earlierEventId}-${laterEventId}-${index}`}>
+                      <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(earlierEventId)}>
+                        {labelFor(earlierEventId)}
+                      </button>
+                      <span className="relative-time-relation-arrow">
+                        <span className="relative-time-relation-arrow__wide" aria-hidden="true">→</span>
+                        <span className="relative-time-relation-arrow__narrow" aria-hidden="true">↓</span>
+                        <span className="visually-hidden">{ja ? "より前" : "before"}</span>
+                      </span>
+                      <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(laterEventId)}>
+                        {labelFor(laterEventId)}
                       </button>
                     </li>
                   ))}
                 </ul>
+                {group.incomparablePairs.length > 0 && (
+                  <details>
+                    <summary>{ja ? "順序が定まらない組み合わせ" : "Pairs with no recorded ordering path"}</summary>
+                    <ul>
+                      {group.incomparablePairs.map(([left, right]) => (
+                        <li key={`${left}-${right}`}>
+                          {labelFor(left)} — {labelFor(right)}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </div>
             ))}
-            <ul className="relative-time-recorded-assertions">
-              {group.assertions.map(({ earlierEventId, laterEventId }, index) => (
-                <li key={`${earlierEventId}-${laterEventId}-${index}`}>
-                  <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(earlierEventId)}>
-                    {labelFor(earlierEventId)}
-                  </button>
-                  <span aria-label={ja ? "より前" : "before"}> → </span>
-                  <button className="relative-time-timeline__event" type="button" onClick={() => onEditEvent(laterEventId)}>
-                    {labelFor(laterEventId)}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {group.incomparablePairs.length > 0 && (
-              <details>
-                <summary>{ja ? "順序が定まらない組み合わせ" : "Pairs with no recorded ordering path"}</summary>
-                <ul>
-                  {group.incomparablePairs.map(([left, right]) => (
-                    <li key={`${left}-${right}`}>
-                      {labelFor(left)} — {labelFor(right)}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </div>
-        ))}
+          </section>
+        )}
       </section>
     </details>
   );
