@@ -26,6 +26,7 @@ test("destructive Detail actions keep their hierarchy while sharing compact geom
 
 test("Timeline Edit and Entity Detail text controls use bounded compact/full-width ownership", () => {
   const styles = readFileSync("src/index.css", "utf8");
+  const entityCreate = readFileSync("src/screens/EntityCreateScreen.tsx", "utf8");
 
   assert.match(
     styles,
@@ -35,4 +36,6 @@ test("Timeline Edit and Entity Detail text controls use bounded compact/full-wid
     styles,
     /\.entity-text-field__control\s*\{\s*box-sizing: border-box;\s*display: block;\s*width: 100%;\s*max-width: 100%;/s,
   );
+  assert.match(entityCreate, /<input[\s\S]*?className="entity-text-field__control"/);
+  assert.match(entityCreate, /<textarea className="entity-text-field__control"/);
 });

@@ -52,6 +52,7 @@ export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pe
         <br />
         <input
           ref={nameInputRef}
+          className="entity-text-field__control"
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -64,7 +65,7 @@ export function EntityCreateScreen({ onCreate, onCancel, onPendingWorkChange, pe
       <div>
         <label>{ja ? "説明" : "Description"}</label>
         <br />
-        <textarea rows={5} value={description} onChange={(event) => setDescription(event.target.value)} />
+        <textarea className="entity-text-field__control" rows={5} value={description} onChange={(event) => setDescription(event.target.value)} />
       </div>
 
       <div className="detail-primary-actions">
