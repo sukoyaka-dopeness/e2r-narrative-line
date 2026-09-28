@@ -1006,17 +1006,6 @@ button:disabled {
   font-size: 0.8rem;
 }
 
-.timeline-card__order-diagnostic summary span {
-  display: inline-grid;
-  width: 1.1em;
-  height: 1.1em;
-  place-items: center;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  font-size: 0.85em;
-  font-weight: 700;
-}
-
 .timeline-card__order-diagnostic ul {
   margin: 4px 0 0;
   padding-inline-start: 20px;
@@ -1034,19 +1023,15 @@ button:disabled {
 .timeline-card--selected .timeline-order-actions,
 .timeline-card:focus-within .timeline-order-actions { display: flex; }
 
-.timeline-order-actions__safety {
+.timeline-order-actions__help {
   flex: 1 1 100%;
   color: var(--text-muted, var(--text));
   font-size: 0.78rem;
   line-height: 1.3;
 }
 
-.timeline-order-actions__state {
-  margin-right: auto;
-  color: var(--text);
-  font-size: 0.75rem;
-  line-height: 1.2;
-}
+.timeline-order-actions__help summary { cursor: pointer; }
+.timeline-order-actions__help p { margin: 4px 0 0; }
 
 .timeline-order-actions button {
   min-width: 32px;

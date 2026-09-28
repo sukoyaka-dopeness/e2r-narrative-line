@@ -35,15 +35,17 @@ Select an Event card, or move keyboard focus to it with **Tab**. The ↑/↓
 controls appear only on the selected or focused Event. On a touch screen, tap
 the Event card to select it and reveal the same controls. With the card focused,
 press **Enter** or **Space** to select it; then use **Tab** to reach a move
-control. The short note beside the controls explains that moving an Event
-changes display order only and leaves its date and Relative Time records
-unchanged.
+control. Open **About display order** beside the controls when you need the
+safety explanation or the selected Event's placement status. The disclosure
+explains that moving an Event changes display order only and leaves its date
+and Relative Time records unchanged.
 
 **Placed in display order** means the Event is included in the saved display
 sequence. **Unplaced · derived display** means no position for that Event is
 saved in that sequence; its current Timeline position comes from the available
 History chronology and applicable Relative Time bands. These labels describe
-display state, not additional temporal facts.
+display state, not additional temporal facts. This explanation is available
+on demand so it does not remain in the Timeline card while you read or reorder.
 
 When a saved display order differs from History chronology or an applicable
 Relative Time band, the affected Event shows **Review display order**. Open it

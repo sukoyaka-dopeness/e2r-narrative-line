@@ -249,3 +249,51 @@ contextual access, H4 confirmation of EN/JA feedback, and H5 review of local
 Relative Time warning discovery. The Human's motion/focus/repeated-movement
 review and warning comprehension/export preference remain closed; H2, H3, and
 H6 remain closed and are not reopened.
+
+## On-demand ordering help, text-only mismatch disclosure, and live locale state — 2026-09-28
+
+The affected-Event warning keeps the existing `Review display order` text and
+native disclosure triangle. Its ambiguous circular `!` ornament is removed;
+no icon or global warning vocabulary is introduced. Opening the local
+disclosure still reveals the existing History or Derived Relative Time
+mismatch detail. The compact Timeline count and full-list disclosure are
+unchanged.
+
+The always-visible safety note and selected-only Placed / Unplaced status no
+longer occupy the Event content area. A collapsed native `About display order`
+disclosure appears with the ordering controls when an authorable row is
+selected or focused. Opening it explains that moves only change display order
+and presents that Event's Placed or Unplaced meaning. The native summary is
+operable by pointer, keyboard, and touch; the page does not depend on hover.
+Both User Guides name this disclosure and remain the main explanation of the
+placement states.
+
+Live code inspection found that success and failure feedback text had been
+formatted in the locale at move time and stored as a string. The state now
+retains the move direction and Event name, then renders the message using the
+current locale. This is bounded to the existing message catalog and does not
+change locale architecture.
+
+Verification: `npm test` passed 315/315; `npm run lint` and `npm run build`
+passed. Regression coverage confirms EN and JA moves and EN → JA → EN locale
+switches while the transient feedback remains visible and keeps the Event name.
+The same tests confirm the local warning has no ambiguous `!` element and the
+safety/placement help starts collapsed and is available through its disclosure.
+
+An isolated Edge tab at `http://127.0.0.1:5181/e2r-narrative-line/#locale=en`
+opened the built-in Berlin Wall sample. The ordinary Timeline showed no
+ordering controls before focus. Enter on a keyboard-focused Event revealed
+controls on that row; a move displayed English feedback and retained focus.
+Switching the same runtime to Japanese translated the existing feedback; a
+new Japanese move also displayed Japanese feedback. The Japanese screenshot
+showed the warning as a text disclosure with a native triangle and the help
+details expanded beneath the controls. The pre-existing Edge tab at port 5173
+and its Dataset were untouched. No physical touch device was used; touch
+accessibility relies on the existing row tap selection and native disclosure.
+
+Human review remains pending only for the final contextual-control/help and
+text-only mismatch presentation under H1, plus the transient locale-switch
+feedback boundary under H4. H4 motion/focus/repeated movement remains closed.
+H5 comprehension, export preference, and the accepted local-discovery
+direction remain closed. H2, H3, and H6 remain closed. Formal Human Acceptance
+is not complete until those targeted presentation checks are recorded.

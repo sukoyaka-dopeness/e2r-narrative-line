@@ -42,32 +42,43 @@ async function renderTimeline(initial, language = "en") {
     appType: "custom",
   });
   let current;
+  let setHarnessLanguage;
   try {
-    const [{ TimelineScreen }, { LanguageProvider }] = await Promise.all([
+    const [{ TimelineScreen }, { LanguageProvider, useLanguage }] = await Promise.all([
       server.ssrLoadModule("/src/screens/TimelineScreen.tsx"),
       server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
     ]);
     await server.close();
     const baseline = serializeDatasetBaseline(initial);
+    function TimelineHarness({ dataset, selectedEvent, onSelectEvent, onMoveEvent }) {
+      const language = useLanguage();
+      setHarnessLanguage = language.setLanguage;
+      return React.createElement(TimelineScreen, {
+        dataset,
+        datasetModified: isDatasetModified(dataset, baseline),
+        selectedEvent,
+        onSelectEvent,
+        onEditEvent() {},
+        onAddEvent() {},
+        onMoveEvent,
+        onImportDataset() { return { isValid: false, issues: [] }; },
+        onExportDataset() { return exportDatasetJson(dataset); },
+        onUpdateDatasetTitle() {},
+      });
+    }
     function Harness() {
       const [dataset, setDataset] = React.useState(initial);
       const [selectedEvent, setSelectedEvent] = React.useState(null);
       current = dataset;
-      return React.createElement(LanguageProvider, null, React.createElement(TimelineScreen, {
+      return React.createElement(LanguageProvider, null, React.createElement(TimelineHarness, {
         dataset,
-        datasetModified: isDatasetModified(dataset, baseline),
         selectedEvent,
         onSelectEvent: setSelectedEvent,
-        onEditEvent() {},
-        onAddEvent() {},
         onMoveEvent(id, direction) {
           const result = movePerspectiveEvent(dataset, id, direction);
           if (result.ok) setDataset(result.dataset);
           return result;
         },
-        onImportDataset() { return { isValid: false, issues: [] }; },
-        onExportDataset() { return exportDatasetJson(dataset); },
-        onUpdateDatasetTitle() {},
       }));
     }
     await act(async () => root.render(React.createElement(Harness)));
@@ -75,6 +86,9 @@ async function renderTimeline(initial, language = "en") {
       container,
       environment,
       get dataset() { return current; },
+      setLanguage(language) {
+        act(() => setHarnessLanguage(language));
+      },
       cleanup() {
         act(() => root.unmount());
         environment.cleanup();
@@ -149,7 +163,10 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
     assert.equal(rendered.container.querySelector(".timeline-screen").dataset.datasetModified, "true");
     assert.equal(rendered.container.querySelector(".timeline-order-feedback")?.textContent,
       "Moved Third up in display order.");
-    assert.equal(rendered.container.querySelectorAll(".timeline-order-actions__state").length, 0);
+    const orderHelp = rendered.container.querySelector(".timeline-order-actions__help");
+    assert.ok(orderHelp);
+    assert.equal(orderHelp.open, false);
+    assert.equal(orderHelp.querySelector("summary")?.textContent, "About display order");
     assert.match(rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]')?.getAttribute("aria-label") ?? "", /placed$/);
     assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "b"]);
     const repeatMove = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
@@ -198,6 +215,26 @@ test("Timeline discloses ordering controls on focused or selected Events for key
   }
 });
 
+test("ordering safety and Placed or Unplaced meaning are available in a collapsed contextual disclosure", async () => {
+  const rendered = await renderTimeline(fixture());
+  try {
+    const target = rendered.container.querySelectorAll(".timeline-card")[1];
+    target.focus();
+    await act(async () => target.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", {
+      key: "Enter", bubbles: true,
+    })));
+    const help = target.querySelector(".timeline-order-actions__help");
+    assert.ok(help);
+    assert.equal(help.open, false);
+    assert.equal(help.querySelector("summary")?.textContent, "About display order");
+    await act(async () => help.querySelector("summary")?.click());
+    assert.match(help.textContent ?? "", /Changes display order only/);
+    assert.match(help.textContent ?? "", /Unplaced · derived display means no position is saved/);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
 test("Perspective mismatch details are available beside each affected Event and in a collapsed summary", async () => {
   const source = fixture();
   source.events = [
@@ -216,6 +253,7 @@ test("Perspective mismatch details are available beside each affected Event and 
     assert.equal(localIndicators.length, 2);
     assert.ok(localIndicators.every((indicator) => indicator.open === false));
     assert.ok(localIndicators.every((indicator) => indicator.textContent?.includes("Review display order")));
+    assert.ok(localIndicators.every((indicator) => !indicator.querySelector("summary span")));
 
     await act(async () => localIndicators[0].querySelector("summary")?.click());
     assert.equal(localIndicators[0].open, true);
@@ -288,6 +326,25 @@ test("English move feedback remains English and preserves a Japanese Event name"
     await act(async () => move.click());
     const status = rendered.container.querySelector('[role="status"].timeline-order-feedback');
     assert.equal(status?.textContent, "Moved 再開 Announced up in display order.");
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("transient move feedback follows locale changes without changing its Event name", async () => {
+  const rendered = await renderTimeline(fixture(), "en");
+  try {
+    const move = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
+    assert.ok(move);
+    await act(async () => move.click());
+    const status = rendered.container.querySelector('[role="status"].timeline-order-feedback');
+    assert.equal(status?.textContent, "Moved Third up in display order.");
+
+    rendered.setLanguage("ja");
+    assert.equal(status?.textContent, "「Third」を表示順で上へ移動しました。");
+
+    rendered.setLanguage("en");
+    assert.equal(status?.textContent, "Moved Third up in display order.");
   } finally {
     await rendered.cleanup();
   }

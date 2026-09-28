@@ -144,7 +144,8 @@ export function TimelineScreen({
   const [showBackToBottom, setShowBackToBottom] = useState(true);
   const [moveFeedback, setMoveFeedback] = useState<{
     dataset: Dataset;
-    text: string;
+    direction?: "earlier" | "later";
+    eventName?: string;
     error: boolean;
   }>();
   const orderingButtonRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -308,15 +309,14 @@ export function TimelineScreen({
       pendingOrderPositions.current = before;
       setMoveFeedback({
         dataset: result.dataset,
-        text: (direction === "earlier" ? copy.timelineMoveEarlier : copy.timelineMoveLater)
-          .replace("{event}", eventName),
+        direction,
+        eventName,
         error: false,
       });
     } else {
       pendingMoveFocus.current = null;
       setMoveFeedback({
         dataset,
-        text: copy.timelineMoveFailure,
         error: true,
       });
     }
@@ -537,7 +537,12 @@ export function TimelineScreen({
         </p>
       )}
       {moveFeedback?.dataset === dataset && (
-        <p className="timeline-order-feedback" role={moveFeedback.error ? "alert" : "status"}>{moveFeedback.text}</p>
+        <p className="timeline-order-feedback" role={moveFeedback.error ? "alert" : "status"}>
+          {moveFeedback.error
+            ? copy.timelineMoveFailure
+            : (moveFeedback.direction === "earlier" ? copy.timelineMoveEarlier : copy.timelineMoveLater)
+              .replace("{event}", moveFeedback.eventName ?? "")}
+        </p>
       )}
       {perspectiveTimeline.diagnostics.length > 0 && (
         <section className="timeline-order-diagnostics" aria-label={ja ? "表示順の診断" : "Display order diagnostics"}>
@@ -657,9 +662,7 @@ export function TimelineScreen({
               </div>
               {eventDiagnostics.length > 0 && (
                 <details className="timeline-card__order-diagnostic">
-                  <summary>
-                    <span aria-hidden="true">!</span> {copy.timelineReviewDisplayOrder}
-                  </summary>
+                  <summary>{copy.timelineReviewDisplayOrder}</summary>
                   <ul>
                     {eventDiagnostics.map((diagnostic, index) => (
                       <li key={`${diagnostic.kind}-${diagnostic.eventIds.join("-")}-${index}`}>
@@ -671,14 +674,15 @@ export function TimelineScreen({
               )}
               {perspectiveTimeline.canAuthor && (
                 <div className="timeline-order-actions">
-                  <small className="timeline-order-actions__safety">{copy.timelineOrderSafety}</small>
-                  {isSelected && (
-                    <small className="timeline-order-actions__state">
+                  <details className="timeline-order-actions__help">
+                    <summary>{copy.timelineOrderHelp}</summary>
+                    <p>{copy.timelineOrderSafety}</p>
+                    <p>
                       {perspectiveTimeline.placedIds.has(event.id)
-                        ? (ja ? "表示順を配置済み" : "Placed in display order")
-                        : (ja ? "未配置・導出表示" : "Unplaced · derived display")}
-                    </small>
-                  )}
+                        ? copy.timelinePlacedDescription
+                        : copy.timelineUnplacedDescription}
+                    </p>
+                  </details>
                   <button
                     type="button"
                     ref={(node) => {
