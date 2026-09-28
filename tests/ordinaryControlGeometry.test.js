@@ -39,3 +39,16 @@ test("Timeline Edit and Entity Detail text controls use bounded compact/full-wid
   assert.match(entityCreate, /<input[\s\S]*?className="entity-text-field__control"/);
   assert.match(entityCreate, /<textarea className="entity-text-field__control"/);
 });
+
+test("Perspective ordering keeps operable targets while reducing persistent density", () => {
+  const styles = readFileSync("src/index.css", "utf8");
+  const timeline = readFileSync("src/screens/TimelineScreen.tsx", "utf8");
+
+  assert.match(
+    styles,
+    /\.timeline-order-actions button\s*\{\s*min-width: 32px;\s*min-height: 32px;\s*padding: 2px 6px;/s,
+  );
+  assert.match(styles, /\.timeline-order-feedback\s*\{[^}]*font-size: 0\.82rem;/s);
+  assert.match(timeline, /isSelected && \([\s\S]*?timeline-order-actions__state/);
+  assert.match(timeline, /<button[\s\S]*?aria-label=\{ja[\s\S]*?unplaced, using derived display/);
+});

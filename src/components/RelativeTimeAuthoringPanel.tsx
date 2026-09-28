@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
 import { formatRelativeTimeSummary, getPresentationMessages } from "../i18n/messages";
-import { resolveEventIdentityPresentations } from "../services/EventIdentityPresentationService";
+import {
+  getEventIdentityChronology,
+  resolveEventIdentityPresentations,
+} from "../services/EventIdentityPresentationService";
 import {
   canStartRelativeTimeAuthoring,
   createRelativeTimeAssertion,
@@ -69,17 +72,17 @@ export function RelativeTimeAuthoringPanel({
   const otherEvents = dataset.events.filter(
     (candidate) => candidate.id !== eventId,
   );
-  const otherEventIdentities = resolveEventIdentityPresentations(otherEvents, {
+  const eventIdentities = resolveEventIdentityPresentations(dataset.events, {
     getPrimary: (candidate) => candidate.name || copy.unnamedEvent,
-    getChronology: () => undefined,
+    getChronology: getEventIdentityChronology,
   });
-  const otherEventLabels = new Map([...otherEventIdentities].map(([id, identity]) => [
-    id,
-    identity.shortIdHint
-      ? `${identity.primary} (${identity.shortIdHint})`
-      : identity.primary,
-  ]));
-  const otherEventLabel = (id: string) => otherEventLabels.get(id) ?? copy.unnamedEvent;
+  const otherEventLabel = (id: string) => {
+    const identity = eventIdentities.get(id);
+    if (!identity) return copy.unnamedEvent;
+    if (!identity.ambiguousPrimary) return identity.primary;
+    const hints = [identity.chronologyHint, identity.shortIdHint].filter(Boolean);
+    return hints.reduce((label, hint) => `${label} (${hint})`, identity.primary);
+  };
 
   if (!event || !canAuthor) return null;
 
@@ -139,12 +142,16 @@ export function RelativeTimeAuthoringPanel({
             <ul className="relative-time-assertions">
               {assertions.map(({ relation, otherEventId: otherId, currentBeforeOther: value }) => {
                 const otherName = otherEventLabel(otherId);
-                const pairLabel = `${event.name || copy.unnamedEvent} / ${otherName}`;
+                const currentName = otherEventLabel(eventId);
+                const pairLabel = `${currentName} / ${otherName}`;
+                const isAmbiguous = eventIdentities.get(eventId)?.ambiguousPrimary ?? false;
                 return (
                   <li key={relation.id} data-relative-time-relation-id={relation.id}>
                     <article className="relative-time-assertion">
                       <div className={`relative-time-assertion__sentence${ja ? " relative-time-assertion__sentence--ja" : ""}`}>
-                        <span>{copy.relativeTimeCurrentEventIs}</span>
+                        <span>{isAmbiguous
+                          ? (ja ? `${currentName}は` : `${currentName} is`)
+                          : copy.relativeTimeCurrentEventIs}</span>
                         <span className="relative-time-assertion__reference">{otherName}</span>
                         {ja && <span>より</span>}
                         <select

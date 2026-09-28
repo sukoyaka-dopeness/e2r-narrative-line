@@ -1,6 +1,6 @@
 # Perspective 0.1.0 Timeline Ordering — Implementation Candidate
 
-Status: automated implementation candidate; Real Browser / Human Acceptance pending.
+Status: **bounded UI refinement implemented; automated gates and focused Edge checks pass; post-refinement Human Acceptance remains pending.**
 
 Authority: [E2R-SPEC Perspective `0.1.0` Candidate](../../e2r-spec/extensions/perspective-extension-candidate.md).
 
@@ -107,3 +107,49 @@ semantics, schema, Dataset data, or temporal authority. Quantitative Relative
 Time is a separate post-closure audit/design checkpoint, not part of this
 acceptance or an implementation authorization; current planning and sequence
 are maintained by the E2R-SPEC Roadmap.
+
+## Bounded UI refinement — 2026-09-28
+
+This follow-up addresses the Human-observed control-density, same-name Event,
+and move-feedback issues without changing Perspective, Relative Time, History,
+or Core meaning.
+
+- The always-visible native move buttons remain in place at 32 by 32 CSS px.
+  Per-Event placed/unplaced text is shown only on the selected card; every move
+  button retains an accessible label that names its Event, direction, and
+  placed or derived state. Existing keyboard activation and disabled
+  boundaries remain intact.
+- A successful move restores focus to the moved Event's same-direction button
+  after list reordering. At a disabled edge it focuses that Event's opposite
+  direction button. The EN/JA result is a low-prominence status message. The
+  Japanese copy now says `「Event名」を表示順で上へ/下へ移動しました。`.
+- Event Detail Relative Time choices and recorded references now use the
+  existing candidate-local identity resolver. The supplementary Relative Time
+  projection already used that resolver and remains unchanged. In authoring,
+  ambiguous names show recorded chronology when it
+  distinguishes the candidates and otherwise use the existing collision-safe
+  short-ID fallback. Event callbacks and option values continue to use full
+  canonical IDs. Timeline composition and identity policy outside these
+  Relative Time reference surfaces are unchanged.
+- Export remains available with a Perspective mismatch warning. No additional
+  confirmation, animation, edit mode, drag-and-drop, shared identity
+  architecture, or Cross-App control standard was introduced.
+
+Verification on this source checkpoint: `npm test` passed 309/309;
+`npm run lint` and `npm run build` passed. The focused Timeline, Relative Time,
+and control-geometry tests passed. Edge at a temporary local Vite port showed
+the 15-Event Timeline in Japanese and English; keyboard moves produced the
+localized result, retained `:focus-visible` on the moved Event, and used the
+opposite control at the first-item boundary. A temporary same-name Event in
+that isolated browser origin was distinguishable in the Relative Time choice
+and recorded reference. The pre-existing user Edge tab and its Dataset were
+left untouched. This browser check did not test a 360px viewport, native
+picker/download, or count as Human acceptance.
+
+The post-refinement Human checklist is limited to H1 density/discoverability,
+H2 narrow layout, H3 same-name target comprehension, H4 actual focus and
+feedback review, and H6 native picker/export/re-open. The OS picker preflight
+is now Human-confirmed. H5's Human preference to keep the current no-extra-
+confirmation export behavior is recorded and retained; it does not decide
+portable semantics. Formal Human Acceptance remains pending until the remaining
+Human checks are complete.

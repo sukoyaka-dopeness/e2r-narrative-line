@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import type {
   DatasetImportIssue,
@@ -145,6 +145,25 @@ export function TimelineScreen({
     text: string;
     error: boolean;
   }>();
+  const orderingButtonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const pendingMoveFocus = useRef<{
+    eventId: string;
+    direction: "earlier" | "later";
+  } | null>(null);
+
+  useLayoutEffect(() => {
+    const pending = pendingMoveFocus.current;
+    if (!pending) return;
+
+    const buttonKey = (direction: "earlier" | "later") => `${pending.eventId}:${direction}`;
+    const preferred = orderingButtonRefs.current.get(buttonKey(pending.direction));
+    const alternate = orderingButtonRefs.current.get(
+      buttonKey(pending.direction === "earlier" ? "later" : "earlier"),
+    );
+    const target = preferred && !preferred.disabled ? preferred : alternate;
+    target?.focus();
+    pendingMoveFocus.current = null;
+  }, [dataset]);
 
   useEffect(() => {
     const sentinel = timelineTopSentinelRef.current;
@@ -230,17 +249,19 @@ export function TimelineScreen({
   };
 
   const handleMove = (eventId: string, direction: "earlier" | "later") => {
+    pendingMoveFocus.current = { eventId, direction };
     const result = onMoveEvent(eventId, direction);
     const eventName = eventNames.get(eventId) ?? eventId;
     if (result.ok) {
       setMoveFeedback({
         dataset: result.dataset,
         text: ja
-          ? `${eventName}を表示上${direction === "earlier" ? "上" : "下"}へ移動しました。`
-          : `Moved ${eventName} ${direction === "earlier" ? "earlier" : "later"} in display order.`,
+          ? `「${eventName}」を表示順で${direction === "earlier" ? "上" : "下"}へ移動しました。`
+          : `Moved ${eventName} ${direction === "earlier" ? "up" : "down"} in display order.`,
         error: false,
       });
     } else {
+      pendingMoveFocus.current = null;
       setMoveFeedback({
         dataset,
         text: ja ? "表示順を変更できませんでした。" : "Display order could not be changed.",
@@ -469,7 +490,7 @@ export function TimelineScreen({
         </p>
       )}
       {moveFeedback?.dataset === dataset && (
-        <p role={moveFeedback.error ? "alert" : "status"}>{moveFeedback.text}</p>
+        <p className="timeline-order-feedback" role={moveFeedback.error ? "alert" : "status"}>{moveFeedback.text}</p>
       )}
       {perspectiveTimeline.diagnostics.length > 0 && (
         <section className="timeline-order-diagnostics" aria-label={ja ? "表示順の診断" : "Display order diagnostics"}>
@@ -584,21 +605,37 @@ export function TimelineScreen({
               </div>
               {perspectiveTimeline.canAuthor && (
                 <div className="timeline-order-actions">
-                  <small>
-                    {perspectiveTimeline.placedIds.has(event.id)
-                      ? (ja ? "表示順を配置済み" : "Placed in display order")
-                      : (ja ? "未配置・導出表示" : "Unplaced · derived display")}
-                  </small>
+                  {isSelected && (
+                    <small className="timeline-order-actions__state">
+                      {perspectiveTimeline.placedIds.has(event.id)
+                        ? (ja ? "表示順を配置済み" : "Placed in display order")
+                        : (ja ? "未配置・導出表示" : "Unplaced · derived display")}
+                    </small>
+                  )}
                   <button
                     type="button"
+                    ref={(node) => {
+                      const key = `${event.id}:earlier`;
+                      if (node) orderingButtonRefs.current.set(key, node);
+                      else orderingButtonRefs.current.delete(key);
+                    }}
                     disabled={eventIndex === 0}
-                    aria-label={ja ? `${eventNames.get(event.id)}を表示上へ移動` : `Move ${eventNames.get(event.id)} earlier in display order`}
+                    aria-label={ja
+                      ? `「${eventNames.get(event.id)}」を表示順で上へ移動。${perspectiveTimeline.placedIds.has(event.id) ? "表示順に配置済み" : "未配置、導出表示"}`
+                      : `Move ${eventNames.get(event.id)} earlier in display order; ${perspectiveTimeline.placedIds.has(event.id) ? "placed" : "unplaced, using derived display"}`}
                     onClick={(e) => { e.stopPropagation(); handleMove(event.id, "earlier"); }}
                   >↑</button>
                   <button
                     type="button"
+                    ref={(node) => {
+                      const key = `${event.id}:later`;
+                      if (node) orderingButtonRefs.current.set(key, node);
+                      else orderingButtonRefs.current.delete(key);
+                    }}
                     disabled={eventIndex === timelineEvents.length - 1}
-                    aria-label={ja ? `${eventNames.get(event.id)}を表示下へ移動` : `Move ${eventNames.get(event.id)} later in display order`}
+                    aria-label={ja
+                      ? `「${eventNames.get(event.id)}」を表示順で下へ移動。${perspectiveTimeline.placedIds.has(event.id) ? "表示順に配置済み" : "未配置、導出表示"}`
+                      : `Move ${eventNames.get(event.id)} later in display order; ${perspectiveTimeline.placedIds.has(event.id) ? "placed" : "unplaced, using derived display"}`}
                     onClick={(e) => { e.stopPropagation(); handleMove(event.id, "later"); }}
                   >↓</button>
                 </div>

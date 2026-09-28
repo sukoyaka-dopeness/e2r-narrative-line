@@ -322,6 +322,45 @@ test("Relative Time authoring uses collision-safe labels for choices and recorde
   }
 });
 
+test("same-name Relative Time references use recorded chronology before the short ID fallback", async () => {
+  const initial = {
+    ...datasetWithAssertions([
+      relativePositionRelation("same-name-relation", "echo-first", "echo-second", "before"),
+    ]),
+    extensions: {
+      ...datasetWithAssertions([]).extensions,
+      "draft.github.sukoyaka-dopeness.specification": {
+        specVersion: "0.1.0",
+        uses: [
+          { extension: "metadata", version: "1.0.0" },
+          { extension: "draft.github.sukoyaka-dopeness.relative-time", version: "0.2.0", features: ["relative-position"] },
+          { extension: "history", version: "1.0.0" },
+        ],
+      },
+    },
+    events: [
+      { id: "echo-first", name: "Echo", extensions: { history: { time: { year: 1989, month: 11, day: 9 } } } },
+      { id: "echo-second", name: "Echo", extensions: { history: { time: { year: 1989, month: 11, day: 10 } } } },
+      { id: "other", name: "Other" },
+    ],
+  };
+  const rendered = await renderAuthoring("en", initial, "echo-first");
+  try {
+    openAuthoring(rendered, "recorded");
+    const row = rendered.document.querySelector("[data-relative-time-relation-id]");
+    assert.match(row?.textContent ?? "", /Echo \(1989-11-09\)/);
+    assert.match(row?.textContent ?? "", /Echo \(1989-11-10\)/);
+
+    openAuthoring(rendered, "create");
+    const referenceSelect = rendered.document.querySelector(".relative-time-authoring__details--create select");
+    const option = [...referenceSelect.options].find(({ value }) => value === "echo-second");
+    assert.equal(option?.textContent, "Echo (1989-11-10)");
+    assert.equal(option?.value, "echo-second");
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
 test("operation feedback follows the current presentation language", async () => {
   const rendered = await renderAuthoring("ja");
   try {

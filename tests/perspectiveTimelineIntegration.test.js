@@ -25,10 +25,10 @@ function fixture() {
   };
 }
 
-async function renderTimeline(initial) {
-  const environment = createDomTestEnvironment("https://narrativeline.test/#locale=en");
-  environment.document.documentElement.lang = "en";
-  environment.window.localStorage.setItem("narrativeline.language", "en");
+async function renderTimeline(initial, language = "en") {
+  const environment = createDomTestEnvironment(`https://narrativeline.test/#locale=${language}`);
+  environment.document.documentElement.lang = language;
+  environment.window.localStorage.setItem("narrativeline.language", language);
   environment.window.HTMLElement.prototype.scrollIntoView = () => {};
   environment.window.requestAnimationFrame = (callback) => { callback(0); return 0; };
   environment.window.cancelAnimationFrame = () => {};
@@ -135,27 +135,48 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
   const rendered = await renderTimeline(fixture());
   try {
     assert.deepEqual(cardOrder(rendered.container), ["First", "Second", "Third"]);
-    const move = rendered.container.querySelector('button[aria-label="Move Third earlier in display order"]');
+    const move = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
     assert.ok(move);
+    assert.match(move.getAttribute("aria-label") ?? "", /unplaced, using derived display/);
     move.focus();
     assert.equal(rendered.environment.document.activeElement, move);
     await act(async () => move.click());
     assert.deepEqual(cardOrder(rendered.container), ["First", "Third", "Second"]);
-    assert.equal(rendered.environment.document.activeElement?.getAttribute("aria-label"),
-      "Move Third earlier in display order");
+    assert.match(rendered.environment.document.activeElement?.getAttribute("aria-label") ?? "",
+      /^Move Third earlier in display order/);
     assert.equal(rendered.container.querySelector(".timeline-screen").dataset.datasetModified, "true");
-    assert.match(rendered.container.textContent, /Moved Third earlier in display order/);
+    assert.match(rendered.container.querySelector(".timeline-order-feedback")?.textContent ?? "",
+      /Moved Third up in display order/);
+    assert.equal(rendered.container.querySelectorAll(".timeline-order-actions__state").length, 0);
+    assert.match(rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]')?.getAttribute("aria-label") ?? "", /placed$/);
     assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "b"]);
-    const repeatMove = rendered.container.querySelector('button[aria-label="Move Third earlier in display order"]');
+    const repeatMove = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
     assert.ok(repeatMove);
     await act(async () => repeatMove.click());
     assert.deepEqual(cardOrder(rendered.container), ["Third", "First", "Second"]);
     assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "a", "b"]);
-    assert.equal(rendered.container.querySelector('button[aria-label="Move Third earlier in display order"]')?.disabled, true);
-    assert.equal(rendered.container.querySelector('button[aria-label="Move Second later in display order"]')?.disabled, true);
+    assert.match(
+      rendered.environment.document.activeElement?.getAttribute("aria-label") ?? "",
+      /^Move Third later in display order/,
+    );
+    assert.equal(rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]')?.disabled, true);
+    assert.equal(rendered.container.querySelector('button[aria-label^="Move Second later in display order"]')?.disabled, true);
     const exported = exportDatasetJson(rendered.dataset);
     assert.equal(exported.isValid, true);
     assert.deepEqual(importDatasetJson(exported.json).dataset, rendered.dataset);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("Japanese move feedback names the Event and display direction naturally", async () => {
+  const rendered = await renderTimeline(fixture(), "ja");
+  try {
+    const move = rendered.container.querySelector('button[aria-label^="「Third」を表示順で上へ移動"]');
+    await act(async () => move.click());
+    const status = rendered.container.querySelector('[role="status"].timeline-order-feedback');
+    assert.equal(status?.textContent, "「Third」を表示順で上へ移動しました。");
+    assert.doesNotMatch(status?.textContent ?? "", /表示上上/);
   } finally {
     await rendered.cleanup();
   }
@@ -226,7 +247,7 @@ test("production App treats a Perspective move as dirty Dataset content and guar
       .find((button) => button.textContent === "Continue Editing");
     assert.ok(continueEditing);
     await act(async () => continueEditing.click());
-    const move = rendered.container.querySelector('button[aria-label="Move Third earlier in display order"]');
+    const move = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
     assert.ok(move);
     await act(async () => move.click());
     assert.equal(rendered.container.querySelector(".timeline-screen").dataset.datasetModified, "true");

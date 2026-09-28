@@ -1001,12 +1001,35 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 2px;
 }
 
-.timeline-order-actions small { margin-right: auto; }
-.timeline-order-actions button { min-width: 36px; min-height: 36px; }
+.timeline-order-actions__state {
+  margin-right: auto;
+  color: var(--text);
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.timeline-order-actions button {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.timeline-order-feedback {
+  margin: 0 0 6px;
+  padding-inline-start: 8px;
+  border-inline-start: 2px solid var(--accent-border);
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
 
 .related-card--selected,
 .timeline-card--selected {
