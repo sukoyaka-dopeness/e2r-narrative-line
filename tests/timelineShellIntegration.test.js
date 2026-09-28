@@ -128,7 +128,7 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     backToTop.focus();
     const focusedBeforeTopNavigation = rendered.document.activeElement;
     await act(async () => backToTop.click());
-    assert.deepEqual(scrollCalls, [{ top: 0, left: 0, behavior: "auto" }]);
+    assert.deepEqual(scrollCalls, [{ top: 0, left: 0, behavior: "smooth" }]);
     assert.equal(rendered.document.activeElement, focusedBeforeTopNavigation);
 
     backToBottom.focus();
@@ -136,9 +136,18 @@ test("accepts the production Timeline shell and preserves Dataset navigation", a
     await act(async () => backToBottom.click());
     assert.deepEqual(rendered.scrollIntoViewCalls.at(-1), {
       id: "timeline-footer",
-      options: { block: "end", behavior: "auto" },
+      options: { block: "end", behavior: "smooth" },
     });
     assert.equal(rendered.document.activeElement, focusedBeforeBottomNavigation);
+
+    rendered.window.matchMedia = () => ({ matches: true });
+    await act(async () => backToTop.click());
+    assert.deepEqual(scrollCalls.at(-1), { top: 0, left: 0, behavior: "auto" });
+    await act(async () => backToBottom.click());
+    assert.deepEqual(rendered.scrollIntoViewCalls.at(-1), {
+      id: "timeline-footer",
+      options: { block: "end", behavior: "auto" },
+    });
 
     await act(async () => rendered.setFooterIntersection(true));
     assert.equal(findToolbarAction(rendered.document, "Bottom"), undefined);

@@ -128,6 +128,8 @@ export function TimelineScreen({
   const ja = language === "ja";
   const copy = getPresentationMessages(language);
   const selectedEventRef = useRef<HTMLLIElement>(null);
+  const timelineCardRefs = useRef(new Map<string, HTMLLIElement>());
+  const pendingOrderPositions = useRef<Map<string, DOMRect> | null>(null);
   const timelineTopSentinelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -153,16 +155,42 @@ export function TimelineScreen({
 
   useLayoutEffect(() => {
     const pending = pendingMoveFocus.current;
-    if (!pending) return;
+    if (pending) {
+      const buttonKey = (direction: "earlier" | "later") => `${pending.eventId}:${direction}`;
+      const preferred = orderingButtonRefs.current.get(buttonKey(pending.direction));
+      const alternate = orderingButtonRefs.current.get(
+        buttonKey(pending.direction === "earlier" ? "later" : "earlier"),
+      );
+      const target = preferred && !preferred.disabled ? preferred : alternate;
+      target?.focus();
+      pendingMoveFocus.current = null;
+    }
 
-    const buttonKey = (direction: "earlier" | "later") => `${pending.eventId}:${direction}`;
-    const preferred = orderingButtonRefs.current.get(buttonKey(pending.direction));
-    const alternate = orderingButtonRefs.current.get(
-      buttonKey(pending.direction === "earlier" ? "later" : "earlier"),
-    );
-    const target = preferred && !preferred.disabled ? preferred : alternate;
-    target?.focus();
-    pendingMoveFocus.current = null;
+    const before = pendingOrderPositions.current;
+    pendingOrderPositions.current = null;
+    if (!before || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    const moved: HTMLLIElement[] = [];
+    for (const [eventId, node] of timelineCardRefs.current) {
+      const previous = before.get(eventId);
+      if (!previous || !node.isConnected) continue;
+      const current = node.getBoundingClientRect();
+      const deltaX = previous.left - current.left;
+      const deltaY = previous.top - current.top;
+      if (deltaX === 0 && deltaY === 0) continue;
+      node.style.transition = "none";
+      node.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+      moved.push(node);
+    }
+
+    if (moved.length === 0) return;
+    void document.body.offsetHeight;
+    window.requestAnimationFrame(() => {
+      for (const node of moved) {
+        node.style.transition = "";
+        node.style.transform = "";
+      }
+    });
   }, [dataset]);
 
   useEffect(() => {
@@ -184,13 +212,19 @@ export function TimelineScreen({
   }, []);
 
   const handleBackToTop = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth";
+    window.scrollTo({ top: 0, left: 0, behavior });
   };
 
   const handleBackToBottom = () => {
+    const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth";
     document.getElementById("timeline-footer")?.scrollIntoView({
       block: "end",
-      behavior: "auto",
+      behavior,
     });
   };
 
@@ -249,10 +283,14 @@ export function TimelineScreen({
   };
 
   const handleMove = (eventId: string, direction: "earlier" | "later") => {
+    const before = new Map(
+      [...timelineCardRefs.current].map(([id, node]) => [id, node.getBoundingClientRect()] as const),
+    );
     pendingMoveFocus.current = { eventId, direction };
     const result = onMoveEvent(eventId, direction);
     const eventName = eventNames.get(eventId) ?? eventId;
     if (result.ok) {
+      pendingOrderPositions.current = before;
       setMoveFeedback({
         dataset: result.dataset,
         text: ja
@@ -538,7 +576,11 @@ export function TimelineScreen({
           return (
             <li
               key={event.id}
-              ref={isSelected ? selectedEventRef : null}
+              ref={(node) => {
+                if (node) timelineCardRefs.current.set(event.id, node);
+                else timelineCardRefs.current.delete(event.id);
+                if (isSelected) selectedEventRef.current = node;
+              }}
               tabIndex={-1}
               onClick={() => onSelectEvent(event.id)}
               className={`timeline-card${isSelected ? " timeline-card--selected" : ""}`}

@@ -153,3 +153,42 @@ is now Human-confirmed. H5's Human preference to keep the current no-extra-
 confirmation export behavior is recorded and retained; it does not decide
 portable semantics. Formal Human Acceptance remains pending until the remaining
 Human checks are complete.
+
+## Human interaction direction and bounded motion refinement — 2026-09-28
+
+The latest Human evidence closes H2 (post-refinement view at about 360 CSS px,
+with no clipping/overlap/horizontal-layout failure reported), H3 (same-name
+targets were identifiable), and H6 (native open/export/re-open reported OK).
+H5's decision to keep export available without extra pre-export confirmation
+is confirmed; diagnostic comprehension remains separately pending. H1 now has
+a selected direction: ordering ↑/↓ controls should not be constantly visible
+in ordinary Timeline. The disclosure model is not selected. The runtime still
+shows the controls on each row until Human chooses among selected-Event
+controls, a dedicated accessible ordering mode (possibly from More), or
+non-hover contextual disclosure. Any chosen path must preserve keyboard/touch
+access and leave room for direct ordinary-Timeline drag-and-drop later.
+
+The Human also selected motion for both Event reorder and top/bottom Timeline
+navigation. This bounded runtime refinement measures keyed Timeline rows
+before a successful move and applies a transform transition to rows whose
+display positions changed. Keyboard focus restoration and Dataset update do
+not wait for animation. Top/bottom actions smoothly move the viewport. Both
+use reduced motion: row transitions are skipped when
+`prefers-reduced-motion: reduce` applies, and navigation uses immediate
+behavior. Event reorder changes Perspective display order; top/bottom changes
+only the viewport. The two arrow families retain these distinct roles.
+
+No edit-mode decision, drag-and-drop, label/icon change, export workflow,
+Dataset state, or Perspective/temporal behavior was changed. Formal Human
+Acceptance remains pending H1 disclosure choice, H4 post-motion browser review
+(focus ring, repeated movement, localized feedback and perceived motion), and
+H5 diagnostic comprehension. Automated and browser checks for this runtime
+change passed: `npm test` (309/309), `npm run lint`, and `npm run build`. An
+isolated Edge tab on Vite port 5179 loaded the 15-Event Berlin Wall sample; the
+browser reported the row transform transition, a move changed the first two
+Events, and focus remained on the moved Event's direction control. The user's
+existing Edge tab and Dataset at port 5173 were left untouched. The reduced-
+motion branch is covered for top/bottom navigation by the Timeline shell test;
+the operating-system reduced-motion setting was not changed or separately
+emulated in Edge. Machine browser evidence does not replace the remaining
+Human review.
