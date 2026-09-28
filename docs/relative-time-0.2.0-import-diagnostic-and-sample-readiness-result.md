@@ -65,9 +65,11 @@ array preservation, Relative Time band composition, dated/undated interleave,
 History/`temporalOrder` non-mutation, Event add/rename/delete lifecycle,
 dangling-reference preservation, multiple/unsupported Perspective safety,
 replacement cancellation/acceptance, and native-button focus/move boundaries.
-Formal Human review remains for rendered visual density, localized wording and
-diagnostic comprehension, narrow viewport appearance, actual focus appearance
-and interaction feel, and the practical cost of real file selection/export.
+Formal Human review remains for rendered visual density and control hierarchy,
+placed/unplaced label density, same-name Event distinguishability, localized
+move feedback and diagnostic comprehension, narrow viewport appearance, actual
+focus appearance and interaction feel, whether a warning needs an explicit
+export confirmation, and one real-file open/export/re-open smoke.
 
 ## Prior checkpoint diagnostic investigation — 2026-09-28
 
