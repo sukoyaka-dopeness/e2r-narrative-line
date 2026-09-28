@@ -5,6 +5,7 @@ import { validateCoreDataset } from "../src/services/ValidationService.ts";
 import {
   applyRelativeTimeOperation,
   canStartRelativeTimeAuthoring,
+  classifyRelativeTimeEvidence,
   createRelativeTimeAssertion,
   getEditableRelativeTimeAssertions,
   isRelativeTimeProjectionEligibleEvent,
@@ -57,6 +58,30 @@ function assertion(id, sourceId, targetId, relation) {
     },
   };
 }
+
+test("Relative Time presentation evidence distinguishes absent, supported, and diagnostic data", () => {
+  assert.equal(classifyRelativeTimeEvidence(blankDataset()), "off");
+  const supported = declaredDataset(undefined, [assertion("rt1", "a", "b", "before")]);
+  assert.equal(classifyRelativeTimeEvidence(supported), "on");
+
+  const declarationOnly = declaredDataset();
+  assert.equal(classifyRelativeTimeEvidence(declarationOnly), "diagnostic");
+
+  const malformed = declaredDataset(undefined, [
+    { ...assertion("rt1", "a", "b", "before"), extensions: {
+      [RELATIVE_TIME_EXTENSION_ID]: { type: "relative-position", relation: "future" },
+    } },
+  ]);
+  assert.equal(classifyRelativeTimeEvidence(malformed), "diagnostic");
+
+  const partiallyRecognized = declaredDataset(undefined, [
+    assertion("rt1", "a", "b", "before"),
+    { id: "rt2", sourceId: "b", targetId: "c", extensions: {
+      [RELATIVE_TIME_EXTENSION_ID]: { type: "future-feature", value: true },
+    } },
+  ]);
+  assert.equal(classifyRelativeTimeEvidence(partiallyRecognized), "diagnostic");
+});
 
 test("first explicit authoring records exact 0.2.0 and qualitative before/after without inverse Relation", () => {
   const source = blankDataset();

@@ -46,6 +46,7 @@ import { addEntity, deleteEntity, updateEntity } from "./services/EntityService"
 import { updateObjectCoordinate } from "./services/CoordinateService";
 import {
   applyRelativeTimeOperation,
+  classifyRelativeTimeEvidence,
   type RelativeTimeOperation,
 } from "./services/RelativeTimeService.ts";
 import {
@@ -167,6 +168,11 @@ function App() {
   const startupLocaleAppliedRef = useRef(false);
 
   const [dataset, setDataset] = useState<Dataset>(storedDataset ?? sample);
+  const [relativeTimeState, setRelativeTimeState] = useState(() =>
+    classifyRelativeTimeEvidence(storedDataset ?? sample),
+  );
+  const [relativeTimeManuallyEnabled, setRelativeTimeManuallyEnabled] = useState(false);
+  const [displayOrderEditingEnabled, setDisplayOrderEditingEnabled] = useState(false);
   const datasetRef = useRef(dataset);
   useEffect(() => {
     datasetRef.current = dataset;
@@ -533,6 +539,9 @@ function App() {
     if (!candidateToAccept) return;
     const acceptedDataset = acceptDatasetCandidate(candidateToAccept);
     setDataset(acceptedDataset);
+    setRelativeTimeState(classifyRelativeTimeEvidence(acceptedDataset));
+    setRelativeTimeManuallyEnabled(false);
+    setDisplayOrderEditingEnabled(false);
     setAcceptedDatasetBaseline(serializeDatasetBaseline(acceptedDataset));
     setDatasetCandidate(clearDatasetCandidate());
     setPendingSources({});
@@ -717,10 +726,12 @@ function App() {
     setPendingSource("eventDetail", false);
   };
   const handleRelativeTimeOperation = (operation: RelativeTimeOperation) => {
-    setDataset((currentDataset) => {
-      const result = applyRelativeTimeOperation(currentDataset, operation);
-      return result.ok ? result.dataset : currentDataset;
-    });
+    const result = applyRelativeTimeOperation(datasetRef.current, operation);
+    if (!result.ok) return;
+    datasetRef.current = result.dataset;
+    setDataset(result.dataset);
+    setRelativeTimeState(classifyRelativeTimeEvidence(result.dataset));
+    setRelativeTimeManuallyEnabled(false);
   };
   const handleSaveAndOpenEntityPicker = (
     eventId: string,
@@ -1128,6 +1139,8 @@ function App() {
           focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
           onRelativeTimeOperation={handleRelativeTimeOperation}
+          relativeTimeState={relativeTimeState}
+          relativeTimeVisible={relativeTimeState !== "off" || relativeTimeManuallyEnabled}
           onPendingWorkChange={handleEventPendingWork}
           pendingDraft={
             eventDraft?.eventId === state.selectedEvent
@@ -1208,6 +1221,12 @@ function App() {
         datasetModified={datasetModified}
         importWarnings={importWarnings}
         onUpdateDatasetTitle={handleUpdateDatasetTitle}
+        relativeTimeState={relativeTimeState}
+        relativeTimeManuallyEnabled={relativeTimeManuallyEnabled}
+        onEnableRelativeTime={() => setRelativeTimeManuallyEnabled(true)}
+        displayOrderEditingEnabled={displayOrderEditingEnabled}
+        onToggleDisplayOrderEditing={() => setDisplayOrderEditingEnabled((enabled) => !enabled)}
+        onEnableDisplayOrderEditing={() => setDisplayOrderEditingEnabled(true)}
         selectedEvent={state.selectedEvent}
         onSelectEvent={handleSelectEvent}
         onEditEvent={handleEditEvent}

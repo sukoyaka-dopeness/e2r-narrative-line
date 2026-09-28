@@ -10,6 +10,8 @@ import type {
 import { downloadDatasetExport } from "../services/DatasetService";
 import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
 import { RelativeTimeTimelineProjection } from "../components/RelativeTimeTimelineProjection";
+import { RelativeTimeDiagnosticNotice } from "../components/RelativeTimeDiagnosticNotice";
+import type { RelativeTimeEvidenceState } from "../services/RelativeTimeService.ts";
 import {
   formatEventHistoryDate,
   formatEventTimelineDate,
@@ -40,6 +42,12 @@ type TimelineScreenProps = {
   onExportDataset: () => DatasetExportResult;
   importWarnings?: DatasetImportWarning[];
   onUpdateDatasetTitle: (title: string) => void;
+  relativeTimeState: RelativeTimeEvidenceState;
+  relativeTimeManuallyEnabled: boolean;
+  onEnableRelativeTime: () => void;
+  displayOrderEditingEnabled: boolean;
+  onToggleDisplayOrderEditing: () => void;
+  onEnableDisplayOrderEditing: () => void;
 };
 
 function formatExportIssue(issue: DatasetExportIssue): string {
@@ -123,6 +131,12 @@ export function TimelineScreen({
   onExportDataset,
   importWarnings = [],
   onUpdateDatasetTitle,
+  relativeTimeState,
+  relativeTimeManuallyEnabled,
+  onEnableRelativeTime,
+  displayOrderEditingEnabled,
+  onToggleDisplayOrderEditing,
+  onEnableDisplayOrderEditing,
 }: TimelineScreenProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
@@ -421,6 +435,24 @@ export function TimelineScreen({
             exportDatasetLabel={copy.exportDataset}
             onOpenDataset={() => fileInputRef.current?.click()}
             onExportDataset={handleExport}
+            relativeTimeLabel={
+              relativeTimeState === "off" && !relativeTimeManuallyEnabled
+                ? (ja ? "相対時間の機能を表示" : "Show Relative Time tools")
+                : undefined
+            }
+            onShowRelativeTime={
+              relativeTimeState === "off" && !relativeTimeManuallyEnabled
+                ? onEnableRelativeTime
+                : undefined
+            }
+            displayOrderLabel={perspectiveTimeline.canAuthor
+              ? (displayOrderEditingEnabled
+                ? copy.timelineStopEditingOrder
+                : copy.timelineEditOrder)
+              : undefined}
+            onToggleDisplayOrder={perspectiveTimeline.canAuthor
+              ? onToggleDisplayOrderEditing
+              : undefined}
           />
         </div>
       </div>
@@ -438,6 +470,8 @@ export function TimelineScreen({
         </section>
       )}
       {downloadError && <p role="alert">{copy.exportFailure}</p>}
+
+      <RelativeTimeDiagnosticNotice state={relativeTimeState} />
 
       {importWarnings.length > 0 && (
         <section
@@ -507,10 +541,14 @@ export function TimelineScreen({
         </section>
       )}
 
-      <RelativeTimeTimelineProjection
-        dataset={dataset}
-        onEditEvent={onEditEvent}
-      />
+      {(relativeTimeState !== "off" || relativeTimeManuallyEnabled) && (
+        <RelativeTimeTimelineProjection
+          dataset={dataset}
+          onEditEvent={onEditEvent}
+          showWhenEmpty={relativeTimeState !== "off" || relativeTimeManuallyEnabled}
+          diagnostic={relativeTimeState === "diagnostic"}
+        />
+      )}
 
       <h2 className="timeline-event-list-heading">
         {ja ? "タイムライン" : "Timeline"}
@@ -670,9 +708,22 @@ export function TimelineScreen({
                       </li>
                     ))}
                   </ul>
+                  {perspectiveTimeline.canAuthor && !displayOrderEditingEnabled && (
+                    <button
+                      type="button"
+                      className="timeline-diagnostic-edit-order"
+                      onClick={(clickEvent) => {
+                        clickEvent.stopPropagation();
+                        onEnableDisplayOrderEditing();
+                        timelineCardRefs.current.get(event.id)?.focus();
+                      }}
+                    >
+                      {copy.timelineEditOrder}
+                    </button>
+                  )}
                 </details>
               )}
-              {perspectiveTimeline.canAuthor && (
+              {perspectiveTimeline.canAuthor && displayOrderEditingEnabled && (
                 <div className="timeline-order-actions">
                   <details className="timeline-order-actions__help">
                     <summary>{copy.timelineOrderHelp}</summary>

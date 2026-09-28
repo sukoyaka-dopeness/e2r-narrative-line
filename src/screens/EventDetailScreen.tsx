@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
 import { RelativeTimeAuthoringPanel } from "../components/RelativeTimeAuthoringPanel";
+import { RelativeTimeDiagnosticNotice } from "../components/RelativeTimeDiagnosticNotice";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
 import type { Entity } from "../models/Entity";
@@ -18,7 +19,7 @@ import {
   preflightDatasetHistory1To2,
 } from "../services/History2Service.ts";
 import type { EventUpdates } from "../services/EventService.ts";
-import type { RelativeTimeOperation } from "../services/RelativeTimeService.ts";
+import type { RelativeTimeEvidenceState, RelativeTimeOperation } from "../services/RelativeTimeService.ts";
 import {
   classifyHistoryCapability,
   isHistoryEditable,
@@ -102,6 +103,8 @@ type EventDetailScreenProps = {
   onRemoveEventEntity: (eventId: string, entityId: string) => void;
   onDeleteEvent: (eventId: string) => void;
   deletionError?: boolean;
+  relativeTimeState: RelativeTimeEvidenceState;
+  relativeTimeVisible: boolean;
 };
 
 export type EventDetailDraft = {
@@ -128,6 +131,8 @@ export function EventDetailScreen({
   onClearDraft,
   onDeleteEvent,
   deletionError = false,
+  relativeTimeState,
+  relativeTimeVisible,
   onSelectEntity,
   onSaveAndOpenEntityPicker,
   onRemoveEventEntity,
@@ -541,11 +546,14 @@ export function EventDetailScreen({
         </p>
       )}
 
-      <RelativeTimeAuthoringPanel
-        dataset={dataset}
-        eventId={event.id}
-        onOperation={onRelativeTimeOperation}
-      />
+      <RelativeTimeDiagnosticNotice state={relativeTimeState} />
+      {relativeTimeVisible && relativeTimeState !== "diagnostic" && (
+        <RelativeTimeAuthoringPanel
+          dataset={dataset}
+          eventId={event.id}
+          onOperation={onRelativeTimeOperation}
+        />
+      )}
 
       <br />
 

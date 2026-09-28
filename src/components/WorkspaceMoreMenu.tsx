@@ -4,6 +4,10 @@ type WorkspaceMoreMenuProps = {
   label: string;
   openDatasetLabel: string;
   exportDatasetLabel: string;
+  relativeTimeLabel?: string;
+  onShowRelativeTime?: () => void;
+  displayOrderLabel?: string;
+  onToggleDisplayOrder?: () => void;
   onOpenDataset: () => void;
   onExportDataset: () => void;
 };
@@ -12,6 +16,10 @@ export function WorkspaceMoreMenu({
   label,
   openDatasetLabel,
   exportDatasetLabel,
+  relativeTimeLabel,
+  onShowRelativeTime,
+  displayOrderLabel,
+  onToggleDisplayOrder,
   onOpenDataset,
   onExportDataset,
 }: WorkspaceMoreMenuProps) {
@@ -125,6 +133,26 @@ export function WorkspaceMoreMenu({
           >
             {exportDatasetLabel}
           </button>
+          {relativeTimeLabel && onShowRelativeTime && (
+            <button
+              className="workspace-more-item"
+              type="button"
+              role="menuitem"
+              onClick={() => activate(onShowRelativeTime)}
+            >
+              {relativeTimeLabel}
+            </button>
+          )}
+          {displayOrderLabel && onToggleDisplayOrder && (
+            <button
+              className="workspace-more-item"
+              type="button"
+              role="menuitem"
+              onClick={() => activate(onToggleDisplayOrder)}
+            >
+              {displayOrderLabel}
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -6,16 +6,20 @@ import { projectRelativeTimeForTimeline } from "../services/RelativeTimeService.
 type RelativeTimeTimelineProjectionProps = {
   dataset: Dataset;
   onEditEvent: (eventId: string) => void;
+  showWhenEmpty?: boolean;
+  diagnostic?: boolean;
 };
 
 export function RelativeTimeTimelineProjection({
   dataset,
   onEditEvent,
+  showWhenEmpty = false,
+  diagnostic = false,
 }: RelativeTimeTimelineProjectionProps) {
   const { language } = useLanguage();
   const ja = language === "ja";
   const projection = projectRelativeTimeForTimeline(dataset);
-  if (projection.groups.length === 0 && projection.conflictedEventIds.length === 0) {
+  if (!showWhenEmpty && projection.groups.length === 0 && projection.conflictedEventIds.length === 0) {
     return null;
   }
   const projectedEventIds = new Set<string>();
@@ -50,6 +54,11 @@ export function RelativeTimeTimelineProjection({
             ? "表示上のまとまりは、記録されたbefore/afterとその連鎖を表すためのものです。まとまりの位置は保存されず、日付・期間・追加の前後関係を意味しません。同じまとまりのできごと同士の前後は定まりません。"
             : "Display groups present recorded before/after assertions and their chains. Group positions are not saved and do not represent dates, durations, or extra assertions. Events in the same group have no recorded order relative to one another."}
         </p>
+        {projection.groups.length === 0 && projection.conflictedEventIds.length === 0 && (
+          <p>{diagnostic
+            ? (ja ? "一部のRelative Time情報はこの補助表示で解釈できません。Dataset内の情報は保持されています。" : "Some Relative Time information cannot be interpreted in this supplementary view. The Dataset information remains preserved.")
+            : (ja ? "表示できるRelative Time記録はまだありません。Event Detailから追加できます。" : "There are no Relative Time records to display yet. Add one from Event Detail.")}</p>
+        )}
         {projection.conflictedEventIds.length > 0 && (
           <div role="status" className="relative-time-conflict">
             <p>

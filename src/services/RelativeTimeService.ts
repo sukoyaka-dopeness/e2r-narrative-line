@@ -54,10 +54,47 @@ export interface RelativeTimeProjection {
   conflictedEventIds: string[][];
 }
 
+export type RelativeTimeEvidenceState = "off" | "on" | "diagnostic";
+
 type JsonRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Classify Dataset evidence for presentation without changing authoring safety. */
+export function classifyRelativeTimeEvidence(dataset: Dataset): RelativeTimeEvidenceState {
+  const relativeObjects = [dataset, ...dataset.entities, ...dataset.events, ...dataset.relations];
+  const payloads = relativeObjects.flatMap((object) => {
+    const payload = object.extensions?.[RELATIVE_TIME_EXTENSION_ID];
+    return payload === undefined ? [] : [{ object, payload }];
+  });
+  const specification = dataset.extensions?.[SPECIFICATION_EXTENSION_ID];
+  const declared = isRecord(specification) && Array.isArray(specification.uses) &&
+    specification.uses.some((use) => isRecord(use) && use.extension === RELATIVE_TIME_EXTENSION_ID);
+
+  if (payloads.length === 0 && !declared) return "off";
+  if (payloads.length === 0 || !supportsRelativeTimeAuthoring(dataset)) return "diagnostic";
+
+  const knownFeatures = new Set(RELATIVE_TIME_FEATURES);
+  const actualFeatures = usedRelativeTimeFeatures(dataset);
+  if (!actualFeatures || [...actualFeatures].some((feature) => !knownFeatures.has(feature) || feature !== RELATIVE_POSITION_FEATURE)) {
+    return "diagnostic";
+  }
+  const hasUnsupportedPayload = payloads.some(({ object, payload }) => {
+    if (object !== dataset && !dataset.relations.includes(object as Relation)) return true;
+    if (!isRecord(payload) || payload.type !== RELATIVE_POSITION_FEATURE ||
+        (payload.relation !== "before" && payload.relation !== "after")) return true;
+    const relation = object as Relation;
+    return !dataset.events.some(({ id }) => id === relation.sourceId) ||
+      !dataset.events.some(({ id }) => id === relation.targetId);
+  });
+  if (hasUnsupportedPayload) return "diagnostic";
+
+  const usable = dataset.events.some((event) =>
+    getEditableRelativeTimeAssertions(dataset, event.id).length > 0,
+  );
+  return usable ? "on" : "diagnostic";
 }
 
 function exactRelativeTimeUse(dataset: Dataset): JsonRecord | undefined {

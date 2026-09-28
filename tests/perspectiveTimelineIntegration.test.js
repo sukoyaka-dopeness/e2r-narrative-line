@@ -50,7 +50,7 @@ async function renderTimeline(initial, language = "en") {
     ]);
     await server.close();
     const baseline = serializeDatasetBaseline(initial);
-    function TimelineHarness({ dataset, selectedEvent, onSelectEvent, onMoveEvent }) {
+    function TimelineHarness({ dataset, selectedEvent, onSelectEvent, onMoveEvent, displayOrderEditingEnabled, onToggleDisplayOrderEditing, onEnableDisplayOrderEditing }) {
       const language = useLanguage();
       setHarnessLanguage = language.setLanguage;
       return React.createElement(TimelineScreen, {
@@ -64,15 +64,25 @@ async function renderTimeline(initial, language = "en") {
         onImportDataset() { return { isValid: false, issues: [] }; },
         onExportDataset() { return exportDatasetJson(dataset); },
         onUpdateDatasetTitle() {},
+        relativeTimeState: "off",
+        relativeTimeManuallyEnabled: false,
+        onEnableRelativeTime() {},
+        displayOrderEditingEnabled,
+        onToggleDisplayOrderEditing,
+        onEnableDisplayOrderEditing,
       });
     }
     function Harness() {
       const [dataset, setDataset] = React.useState(initial);
       const [selectedEvent, setSelectedEvent] = React.useState(null);
+      const [displayOrderEditingEnabled, setDisplayOrderEditingEnabled] = React.useState(false);
       current = dataset;
       return React.createElement(LanguageProvider, null, React.createElement(TimelineHarness, {
         dataset,
         selectedEvent,
+        displayOrderEditingEnabled,
+        onToggleDisplayOrderEditing: () => setDisplayOrderEditingEnabled((enabled) => !enabled),
+        onEnableDisplayOrderEditing: () => setDisplayOrderEditingEnabled(true),
         onSelectEvent: setSelectedEvent,
         onMoveEvent(id, direction) {
           const result = movePerspectiveEvent(dataset, id, direction);
@@ -105,6 +115,12 @@ async function renderTimeline(initial, language = "en") {
 function cardOrder(container) {
   return [...container.querySelectorAll(".timeline-card .timeline-event-name")]
     .map((element) => element.textContent);
+}
+
+async function enableDisplayOrderEditing(container, label = "Edit display order") {
+  await act(async () => container.querySelector(".workspace-more-trigger")?.click());
+  await act(async () => [...container.querySelectorAll('[role="menuitem"]')]
+    .find((item) => item.textContent?.trim() === label)?.click());
 }
 
 async function renderApp(initial) {
@@ -151,6 +167,8 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
   const rendered = await renderTimeline(fixture());
   try {
     assert.deepEqual(cardOrder(rendered.container), ["First", "Second", "Third"]);
+    assert.equal(rendered.container.querySelector(".timeline-order-actions"), null);
+    await enableDisplayOrderEditing(rendered.container);
     const move = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
     assert.ok(move);
     assert.match(move.getAttribute("aria-label") ?? "", /unplaced, using derived display/);
@@ -183,20 +201,23 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
     const exported = exportDatasetJson(rendered.dataset);
     assert.equal(exported.isValid, true);
     assert.deepEqual(importDatasetJson(exported.json).dataset, rendered.dataset);
+    await act(async () => rendered.container.querySelector(".workspace-more-trigger")?.click());
+    await act(async () => [...rendered.container.querySelectorAll('[role="menuitem"]')]
+      .find((item) => item.textContent?.trim() === "Finish editing display order")?.click());
+    assert.equal(rendered.container.querySelector(".timeline-order-actions"), null);
   } finally {
     await rendered.cleanup();
   }
 });
 
-test("Timeline discloses ordering controls on focused or selected Events for keyboard and touch workflows", async () => {
+test("ordinary Timeline keeps ordering controls hidden until explicitly enabled, then supports keyboard and touch selection", async () => {
   const rendered = await renderTimeline(fixture());
   try {
     const cards = [...rendered.container.querySelectorAll(".timeline-card")];
     assert.equal(cards.length, 3);
     assert.ok(cards.every((card) => card.tabIndex === 0));
     const target = cards[1];
-    const orderActions = target.querySelector(".timeline-order-actions");
-    assert.ok(orderActions);
+    assert.equal(target.querySelector(".timeline-order-actions"), null);
 
     target.focus();
     await act(async () => target.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", {
@@ -204,8 +225,13 @@ test("Timeline discloses ordering controls on focused or selected Events for key
     })));
     assert.equal(target.classList.contains("timeline-card--selected"), true);
     assert.equal(rendered.environment.document.activeElement, target);
+    assert.equal(target.querySelector(".timeline-order-actions"), null);
+
+    await enableDisplayOrderEditing(rendered.container);
+    assert.equal(rendered.environment.document.activeElement, rendered.container.querySelector(".workspace-more-trigger"));
     assert.equal(target.querySelectorAll(".timeline-order-actions button").length, 2);
 
+    target.focus();
     await act(async () => target.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", {
       key: " ", bubbles: true,
     })));
@@ -218,6 +244,7 @@ test("Timeline discloses ordering controls on focused or selected Events for key
 test("ordering safety and Placed or Unplaced meaning are available in a collapsed contextual disclosure", async () => {
   const rendered = await renderTimeline(fixture());
   try {
+    await enableDisplayOrderEditing(rendered.container);
     const target = rendered.container.querySelectorAll(".timeline-card")[1];
     target.focus();
     await act(async () => target.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", {
@@ -258,8 +285,29 @@ test("Perspective mismatch details are available beside each affected Event and 
     await act(async () => localIndicators[0].querySelector("summary")?.click());
     assert.equal(localIndicators[0].open, true);
     assert.match(localIndicators[0].textContent ?? "", /History chronology and display order/);
+    assert.equal(rendered.container.querySelector(".timeline-order-actions"), null);
+    const localEdit = localIndicators[0].querySelector(".timeline-diagnostic-edit-order");
+    assert.equal(localEdit?.textContent?.trim(), "Edit display order");
+    await act(async () => localEdit?.click());
+    assert.equal(localIndicators[0].open, true);
+    assert.equal(rendered.environment.document.activeElement?.classList.contains("timeline-card"), true);
+    assert.equal(localIndicators[0].closest(".timeline-card")?.querySelectorAll(".timeline-order-actions button").length, 2);
+    await act(async () => rendered.container.querySelector(".workspace-more-trigger")?.click());
+    const finishEditing = [...rendered.container.querySelectorAll('[role="menuitem"]')]
+      .find((item) => item.textContent?.trim() === "Finish editing display order");
+    assert.ok(finishEditing);
+    await act(async () => finishEditing.click());
+    assert.equal(rendered.container.querySelector(".timeline-order-actions"), null);
   } finally {
     await rendered.cleanup();
+  }
+
+  const japanese = await renderTimeline(moved.dataset, "ja");
+  try {
+    const localEdit = japanese.container.querySelector(".timeline-diagnostic-edit-order");
+    assert.equal(localEdit?.textContent?.trim(), "表示順を編集");
+  } finally {
+    await japanese.cleanup();
   }
 });
 
@@ -317,6 +365,7 @@ test("Relative Time Derived mismatch is discoverable beside its affected Events"
 test("Japanese move feedback names the Event and display direction naturally", async () => {
   const rendered = await renderTimeline(fixture(), "ja");
   try {
+    await enableDisplayOrderEditing(rendered.container, "表示順を編集");
     const move = rendered.container.querySelector('button[aria-label^="「Third」を表示順で上へ移動"]');
     await act(async () => move.click());
     const status = rendered.container.querySelector('[role="status"].timeline-order-feedback');
@@ -332,6 +381,7 @@ test("English move feedback remains English and preserves a Japanese Event name"
   source.events[2].name = "再開 Announced";
   const rendered = await renderTimeline(source, "en");
   try {
+    await enableDisplayOrderEditing(rendered.container);
     const move = rendered.container.querySelector('button[aria-label^="Move 再開 Announced earlier in display order"]');
     assert.ok(move);
     await act(async () => move.click());
@@ -345,6 +395,7 @@ test("English move feedback remains English and preserves a Japanese Event name"
 test("transient move feedback follows locale changes without changing its Event name", async () => {
   const rendered = await renderTimeline(fixture(), "en");
   try {
+    await enableDisplayOrderEditing(rendered.container);
     const move = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
     assert.ok(move);
     await act(async () => move.click());
@@ -426,6 +477,7 @@ test("production App treats a Perspective move as dirty Dataset content and guar
       .find((button) => button.textContent === "Continue Editing");
     assert.ok(continueEditing);
     await act(async () => continueEditing.click());
+    await enableDisplayOrderEditing(rendered.container);
     const move = rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]');
     assert.ok(move);
     await act(async () => move.click());
@@ -433,6 +485,7 @@ test("production App treats a Perspective move as dirty Dataset content and guar
     assert.deepEqual(cardOrder(rendered.container), ["First", "Third", "Second"]);
     const persisted = JSON.parse(rendered.environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.deepEqual(persisted.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "b"]);
+    assert.equal(JSON.stringify(persisted).includes("displayOrderEditing"), false);
 
     await act(async () => rendered.container.querySelector(".app-brand").click());
     const create = [...rendered.container.querySelectorAll(".home-actions button")]
@@ -467,6 +520,11 @@ test("production App treats a Perspective move as dirty Dataset content and guar
     assert.deepEqual(replacement, JSON.parse(replacementSource));
     assert.equal(replacement.extensions?.[PERSPECTIVE_EXTENSION_ID], undefined);
     assert.deepEqual(cardOrder(rendered.container), ["A Quiet Morning"]);
+    await act(async () => rendered.container.querySelector(".workspace-more-trigger")?.click());
+    assert.ok([...rendered.container.querySelectorAll('[role="menuitem"]')]
+      .some((item) => item.textContent?.trim() === "Edit display order"));
+    assert.equal([...rendered.container.querySelectorAll('[role="menuitem"]')]
+      .some((item) => item.textContent?.trim() === "Finish editing display order"), false);
   } finally {
     rendered.cleanup();
   }
