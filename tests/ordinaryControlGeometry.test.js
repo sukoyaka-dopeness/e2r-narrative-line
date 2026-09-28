@@ -51,6 +51,9 @@ test("Perspective ordering keeps operable targets while reducing persistent dens
   assert.match(styles, /\.timeline-order-feedback\s*\{[^}]*font-size: 0\.82rem;/s);
   assert.match(styles, /\.timeline-order-actions\s*\{\s*display: none;/s);
   assert.match(styles, /\.timeline-card--selected \.timeline-order-actions,\s*\.timeline-card:focus-within \.timeline-order-actions \{ display: flex; \}/);
+  assert.match(styles, /\.timeline-card--selected,\s*\.timeline-card:focus-within \{ padding-block: 4px; \}/);
+  assert.match(styles, /\.timeline-card__order-diagnostic \+ \.timeline-order-actions \{ margin-top: 8px; \}/);
+  assert.match(styles, /\.timeline-order-actions__help \{\s*flex: 0 1 auto;\s*margin-inline-end: auto;/);
   assert.match(timeline, /tabIndex=\{perspectiveTimeline\.canAuthor \? 0 : -1\}/);
   assert.match(timeline, /onKeyDown=\{\(keyEvent\) => \{[\s\S]*?keyEvent\.key !== "Enter" && keyEvent\.key !== " "/);
   assert.match(timeline, /<details className="timeline-order-actions__help">[\s\S]*?timelinePlacedDescription[\s\S]*?timelineUnplacedDescription/);

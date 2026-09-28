@@ -297,9 +297,20 @@ test("Relative Time Derived mismatch is discoverable beside its affected Events"
     const indicators = [...rendered.container.querySelectorAll(".timeline-card__order-diagnostic")];
     assert.ok(indicators.length > 0);
     await act(async () => indicators[0].querySelector("summary")?.click());
-    assert.match(indicators[0].textContent ?? "", /Derived Relative Time band order/);
+    assert.match(indicators[0].textContent ?? "", /saved display order.*recorded Relative Time relationships/i);
+    assert.doesNotMatch(indicators[0].textContent ?? "", /Derived band/);
   } finally {
     await rendered.cleanup();
+  }
+
+  const japanese = await renderTimeline(second.dataset, "ja");
+  try {
+    const indicator = japanese.container.querySelector(".timeline-card__order-diagnostic");
+    await act(async () => indicator?.querySelector("summary")?.click());
+    assert.match(indicator?.textContent ?? "", /保存された表示順は、記録された相対時間の前後関係から分かる順序と異なります/);
+    assert.doesNotMatch(indicator?.textContent ?? "", /Derived band/);
+  } finally {
+    await japanese.cleanup();
   }
 });
 

@@ -66,7 +66,7 @@ const englishMessages = {
   timelineDiagnosticCountMany: "{count} display order differences need review.",
   timelineDiagnosticDetails: "View diagnostic details",
   timelineHistoryMismatch: "{events} differs from History chronology and display order.",
-  timelineDerivedMismatch: "{events} differs from Derived Relative Time band order.",
+  timelineDerivedMismatch: "The saved display order for {events} differs from the order indicated by recorded Relative Time relationships.",
   timelineDanglingPerspective: "A missing Event ID is preserved: {id}",
 } as const;
 
@@ -139,7 +139,7 @@ const japaneseMessages: PresentationMessages = {
   timelineDiagnosticCountMany: "表示順の不一致が{count}件あります。",
   timelineDiagnosticDetails: "診断の詳細を表示",
   timelineHistoryMismatch: "{events}は日時・History順と表示順が異なります。",
-  timelineDerivedMismatch: "{events}は相対時間のDerived band順と表示順が異なります。",
+  timelineDerivedMismatch: "{events}の保存された表示順は、記録された相対時間の前後関係から分かる順序と異なります。",
   timelineDanglingPerspective: "存在しないEvent IDを保持しています: {id}",
 };
 

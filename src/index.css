@@ -984,6 +984,9 @@ button:disabled {
   transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+.timeline-card--selected,
+.timeline-card:focus-within { padding-block: 4px; }
+
 @media (prefers-reduced-motion: reduce) {
   .timeline-card { transition: none; }
 }
@@ -1006,6 +1009,7 @@ button:disabled {
   font-size: 0.8rem;
 }
 
+.timeline-card__order-diagnostic summary { font-weight: 600; }
 .timeline-card__order-diagnostic ul {
   margin: 4px 0 0;
   padding-inline-start: 20px;
@@ -1020,11 +1024,14 @@ button:disabled {
   margin-top: 2px;
 }
 
+.timeline-card__order-diagnostic + .timeline-order-actions { margin-top: 8px; }
+
 .timeline-card--selected .timeline-order-actions,
 .timeline-card:focus-within .timeline-order-actions { display: flex; }
 
 .timeline-order-actions__help {
-  flex: 1 1 100%;
+  flex: 0 1 auto;
+  margin-inline-end: auto;
   color: var(--text-muted, var(--text));
   font-size: 0.78rem;
   line-height: 1.3;

@@ -42,8 +42,8 @@ and Relative Time records unchanged.
 
 **Placed in display order** means the Event is included in the saved display
 sequence. **Unplaced · derived display** means no position for that Event is
-saved in that sequence; its current Timeline position comes from the available
-History chronology and applicable Relative Time bands. These labels describe
+saved in that sequence; the Timeline places it according to available History
+dates and Relative Time relationships recorded between Events. These labels describe
 display state, not additional temporal facts. This explanation is available
 on demand so it does not remain in the Timeline card while you read or reorder.
 
