@@ -192,3 +192,60 @@ motion branch is covered for top/bottom navigation by the Timeline shell test;
 the operating-system reduced-motion setting was not changed or separately
 emulated in Edge. Machine browser evidence does not replace the remaining
 Human review.
+
+## Contextual controls and local mismatch discovery — 2026-09-28
+
+H1's Human-selected non-hover contextual direction is implemented using the
+existing Event row and selection pattern. Ordering controls are hidden in the
+ordinary read-oriented Timeline and appear only on the selected or focused
+Event. When authoring is available, rows are keyboard-focusable; Enter or
+Space selects a focused row, and the native move buttons are next in its Tab
+sequence. Pointer selection uses the existing row click; a touch tap follows
+that same selection path. No edit mode or More-menu action was added. Future
+drag-and-drop remains possible in ordinary Timeline without a mode. Actual
+touch-device review remains part of H1 Human acceptance.
+
+The always-visible ordering paragraph was removed. A short localized safety
+note appears beside disclosed controls: display-order changes do not alter
+dates or Relative Time records. The EN and JA user guides explain the Placed /
+Unplaced · derived display labels and how to inspect a warning beside an
+affected Event.
+
+Move feedback now comes from the existing EN/JA message catalog. The Event
+name is inserted unchanged into localized direction wording. EN says “Moved
+{event} up/down in display order”; JA uses the natural “を表示順で上/下へ移動
+しました” wording.
+
+Mismatch diagnostics retain their existing source, comparison, severity,
+export behavior, and persisted-data boundary. The top of the Timeline now has
+a compact count and a collapsed full diagnostic list. Every affected Event
+also has a local “Review display order” disclosure with the existing
+History- or Relative Time-specific detail. Dangling IDs stay in the full list
+because they have no matching Event row. No diagnostic is acknowledged or
+removed.
+
+Event reorder transitions, top/bottom smooth navigation, and reduced-motion
+handling from the preceding checkpoint are unchanged. No motion state is
+persisted.
+
+Verification on this checkpoint: `npm test` passed 313/313;
+`npm run lint` and `npm run build` passed. E2R-SPEC `npm run validate` passed.
+Focused coverage checks initial hidden controls, keyboard row selection and
+move access, EN/JA feedback with an untranslated Japanese Event name, and
+local details for both History and Relative Time Derived mismatches.
+
+An isolated Edge tab on Vite port 5180 loaded the 15-Event Berlin Wall sample.
+The ordinary Timeline showed zero ordering button rows. Keyboard Enter on a
+row revealed controls on only that row; Tab reached the move button; Enter
+moved the Event and retained focus. EN feedback was English, then JA feedback
+was Japanese while the Event name remained unchanged. A pointer-selected row
+also disclosed only its controls. The local History mismatch disclosure opened
+beside the affected Event while the full-list disclosure stayed collapsed.
+The user's existing Edge tab and Dataset at port 5173 were untouched. Browser
+review did not simulate a touch device; touch access still needs Human review.
+
+Formal Human Acceptance remains pending targeted H1 review of keyboard/touch
+contextual access, H4 confirmation of EN/JA feedback, and H5 review of local
+Relative Time warning discovery. The Human's motion/focus/repeated-movement
+review and warning comprehension/export preference remain closed; H2, H3, and
+H6 remain closed and are not reopened.

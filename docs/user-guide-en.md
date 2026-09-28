@@ -29,6 +29,28 @@ another local file and **Export E2R JSON** for saving the current Dataset;
 opening replaces the current Dataset only after the replacement-safety checks,
 whereas export downloads a copy and keeps the current workspace open.
 
+## Change the display order
+
+Select an Event card, or move keyboard focus to it with **Tab**. The ↑/↓
+controls appear only on the selected or focused Event. On a touch screen, tap
+the Event card to select it and reveal the same controls. With the card focused,
+press **Enter** or **Space** to select it; then use **Tab** to reach a move
+control. The short note beside the controls explains that moving an Event
+changes display order only and leaves its date and Relative Time records
+unchanged.
+
+**Placed in display order** means the Event is included in the saved display
+sequence. **Unplaced · derived display** means no position for that Event is
+saved in that sequence; its current Timeline position comes from the available
+History chronology and applicable Relative Time bands. These labels describe
+display state, not additional temporal facts.
+
+When a saved display order differs from History chronology or an applicable
+Relative Time band, the affected Event shows **Review display order**. Open it
+to read the specific difference. A compact summary above the Timeline also
+provides the full diagnostic list. The diagnostic is informational; it does
+not change the records or disable export.
+
 ```text
 Home
   ↓ Open a Dataset

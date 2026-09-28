@@ -248,6 +248,21 @@ export function TimelineScreen({
     const name = identity?.primary ?? event.name ?? copy.unnamedEvent;
     return [event.id, identity?.shortIdHint ? `${name} (${identity.shortIdHint})` : name] as const;
   }));
+  const formatPerspectiveDiagnostic = (
+    diagnostic: (typeof perspectiveTimeline.diagnostics)[number],
+  ): string => {
+    if (diagnostic.kind === "dangling") {
+      return copy.timelineDanglingPerspective.replace("{id}", diagnostic.eventIds[0] ?? "");
+    }
+    const names = diagnostic.eventIds.map((id) => eventNames.get(id) ?? id).join(" → ");
+    return (diagnostic.kind === "history"
+      ? copy.timelineHistoryMismatch
+      : copy.timelineDerivedMismatch
+    ).replace("{events}", names);
+  };
+  const diagnosticCountMessage = perspectiveTimeline.diagnostics.length === 1
+    ? copy.timelineDiagnosticCountOne
+    : copy.timelineDiagnosticCountMany.replace("{count}", String(perspectiveTimeline.diagnostics.length));
   const migrationWarnings = importWarnings.filter(
     ({ code }) => code === "legacy_dataset_migrated",
   );
@@ -293,16 +308,15 @@ export function TimelineScreen({
       pendingOrderPositions.current = before;
       setMoveFeedback({
         dataset: result.dataset,
-        text: ja
-          ? `「${eventName}」を表示順で${direction === "earlier" ? "上" : "下"}へ移動しました。`
-          : `Moved ${eventName} ${direction === "earlier" ? "up" : "down"} in display order.`,
+        text: (direction === "earlier" ? copy.timelineMoveEarlier : copy.timelineMoveLater)
+          .replace("{event}", eventName),
         error: false,
       });
     } else {
       pendingMoveFocus.current = null;
       setMoveFeedback({
         dataset,
-        text: ja ? "表示順を変更できませんでした。" : "Display order could not be changed.",
+        text: copy.timelineMoveFailure,
         error: true,
       });
     }
@@ -501,11 +515,6 @@ export function TimelineScreen({
       <h2 className="timeline-event-list-heading">
         {ja ? "タイムライン" : "Timeline"}
       </h2>
-      <p className="timeline-order-description">
-        {ja
-          ? "上下のボタンは表示順だけを保存します。日時や相対時間の記録は変更しません。『未配置』は現在の記録から表示位置を決めています。"
-          : "Move buttons save display order only. Dates and Relative Time records stay unchanged. Unplaced Events use a derived display position."}
-      </p>
       {perspectiveTimeline.availability.kind === "multiple" && (
         <p role="status">
           {ja
@@ -533,26 +542,18 @@ export function TimelineScreen({
       {perspectiveTimeline.diagnostics.length > 0 && (
         <section className="timeline-order-diagnostics" aria-label={ja ? "表示順の診断" : "Display order diagnostics"}>
           <p role="status">
-            {ja
-              ? "保存された表示順と現在の記録に確認が必要な箇所があります。表示順と日時・相対時間の記録は変更していません。"
-              : "Saved display order needs review against current records. Neither the order nor temporal records were changed."}
+            {diagnosticCountMessage}
           </p>
-          <ul>
-            {perspectiveTimeline.diagnostics.slice(0, 8).map((diagnostic, index) => (
-              <li key={`${diagnostic.kind}-${diagnostic.eventIds.join("-")}-${index}`}>
-                {diagnostic.kind === "dangling"
-                  ? (ja
-                    ? `存在しないEvent IDを保持しています: ${diagnostic.eventIds[0]}`
-                    : `Missing Event ID is preserved: ${diagnostic.eventIds[0]}`)
-                  : (ja
-                    ? `${diagnostic.eventIds.map((id) => eventNames.get(id) ?? id).join(" → ")} は${diagnostic.kind === "history" ? "日時・History順" : "相対時間のDerived band順"}と表示順が異なります。`
-                    : `${diagnostic.eventIds.map((id) => eventNames.get(id) ?? id).join(" → ")} differs from ${diagnostic.kind === "history" ? "History chronology" : "Derived Relative Time band order"}.`)}
-              </li>
-            ))}
-          </ul>
-          {perspectiveTimeline.diagnostics.length > 8 && (
-            <p>{ja ? `ほか${perspectiveTimeline.diagnostics.length - 8}件` : `${perspectiveTimeline.diagnostics.length - 8} more`}</p>
-          )}
+          <details>
+            <summary>{copy.timelineDiagnosticDetails}</summary>
+            <ul>
+              {perspectiveTimeline.diagnostics.map((diagnostic, index) => (
+                <li key={`${diagnostic.kind}-${diagnostic.eventIds.join("-")}-${index}`}>
+                  {formatPerspectiveDiagnostic(diagnostic)}
+                </li>
+              ))}
+            </ul>
+          </details>
         </section>
       )}
       <ul style={{ listStyle: "none", padding: 0 }}>
@@ -561,6 +562,9 @@ export function TimelineScreen({
           const identity = eventIdentity.get(event.id);
           const history2Position = getHistory2PositionEditorValues(dataset, event);
           const isApproximate = history2Position?.approximation ?? false;
+          const eventDiagnostics = perspectiveTimeline.diagnostics.filter(
+            (diagnostic) => diagnostic.kind !== "dangling" && diagnostic.eventIds.includes(event.id),
+          );
           const timelineDate = formatEventTimelineDate(dataset, event);
           const dateText = isApproximate
             ? timelineDate ?? "----/--/--"
@@ -581,8 +585,14 @@ export function TimelineScreen({
                 else timelineCardRefs.current.delete(event.id);
                 if (isSelected) selectedEventRef.current = node;
               }}
-              tabIndex={-1}
+              tabIndex={perspectiveTimeline.canAuthor ? 0 : -1}
               onClick={() => onSelectEvent(event.id)}
+              onKeyDown={(keyEvent) => {
+                if (keyEvent.target !== keyEvent.currentTarget) return;
+                if (keyEvent.key !== "Enter" && keyEvent.key !== " ") return;
+                keyEvent.preventDefault();
+                onSelectEvent(event.id);
+              }}
               className={`timeline-card${isSelected ? " timeline-card--selected" : ""}`}
             >
               <div className="timeline-card__row">
@@ -645,8 +655,23 @@ export function TimelineScreen({
                   )}
                 </div>
               </div>
+              {eventDiagnostics.length > 0 && (
+                <details className="timeline-card__order-diagnostic">
+                  <summary>
+                    <span aria-hidden="true">!</span> {copy.timelineReviewDisplayOrder}
+                  </summary>
+                  <ul>
+                    {eventDiagnostics.map((diagnostic, index) => (
+                      <li key={`${diagnostic.kind}-${diagnostic.eventIds.join("-")}-${index}`}>
+                        {formatPerspectiveDiagnostic(diagnostic)}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               {perspectiveTimeline.canAuthor && (
                 <div className="timeline-order-actions">
+                  <small className="timeline-order-actions__safety">{copy.timelineOrderSafety}</small>
                   {isSelected && (
                     <small className="timeline-order-actions__state">
                       {perspectiveTimeline.placedIds.has(event.id)

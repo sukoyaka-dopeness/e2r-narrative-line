@@ -54,6 +54,17 @@ const englishMessages = {
   relativeTimeReferencePrefix: "With",
   relativeTimeReferenceSuffix: "as the reference, this Event happened",
   relativeTimeCurrentEventIs: "This Event is",
+  timelineMoveEarlier: "Moved {event} up in display order.",
+  timelineMoveLater: "Moved {event} down in display order.",
+  timelineMoveFailure: "Display order could not be changed.",
+  timelineOrderSafety: "Changes display order only. Dates and Relative Time records stay the same.",
+  timelineReviewDisplayOrder: "Review display order",
+  timelineDiagnosticCountOne: "One display order difference needs review.",
+  timelineDiagnosticCountMany: "{count} display order differences need review.",
+  timelineDiagnosticDetails: "View diagnostic details",
+  timelineHistoryMismatch: "{events} differs from History chronology and display order.",
+  timelineDerivedMismatch: "{events} differs from Derived Relative Time band order.",
+  timelineDanglingPerspective: "A missing Event ID is preserved: {id}",
 } as const;
 
 type MessageKey = keyof typeof englishMessages;
@@ -113,6 +124,17 @@ const japaneseMessages: PresentationMessages = {
   relativeTimeReferencePrefix: "基準",
   relativeTimeReferenceSuffix: "を基準に、このできごとは",
   relativeTimeCurrentEventIs: "このできごとは",
+  timelineMoveEarlier: "「{event}」を表示順で上へ移動しました。",
+  timelineMoveLater: "「{event}」を表示順で下へ移動しました。",
+  timelineMoveFailure: "表示順を変更できませんでした。",
+  timelineOrderSafety: "表示順だけを変更します。日時や相対時間の記録は変わりません。",
+  timelineReviewDisplayOrder: "表示順を確認",
+  timelineDiagnosticCountOne: "表示順の不一致が1件あります。",
+  timelineDiagnosticCountMany: "表示順の不一致が{count}件あります。",
+  timelineDiagnosticDetails: "診断の詳細を表示",
+  timelineHistoryMismatch: "{events}は日時・History順と表示順が異なります。",
+  timelineDerivedMismatch: "{events}は相対時間のDerived band順と表示順が異なります。",
+  timelineDanglingPerspective: "存在しないEvent IDを保持しています: {id}",
 };
 
 export const messages: Record<Locale, PresentationMessages> = {

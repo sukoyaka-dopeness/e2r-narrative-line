@@ -10,6 +10,7 @@ import { exportDatasetJson, importDatasetJson } from "../src/services/DatasetSer
 import { isDatasetModified, serializeDatasetBaseline } from "../src/services/DatasetBaselineService.ts";
 
 const specificationId = "draft.github.sukoyaka-dopeness.specification";
+const relativeTimeId = "draft.github.sukoyaka-dopeness.relative-time";
 
 function fixture() {
   return {
@@ -50,12 +51,13 @@ async function renderTimeline(initial, language = "en") {
     const baseline = serializeDatasetBaseline(initial);
     function Harness() {
       const [dataset, setDataset] = React.useState(initial);
+      const [selectedEvent, setSelectedEvent] = React.useState(null);
       current = dataset;
       return React.createElement(LanguageProvider, null, React.createElement(TimelineScreen, {
         dataset,
         datasetModified: isDatasetModified(dataset, baseline),
-        selectedEvent: null,
-        onSelectEvent() {},
+        selectedEvent,
+        onSelectEvent: setSelectedEvent,
         onEditEvent() {},
         onAddEvent() {},
         onMoveEvent(id, direction) {
@@ -145,8 +147,8 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
     assert.match(rendered.environment.document.activeElement?.getAttribute("aria-label") ?? "",
       /^Move Third earlier in display order/);
     assert.equal(rendered.container.querySelector(".timeline-screen").dataset.datasetModified, "true");
-    assert.match(rendered.container.querySelector(".timeline-order-feedback")?.textContent ?? "",
-      /Moved Third up in display order/);
+    assert.equal(rendered.container.querySelector(".timeline-order-feedback")?.textContent,
+      "Moved Third up in display order.");
     assert.equal(rendered.container.querySelectorAll(".timeline-order-actions__state").length, 0);
     assert.match(rendered.container.querySelector('button[aria-label^="Move Third earlier in display order"]')?.getAttribute("aria-label") ?? "", /placed$/);
     assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "b"]);
@@ -169,6 +171,100 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
   }
 });
 
+test("Timeline discloses ordering controls on focused or selected Events for keyboard and touch workflows", async () => {
+  const rendered = await renderTimeline(fixture());
+  try {
+    const cards = [...rendered.container.querySelectorAll(".timeline-card")];
+    assert.equal(cards.length, 3);
+    assert.ok(cards.every((card) => card.tabIndex === 0));
+    const target = cards[1];
+    const orderActions = target.querySelector(".timeline-order-actions");
+    assert.ok(orderActions);
+
+    target.focus();
+    await act(async () => target.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", {
+      key: "Enter", bubbles: true,
+    })));
+    assert.equal(target.classList.contains("timeline-card--selected"), true);
+    assert.equal(rendered.environment.document.activeElement, target);
+    assert.equal(target.querySelectorAll(".timeline-order-actions button").length, 2);
+
+    await act(async () => target.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", {
+      key: " ", bubbles: true,
+    })));
+    assert.equal(rendered.environment.document.activeElement, target);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("Perspective mismatch details are available beside each affected Event and in a collapsed summary", async () => {
+  const source = fixture();
+  source.events = [
+    { id: "a", name: "First", extensions: { history: { time: { year: 2020, temporalOrder: 1 } } } },
+    { id: "b", name: "Second", extensions: { history: { time: { year: 2021, temporalOrder: 2 } } } },
+  ];
+  const moved = movePerspectiveEvent(source, "a", "later");
+  assert.equal(moved.ok, true);
+
+  const rendered = await renderTimeline(moved.dataset);
+  try {
+    const summary = rendered.container.querySelector(".timeline-order-diagnostics");
+    assert.match(summary?.textContent ?? "", /One display order difference needs review/);
+    assert.equal(summary?.querySelector(":scope > details")?.open, false);
+    const localIndicators = [...rendered.container.querySelectorAll(".timeline-card__order-diagnostic")];
+    assert.equal(localIndicators.length, 2);
+    assert.ok(localIndicators.every((indicator) => indicator.open === false));
+    assert.ok(localIndicators.every((indicator) => indicator.textContent?.includes("Review display order")));
+
+    await act(async () => localIndicators[0].querySelector("summary")?.click());
+    assert.equal(localIndicators[0].open, true);
+    assert.match(localIndicators[0].textContent ?? "", /History chronology and display order/);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("Relative Time Derived mismatch is discoverable beside its affected Events", async () => {
+  const source = fixture();
+  source.events = [
+    { id: "later", name: "Later" },
+    { id: "same-band", name: "In the middle" },
+    { id: "earlier", name: "Earlier" },
+    { id: "standalone", name: "Standalone" },
+  ];
+  source.relations = [
+    {
+      id: "rel-1", sourceId: "earlier", targetId: "later",
+      extensions: { [relativeTimeId]: { type: "relative-position", relation: "after" } },
+    },
+    {
+      id: "rel-2", sourceId: "earlier", targetId: "same-band",
+      extensions: { [relativeTimeId]: { type: "relative-position", relation: "after" } },
+    },
+  ];
+  source.extensions[specificationId] = {
+    specVersion: "0.1.0",
+    uses: [
+      { extension: "metadata", version: "1.0.0" },
+      { extension: relativeTimeId, version: "0.2.0", features: ["relative-position"] },
+    ],
+  };
+  const first = movePerspectiveEvent(source, "same-band", "earlier");
+  const second = first.ok ? movePerspectiveEvent(first.dataset, "same-band", "earlier") : first;
+  assert.equal(second.ok, true);
+
+  const rendered = await renderTimeline(second.dataset);
+  try {
+    const indicators = [...rendered.container.querySelectorAll(".timeline-card__order-diagnostic")];
+    assert.ok(indicators.length > 0);
+    await act(async () => indicators[0].querySelector("summary")?.click());
+    assert.match(indicators[0].textContent ?? "", /Derived Relative Time band order/);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
 test("Japanese move feedback names the Event and display direction naturally", async () => {
   const rendered = await renderTimeline(fixture(), "ja");
   try {
@@ -177,6 +273,21 @@ test("Japanese move feedback names the Event and display direction naturally", a
     const status = rendered.container.querySelector('[role="status"].timeline-order-feedback');
     assert.equal(status?.textContent, "「Third」を表示順で上へ移動しました。");
     assert.doesNotMatch(status?.textContent ?? "", /表示上上/);
+  } finally {
+    await rendered.cleanup();
+  }
+});
+
+test("English move feedback remains English and preserves a Japanese Event name", async () => {
+  const source = fixture();
+  source.events[2].name = "再開 Announced";
+  const rendered = await renderTimeline(source, "en");
+  try {
+    const move = rendered.container.querySelector('button[aria-label^="Move 再開 Announced earlier in display order"]');
+    assert.ok(move);
+    await act(async () => move.click());
+    const status = rendered.container.querySelector('[role="status"].timeline-order-feedback');
+    assert.equal(status?.textContent, "Moved 再開 Announced up in display order.");
   } finally {
     await rendered.cleanup();
   }
