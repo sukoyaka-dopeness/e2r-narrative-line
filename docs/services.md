@@ -98,6 +98,23 @@ Returns:
 
 ---
 
+# PerspectiveOrderingService
+
+Reads the exact Perspective `0.1.0` Candidate declaration and payload, derives
+ordinary Timeline order from History and eligible Relative Time bands, then
+applies the sparse Human-authored Event sequence. Unlisted Events retain
+Derived/default display slots. Reading and diagnostics do not mutate the
+Dataset. A Human move swaps adjacent displayed Events and records only the
+affected placed sequence; Event-array order and temporal evidence are untouched.
+
+The service reports dated/band mismatches and dangling references as Derived
+diagnostics. It preserves unused entries, refuses implicit selection when
+multiple Perspectives exist, and prepares an exact Specification declaration
+when first authoring a Perspective. EventService calls its cleanup operation
+inside Event deletion; unsupported Perspective data prevents unsafe deletion.
+
+---
+
 # HistoryService
 
 The HistoryService provides pure read, validation, display, and comparison

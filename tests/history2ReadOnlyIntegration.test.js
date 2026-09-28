@@ -134,7 +134,7 @@ function openCandidateEvent(document, eventName = "Candidate Event") {
   assert.ok(card);
   act(() => card.dispatchEvent(new document.defaultView.MouseEvent("click", { bubbles: true })));
 
-  const edit = document.querySelector(".timeline-card button");
+  const edit = document.querySelector(".timeline-card--selected .timeline-card__edit-action");
   assert.ok(edit);
   act(() => edit.click());
 }

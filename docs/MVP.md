@@ -195,9 +195,14 @@ For example:
 
 1945-08-15
 
-Events without temporal information appear after dated Events.
+By default, Events without temporal information appear after dated Events.
 
-Future versions may additionally support Relative Time and causal ordering.
+Eligible undated Relative Time Events use Derived band order within their
+existing Timeline slots. A single supported Perspective `0.1.0` can then
+apply a Human-authored sparse Event sequence to its listed Events; unlisted
+Events retain Derived/default slots. Move controls edit only that portable
+display sequence. They do not change History, Relative Time assertions, or
+the Core Event array. Causal ordering remains outside this workflow.
 
 ---
 
@@ -321,6 +326,7 @@ The current MVP focuses on validating the core editing workflow of E2R datasets.
 - Astronomical year numbering
 - Gregorian date and leap-year validation
 - History-based Timeline display and ordering
+- Relative Time Derived band display order and Perspective `0.1.0` Event ordering
 - Entity detail screen
 - Entity editing
 - Entity deletion with connected Relation cleanup

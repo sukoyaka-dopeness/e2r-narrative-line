@@ -187,6 +187,67 @@ export function getCompleteSupportedExtensionUses(
     });
 }
 
+/** Keep an existing complete declaration complete when an edit first creates stable History. */
+export function declareFirstStableHistoryUse(previous: Dataset, updated: Dataset): Dataset {
+  const specification = previous.extensions?.[SPECIFICATION_EXTENSION_ID];
+  if (!isRecord(specification) ||
+      specification.specVersion !== SPECIFICATION_EXTENSION_VERSION ||
+      !Array.isArray(specification.uses) ||
+      specification.uses.some((item) => !isRecord(item) ||
+        typeof item.extension !== "string" || typeof item.version !== "string")) {
+    return updated;
+  }
+  const uses = specification.uses as SpecificationUse[];
+  const previousIds = collectExtensionIds(previous);
+  previousIds.delete(SPECIFICATION_EXTENSION_ID);
+  if (uses.length !== previousIds.size ||
+      new Set(uses.map((item) => item.extension)).size !== uses.length ||
+      uses.some((item) => !previousIds.has(item.extension)) ||
+      previousIds.has("history")) {
+    return updated;
+  }
+  const history = getHistoryDeclarationInfo(updated);
+  if (history?.version !== "1.0.0") return updated;
+  return {
+    ...updated,
+    extensions: {
+      ...(updated.extensions ?? {}),
+      [SPECIFICATION_EXTENSION_ID]: {
+        ...specification,
+        uses: [...uses, { extension: "history", version: "1.0.0" }],
+      },
+    },
+  };
+}
+
+/** Remove only declarations whose last payload was removed by an Event deletion. */
+export function removeAbsentUsesAfterEventDeletion(previous: Dataset, updated: Dataset): Dataset {
+  const specification = previous.extensions?.[SPECIFICATION_EXTENSION_ID];
+  if (!isRecord(specification) ||
+      specification.specVersion !== SPECIFICATION_EXTENSION_VERSION ||
+      !Array.isArray(specification.uses) ||
+      specification.uses.some((item) => !isRecord(item) || typeof item.extension !== "string")) {
+    return updated;
+  }
+  const uses = specification.uses as SpecificationUse[];
+  const before = collectExtensionIds(previous);
+  before.delete(SPECIFICATION_EXTENSION_ID);
+  if (uses.length !== before.size ||
+      new Set(uses.map((item) => item.extension)).size !== uses.length ||
+      uses.some((item) => !before.has(item.extension))) return updated;
+  const after = collectExtensionIds(updated);
+  after.delete(SPECIFICATION_EXTENSION_ID);
+  const retained = uses.filter((item) => after.has(item.extension));
+  if (retained.length === uses.length) return updated;
+  return {
+    ...updated,
+    extensions: {
+      ...(updated.extensions ?? {}),
+      [SPECIFICATION_EXTENSION_ID]: { ...specification, uses: retained },
+    },
+  };
+}
+
 /**
  * Adds a complete Specification Extension declaration for newly exported data
  * only when NarrativeLine can state every used Extension version exactly.

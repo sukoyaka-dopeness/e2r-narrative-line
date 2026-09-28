@@ -49,6 +49,10 @@ import {
   type RelativeTimeOperation,
 } from "./services/RelativeTimeService.ts";
 import {
+  movePerspectiveEvent,
+  type PerspectiveMoveResult,
+} from "./services/PerspectiveOrderingService.ts";
+import {
   isDatasetModified,
   serializeDatasetBaseline,
 } from "./services/DatasetBaselineService";
@@ -173,6 +177,7 @@ function App() {
   const [sourceDatasetUrl, setSourceDatasetUrl] = useState<string | undefined>();
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
   const [replacementError, setReplacementError] = useState(false);
+  const [eventDeletionError, setEventDeletionError] = useState(false);
   const [handoffLoading, setHandoffLoading] = useState(
     shouldStartHandoff(startupHandoff.kind === "valid", localeResolution),
   );
@@ -535,6 +540,7 @@ function App() {
     setEntityDraft(undefined);
     setEntityCreateDraft(undefined);
     setReplacementError(false);
+    setEventDeletionError(false);
     setImportWarnings(warningsToKeep);
     setSourceDatasetUrl(
       candidateToAccept.source === "handoff" && startupHandoff.kind === "valid"
@@ -773,6 +779,7 @@ function App() {
     currentNavigationIndexRef.current = readNarrativeLineNavigationIndex(window.history.state);
   };
   const handleEditEvent = (eventId: string) => {
+    setEventDeletionError(false);
     setState(
       navigate(
         {
@@ -941,8 +948,16 @@ function App() {
     );
   };
   const handleDeleteEvent = (eventId: string) => {
+    let nextDataset: Dataset;
+    try {
+      nextDataset = deleteEvent(dataset, eventId);
+    } catch {
+      setEventDeletionError(true);
+      return;
+    }
     handleClearEventDraft(eventId);
-    setDataset(deleteEvent(dataset, eventId));
+    setEventDeletionError(false);
+    setDataset(nextDataset);
 
     setState(
       navigate(
@@ -959,10 +974,16 @@ function App() {
     eventId: string,
     discardDraft: boolean,
   ) => {
-    handleClearEventDraft(eventId);
     if (discardDraft) {
-      setDataset((currentDataset) => deleteEvent(currentDataset, eventId));
+      try {
+        setDataset(deleteEvent(dataset, eventId));
+      } catch {
+        setEventDeletionError(true);
+        return;
+      }
     }
+    handleClearEventDraft(eventId);
+    setEventDeletionError(false);
 
     setState((currentState) =>
       navigate(
@@ -997,6 +1018,7 @@ function App() {
   };
 
   const handleAddEvent = () => {
+    setEventDeletionError(false);
     const result = addEvent(dataset, language);
 
     setDataset(result.dataset);
@@ -1010,6 +1032,15 @@ function App() {
         "eventDetail",
       ),
     );
+  };
+
+  const handleMovePerspectiveEvent = (
+    eventId: string,
+    direction: "earlier" | "later",
+  ): PerspectiveMoveResult => {
+    const result = movePerspectiveEvent(dataset, eventId, direction);
+    if (result.ok) setDataset(result.dataset);
+    return result;
   };
 
   const renderDatasetReplacementFeedback = () => (
@@ -1106,6 +1137,7 @@ function App() {
           onDraftChange={handleEventDraftChange}
           onClearDraft={handleClearEventDraft}
           onDeleteEvent={handleDeleteEvent}
+          deletionError={eventDeletionError}
           onSelectEntity={handleSelectEntity}
           onSaveAndOpenEntityPicker={handleSaveAndOpenEntityPicker}
           onRemoveEventEntity={handleRemoveEventEntity}
@@ -1180,6 +1212,7 @@ function App() {
         onSelectEvent={handleSelectEvent}
         onEditEvent={handleEditEvent}
         onAddEvent={handleAddEvent}
+        onMoveEvent={handleMovePerspectiveEvent}
         onImportDataset={handleImportDataset}
         onExportDataset={handleExportDataset}
       />

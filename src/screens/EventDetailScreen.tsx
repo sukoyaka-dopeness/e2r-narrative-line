@@ -101,6 +101,7 @@ type EventDetailScreenProps = {
   ) => void;
   onRemoveEventEntity: (eventId: string, entityId: string) => void;
   onDeleteEvent: (eventId: string) => void;
+  deletionError?: boolean;
 };
 
 export type EventDetailDraft = {
@@ -126,6 +127,7 @@ export function EventDetailScreen({
   onDraftChange,
   onClearDraft,
   onDeleteEvent,
+  deletionError = false,
   onSelectEntity,
   onSaveAndOpenEntityPicker,
   onRemoveEventEntity,
@@ -701,6 +703,13 @@ export function EventDetailScreen({
         >
           <h2 id="delete-event-heading">{ja ? "できごとを削除しますか？" : "Delete Event?"}</h2>
           <p>{ja ? "このできごとと関連する関係を完全に削除します。保存していない編集も破棄されます。" : "This permanently removes the Event and its connected Relations. Unsaved edits will also be discarded."}</p>
+          {deletionError && (
+            <p role="alert">
+              {ja
+                ? "対応していないPerspectiveを安全に更新できないため、削除を中止しました。"
+                : "Deletion was stopped because this Perspective payload cannot be updated safely."}
+            </p>
+          )}
           <div className="modal-actions">
             <button
               type="button"

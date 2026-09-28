@@ -11,13 +11,16 @@ import { downloadDatasetExport } from "../services/DatasetService";
 import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
 import { RelativeTimeTimelineProjection } from "../components/RelativeTimeTimelineProjection";
 import {
-  compareEventsByHistoryDate,
   formatEventHistoryDate,
   formatEventTimelineDate,
   getEventHistoryTime,
   validateHistoryDate,
 } from "../services/HistoryService";
 import { getHistory2PositionEditorValues } from "../services/History2Service";
+import {
+  getPerspectiveTimeline,
+  type PerspectiveMoveResult,
+} from "../services/PerspectiveOrderingService.ts";
 import {
   getEventIdentityChronology,
   resolveEventIdentityPresentations,
@@ -32,6 +35,7 @@ type TimelineScreenProps = {
   onSelectEvent: (eventId: string) => void;
   onEditEvent: (eventId: string) => void;
   onAddEvent: () => void;
+  onMoveEvent: (eventId: string, direction: "earlier" | "later") => PerspectiveMoveResult;
   onImportDataset: (source: string) => DatasetImportResult;
   onExportDataset: () => DatasetExportResult;
   importWarnings?: DatasetImportWarning[];
@@ -114,6 +118,7 @@ export function TimelineScreen({
   onSelectEvent,
   onEditEvent,
   onAddEvent,
+  onMoveEvent,
   onImportDataset,
   onExportDataset,
   importWarnings = [],
@@ -135,6 +140,11 @@ export function TimelineScreen({
   );
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [showBackToBottom, setShowBackToBottom] = useState(true);
+  const [moveFeedback, setMoveFeedback] = useState<{
+    dataset: Dataset;
+    text: string;
+    error: boolean;
+  }>();
 
   useEffect(() => {
     const sentinel = timelineTopSentinelRef.current;
@@ -174,13 +184,17 @@ export function TimelineScreen({
     return () => window.cancelAnimationFrame(frame);
   }, [selectedEvent, dataset.events.length]);
 
-  const timelineEvents = [...dataset.events].sort((left, right) =>
-    compareEventsByHistoryDate(left, right, dataset),
-  );
+  const perspectiveTimeline = getPerspectiveTimeline(dataset);
+  const timelineEvents = perspectiveTimeline.events;
   const eventIdentity = resolveEventIdentityPresentations(timelineEvents, {
     getPrimary: (event) => event.name ?? copy.unnamedEvent,
     getChronology: getEventIdentityChronology,
   });
+  const eventNames = new Map(dataset.events.map((event) => {
+    const identity = eventIdentity.get(event.id);
+    const name = identity?.primary ?? event.name ?? copy.unnamedEvent;
+    return [event.id, identity?.shortIdHint ? `${name} (${identity.shortIdHint})` : name] as const;
+  }));
   const migrationWarnings = importWarnings.filter(
     ({ code }) => code === "legacy_dataset_migrated",
   );
@@ -213,6 +227,26 @@ export function TimelineScreen({
     setDownloadError(false);
 
     downloadDatasetExport(dataset, result);
+  };
+
+  const handleMove = (eventId: string, direction: "earlier" | "later") => {
+    const result = onMoveEvent(eventId, direction);
+    const eventName = eventNames.get(eventId) ?? eventId;
+    if (result.ok) {
+      setMoveFeedback({
+        dataset: result.dataset,
+        text: ja
+          ? `${eventName}を表示上${direction === "earlier" ? "上" : "下"}へ移動しました。`
+          : `Moved ${eventName} ${direction === "earlier" ? "earlier" : "later"} in display order.`,
+        error: false,
+      });
+    } else {
+      setMoveFeedback({
+        dataset,
+        text: ja ? "表示順を変更できませんでした。" : "Display order could not be changed.",
+        error: true,
+      });
+    }
   };
 
   const handleImportFile = async (
@@ -408,8 +442,62 @@ export function TimelineScreen({
       <h2 className="timeline-event-list-heading">
         {ja ? "タイムライン" : "Timeline"}
       </h2>
+      <p className="timeline-order-description">
+        {ja
+          ? "上下のボタンは表示順だけを保存します。日時や相対時間の記録は変更しません。『未配置』は現在の記録から表示位置を決めています。"
+          : "Move buttons save display order only. Dates and Relative Time records stay unchanged. Unplaced Events use a derived display position."}
+      </p>
+      {perspectiveTimeline.availability.kind === "multiple" && (
+        <p role="status">
+          {ja
+            ? "複数のPerspectiveがあります。選択されていないため表示順の編集を停止し、すべてのPerspectiveを保持します。"
+            : "Multiple Perspectives are present. Ordering edits are paused until one is explicitly selected; all are preserved."}
+        </p>
+      )}
+      {perspectiveTimeline.availability.kind === "unsupported" && (
+        <p role="status">
+          {ja
+            ? "このDatasetのPerspectiveまたはExtension宣言を安全に解釈できないため、表示順の編集を停止しています。元のデータは保持します。"
+            : "This Dataset's Perspective or Extension declaration cannot be interpreted safely. Ordering edits are paused and the data is preserved."}
+        </p>
+      )}
+      {perspectiveTimeline.availability.kind === "absent" && !perspectiveTimeline.canAuthor && (
+        <p role="status">
+          {ja
+            ? "このDatasetでは使用中のExtensionすべての仕様バージョンを宣言できないため、Perspectiveの新規作成を停止しています。"
+            : "Ordering is unavailable because this Dataset's used Extension versions cannot all be declared exactly."}
+        </p>
+      )}
+      {moveFeedback?.dataset === dataset && (
+        <p role={moveFeedback.error ? "alert" : "status"}>{moveFeedback.text}</p>
+      )}
+      {perspectiveTimeline.diagnostics.length > 0 && (
+        <section className="timeline-order-diagnostics" aria-label={ja ? "表示順の診断" : "Display order diagnostics"}>
+          <p role="status">
+            {ja
+              ? "保存された表示順と現在の記録に確認が必要な箇所があります。表示順と日時・相対時間の記録は変更していません。"
+              : "Saved display order needs review against current records. Neither the order nor temporal records were changed."}
+          </p>
+          <ul>
+            {perspectiveTimeline.diagnostics.slice(0, 8).map((diagnostic, index) => (
+              <li key={`${diagnostic.kind}-${diagnostic.eventIds.join("-")}-${index}`}>
+                {diagnostic.kind === "dangling"
+                  ? (ja
+                    ? `存在しないEvent IDを保持しています: ${diagnostic.eventIds[0]}`
+                    : `Missing Event ID is preserved: ${diagnostic.eventIds[0]}`)
+                  : (ja
+                    ? `${diagnostic.eventIds.map((id) => eventNames.get(id) ?? id).join(" → ")} は${diagnostic.kind === "history" ? "日時・History順" : "相対時間のDerived band順"}と表示順が異なります。`
+                    : `${diagnostic.eventIds.map((id) => eventNames.get(id) ?? id).join(" → ")} differs from ${diagnostic.kind === "history" ? "History chronology" : "Derived Relative Time band order"}.`)}
+              </li>
+            ))}
+          </ul>
+          {perspectiveTimeline.diagnostics.length > 8 && (
+            <p>{ja ? `ほか${perspectiveTimeline.diagnostics.length - 8}件` : `${perspectiveTimeline.diagnostics.length - 8} more`}</p>
+          )}
+        </section>
+      )}
       <ul style={{ listStyle: "none", padding: 0 }}>
-        {timelineEvents.map((event) => {
+        {timelineEvents.map((event, eventIndex) => {
           const isSelected = event.id === selectedEvent;
           const identity = eventIdentity.get(event.id);
           const history2Position = getHistory2PositionEditorValues(dataset, event);
@@ -494,6 +582,27 @@ export function TimelineScreen({
                   )}
                 </div>
               </div>
+              {perspectiveTimeline.canAuthor && (
+                <div className="timeline-order-actions">
+                  <small>
+                    {perspectiveTimeline.placedIds.has(event.id)
+                      ? (ja ? "表示順を配置済み" : "Placed in display order")
+                      : (ja ? "未配置・導出表示" : "Unplaced · derived display")}
+                  </small>
+                  <button
+                    type="button"
+                    disabled={eventIndex === 0}
+                    aria-label={ja ? `${eventNames.get(event.id)}を表示上へ移動` : `Move ${eventNames.get(event.id)} earlier in display order`}
+                    onClick={(e) => { e.stopPropagation(); handleMove(event.id, "earlier"); }}
+                  >↑</button>
+                  <button
+                    type="button"
+                    disabled={eventIndex === timelineEvents.length - 1}
+                    aria-label={ja ? `${eventNames.get(event.id)}を表示下へ移動` : `Move ${eventNames.get(event.id)} later in display order`}
+                    onClick={(e) => { e.stopPropagation(); handleMove(event.id, "later"); }}
+                  >↓</button>
+                </div>
+              )}
             </li>
           );
         })}

@@ -100,6 +100,7 @@ async function renderTimeline(dataset, language = "en") {
           },
           onEditEvent: (eventId) => editedIds.push(eventId),
           onAddEvent: () => {},
+          onMoveEvent: () => ({ ok: false, reason: "unavailable" }),
           onImportDataset: () => ({ isValid: true, issues: [] }),
           onExportDataset: () => ({ isValid: true, issues: [], json: "{}" }),
           onUpdateDatasetTitle: () => {},
@@ -540,7 +541,7 @@ test("Entity Detail presents its editable Name directly below the heading withou
   }
 });
 
-test("ordinary Timeline has a visible localized heading and keeps its order when Relative Time opens", async () => {
+test("ordinary Timeline uses Derived Relative Time band order while supplementary disclosure leaves it unchanged", async () => {
   const dataset = {
     version: "1.0",
     entities: [],
@@ -582,9 +583,9 @@ test("ordinary Timeline has a visible localized heading and keeps its order when
 
       assert.equal(heading?.textContent?.trim(), language === "ja" ? "タイムライン" : "Timeline");
       assert.equal(disclosure?.open, false);
-      assert.deepEqual(eventNames(), ["Alpha", "Zeta"]);
+      assert.deepEqual(eventNames(), ["Zeta", "Alpha"]);
       disclosure.open = true;
-      assert.deepEqual(eventNames(), ["Alpha", "Zeta"]);
+      assert.deepEqual(eventNames(), ["Zeta", "Alpha"]);
       assert.equal(
         disclosure.querySelector(":scope > summary")?.textContent,
         language === "ja" ? "相対時間（補助表示）" : "Relative Time (supplementary view)",

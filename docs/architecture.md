@@ -62,7 +62,9 @@ Planned:
 
 ## TimelineScreen
 
-Displays Events in chronological order.
+Displays Events using History chronology, eligible Relative Time Derived bands,
+and an applicable Perspective `0.1.0` authorial sequence. The Dataset Event
+array remains unchanged by display sorting.
 
 Responsibilities:
 
@@ -71,6 +73,7 @@ Responsibilities:
 * Open Event editor
 * Create Event
 * Export the current Dataset as E2R JSON
+* Move Events in non-temporal display order through keyboard-operable controls
 
 The Timeline is Event-centric.
 

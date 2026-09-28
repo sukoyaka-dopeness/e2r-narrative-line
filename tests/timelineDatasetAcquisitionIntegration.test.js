@@ -51,6 +51,7 @@ async function createHarness(importResult, fileText = "") {
       onSelectEvent: () => {},
       onEditEvent: () => {},
       onAddEvent: () => {},
+      onMoveEvent: () => ({ ok: false, reason: "unavailable" }),
       onImportDataset: (source) => {
         imports.push(source);
         return renderResult;

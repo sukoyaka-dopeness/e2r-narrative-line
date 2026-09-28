@@ -4,6 +4,11 @@ import type { HistoryDate } from "./HistoryService";
 import { validateHistoryDate } from "./HistoryService.ts";
 import { classifyHistoryCapability, isHistoryEditable } from "./HistoryCapabilityService.ts";
 import { createCoreObjectId } from "./IdentifierService.ts";
+import { removeDeletedEventFromPerspective } from "./PerspectiveOrderingService.ts";
+import {
+  declareFirstStableHistoryUse,
+  removeAbsentUsesAfterEventDeletion,
+} from "./SpecificationDeclarationService.ts";
 import {
   updateEventHistory2Position,
   type History2PositionUpdate,
@@ -164,7 +169,7 @@ export function updateEvent(
     };
   }
 
-  return {
+  const updated = {
     ...dataset,
     events: dataset.events.map((event) => {
       if (event.id !== eventId) {
@@ -182,17 +187,25 @@ export function updateEvent(
         : setEventHistoryDate(dataset, updatedEvent, historyDate);
     }),
   };
+  return updates.historyDate === undefined
+    ? updated
+    : declareFirstStableHistoryUse(dataset, updated);
 }
 
 export function deleteEvent(dataset: Dataset, eventId: string): Dataset {
-  return {
-    ...dataset,
-    events: dataset.events.filter((event) => event.id !== eventId),
-    relations: dataset.relations.filter(
+  const cleaned = removeDeletedEventFromPerspective(dataset, eventId);
+  if (!cleaned) {
+    throw new Error("Cannot delete Event while an unsupported Perspective payload is present");
+  }
+  const updated = {
+    ...cleaned,
+    events: cleaned.events.filter((event) => event.id !== eventId),
+    relations: cleaned.relations.filter(
       (relation) =>
         relation.sourceId !== eventId && relation.targetId !== eventId,
     ),
   };
+  return removeAbsentUsesAfterEventDeletion(dataset, updated);
 }
 
 export function addEventEntityRelation(
