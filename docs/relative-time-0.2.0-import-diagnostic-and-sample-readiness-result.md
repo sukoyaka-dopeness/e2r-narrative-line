@@ -22,16 +22,42 @@ the Vite source entry at that URL; the current production build was regenerated
 on 2026-09-28 as `dist/assets/index-xsrFFke0.js`. The long-lived dev process
 alone does not prove that Human used a stale application revision.
 
+The current Edge page exposes `/e2r-narrative-line/@vite/client` and
+`/e2r-narrative-line/src/main.tsx`; its browser console recorded Vite connected
+at `2026-09-28T04:19:04Z`. It is a live Vite development page, not the production
+bundle. The current Vite-transformed `ValidationService.ts` imports
+`/e2r-narrative-line/node_modules/.vite/deps/@sukoyaka-dopeness_e2r-validator.js?v=5bbf2261`.
+That local browser prebundle was generated on 2026-09-28, is 97,301 bytes, and
+has SHA-256
+`EE531EDFB1D5CBA438AFA879930244597FE440D44372028F78C1FEEF63EC10B6`.
+It contains exact Relative Time `0.2.0` and `relative-position` support. The
+separate current production asset is
+`dist/assets/index-xsrFFke0.js` (SHA-256
+`8EBEFA526F5E2FAC71FD1F27E8B454A1AD7226E0C0D5D695209246D52E31EFC9`); the
+visible Edge page does not load that asset. The dev page exposes no Git commit
+identifier; its URL and entry identify a Vite source runtime, while the exact
+revision that emitted Human's warning remains unknown.
+
+The Core-only control is visibly open in the current Edge page and has no
+`読み込み情報`. Lantern Market EN/JA were not reopened in this attempt: the
+browser upload bridge rejected the local-file chooser because Edge's ChatGPT
+extension does not currently have local-file access. Human approved enabling
+`Allow access to file URLs`, but the browser control policy blocked navigation
+to `edge://extensions/`. No alternate route was attempted and no extension
+setting changed. The next concrete action is for Human to enable that setting
+manually or provide the exact diagnostic and app URL from a fresh import.
+
 Current `package.json`, lockfile, installed package, and Vite prebundle resolve
 Validator `0.7.0`; exact Relative Time `0.2.0` / `relative-position` support is
 present. The current NarrativeLine import pipeline preserves Validator warning
 diagnostics and shows only returned warning-severity issues under `読み込み情報`.
 Current import-service and production-App file-input integration evidence
 imports the Core-only fixture and Lantern Market EN/JA with no warnings or
-errors. No current-source/runtime integration defect has been established, and
-there is not enough evidence to attribute the Human-observed warning to a stale
-build, a different import route, or an input/declaration difference. No warning
-was filtered, and no sample, version, or Extension declaration was changed.
+errors. No current source defect has been demonstrated, but there is not enough
+evidence to attribute the Human-observed warning to a stale build, a different
+import route, a dependency/prebundle difference, or an input/declaration
+difference. The warning remains unclassified, not ruled out. No warning was
+filtered, and no sample, version, or Extension declaration was changed.
 
 The remaining diagnostic input is the exact warning code/path/message for each
 Lantern Market draft and the app URL used when it appeared. Until those values
@@ -56,8 +82,15 @@ The existing app-local test infrastructure now also verifies:
   Perspective and recorded Relations remain unchanged.
 
 These tests exercise the production App/import handlers with a synthetic
-File-like object in the existing Vite/jsdom harness. They do not exercise the
-OS file chooser, real browser download, or a Human-observed browser warning.
+File-like object in the existing Vite/jsdom harness. The App integration uses
+Vite's `ssrLoadModule`; it exercises the import handler but does not load the
+page's browser-optimized Validator prebundle or retain a real browser page
+between builds. This is why it could not detect a possible browser-only or
+long-lived-page discrepancy. The tests do not exercise the OS file chooser,
+real browser download, or a Human-observed browser warning. No new browser test
+was added: the available Vite/jsdom layer repeats the same SSR/runtime boundary,
+while a maintained real-browser test runner would be a separate infrastructure
+addition outside this bounded checkpoint.
 
 The Perspective service and Timeline integration suites cover sparse
 authoring, clean read/projection, dirty baseline, export/re-import, Core Event
