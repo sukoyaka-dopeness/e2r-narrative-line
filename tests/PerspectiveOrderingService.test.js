@@ -9,6 +9,7 @@ import {
 import { addEvent, deleteEvent, updateEvent } from "../src/services/EventService.ts";
 import { importDatasetJson, exportDatasetJson } from "../src/services/DatasetService.ts";
 import { isDatasetModified, serializeDatasetBaseline } from "../src/services/DatasetBaselineService.ts";
+import { projectRelativeTimeForTimeline } from "../src/services/RelativeTimeService.ts";
 
 const specificationId = "draft.github.sukoyaka-dopeness.specification";
 const relativeTimeId = "draft.github.sukoyaka-dopeness.relative-time";
@@ -75,9 +76,9 @@ test("a first move authors a sparse sequence, declares exact version, and round-
 
 test("adjacent keyboard moves place an undated Event between dated Events without changing temporal data", () => {
   const dated = dataset([
-    { id: "d1", extensions: { history: { time: { year: 2020, month: 1, day: 1 } } } },
-    { id: "d2", extensions: { history: { time: { year: 2021, month: 1, day: 1 } } } },
-    { id: "d3", extensions: { history: { time: { year: 2022, month: 1, day: 1 } } } },
+    { id: "d1", extensions: { history: { time: { year: 2020, month: 1, day: 1, temporalOrder: 1 } } } },
+    { id: "d2", extensions: { history: { time: { year: 2021, month: 1, day: 1, temporalOrder: 2 } } } },
+    { id: "d3", extensions: { history: { time: { year: 2022, month: 1, day: 1, temporalOrder: 3 } } } },
     { id: "u" },
   ]);
   const originalEvents = structuredClone(dated.events);
@@ -126,6 +127,38 @@ test("Relative Time bands compose into ordinary Timeline order; a Human move ret
   assert.deepEqual(ids(acrossBand.dataset), ["same-band", "earlier", "later", "standalone"]);
   assert.ok(getPerspectiveTimeline(acrossBand.dataset).diagnostics.some((item) => item.kind === "relative-band"));
   assert.deepEqual(acrossBand.dataset.relations, before.relations);
+});
+
+test("Relative Time Relation addition, edit, and deletion never rewrite authored Perspective order", () => {
+  const authored = withPerspective(dataset(), {
+    main: { name: "Main", eventOrder: ["c", "a"] },
+  });
+  authored.extensions[specificationId].uses.push({
+    extension: relativeTimeId, version: "0.2.0", features: ["relative-position"],
+  });
+  authored.relations = [{
+    id: "relative-a-b", sourceId: "a", targetId: "b",
+    extensions: { [relativeTimeId]: { type: "relative-position", relation: "before" } },
+  }];
+
+  const originalEvents = structuredClone(authored.events);
+  const originalPerspective = structuredClone(authored.extensions[PERSPECTIVE_EXTENSION_ID]);
+  const added = structuredClone(authored);
+  added.relations.push({
+    id: "relative-b-c", sourceId: "b", targetId: "c",
+    extensions: { [relativeTimeId]: { type: "relative-position", relation: "before" } },
+  });
+  const edited = structuredClone(added);
+  edited.relations[0].extensions[relativeTimeId].relation = "after";
+  const deleted = structuredClone(edited);
+  deleted.relations = deleted.relations.filter(({ id }) => id !== "relative-a-b");
+
+  for (const changed of [added, edited, deleted]) {
+    assert.deepEqual(changed.extensions[PERSPECTIVE_EXTENSION_ID], originalPerspective);
+    assert.deepEqual(changed.events, originalEvents);
+    assert.deepEqual(getPerspectiveTimeline(changed).availability.entry.eventOrder, ["c", "a"]);
+    assert.equal(exportDatasetJson(changed).isValid, true);
+  }
 });
 
 test("single Perspective remains sparse; add and rename preserve placement; deletion cleans every entry", () => {
@@ -198,6 +231,7 @@ test("a cyclic Relative Time group leaves Perspective sequence and Recorded Rela
   const before = structuredClone(original);
   assert.deepEqual(ids(original), ["b", "a", "c"]);
   assert.deepEqual(original, before);
+  assert.deepEqual(projectRelativeTimeForTimeline(original).conflictedEventIds, [["a", "b"]]);
   assert.deepEqual(getPerspectiveTimeline(original).diagnostics.filter((item) => item.kind === "relative-band"), []);
 });
 

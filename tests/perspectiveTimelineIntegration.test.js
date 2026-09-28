@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -145,11 +146,50 @@ test("Timeline native move buttons are focusable and persist a sparse Dataset or
     assert.equal(rendered.container.querySelector(".timeline-screen").dataset.datasetModified, "true");
     assert.match(rendered.container.textContent, /Moved Third earlier in display order/);
     assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "b"]);
+    const repeatMove = rendered.container.querySelector('button[aria-label="Move Third earlier in display order"]');
+    assert.ok(repeatMove);
+    await act(async () => repeatMove.click());
+    assert.deepEqual(cardOrder(rendered.container), ["Third", "First", "Second"]);
+    assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "a", "b"]);
+    assert.equal(rendered.container.querySelector('button[aria-label="Move Third earlier in display order"]')?.disabled, true);
+    assert.equal(rendered.container.querySelector('button[aria-label="Move Second later in display order"]')?.disabled, true);
     const exported = exportDatasetJson(rendered.dataset);
     assert.equal(exported.isValid, true);
     assert.deepEqual(importDatasetJson(exported.json).dataset, rendered.dataset);
   } finally {
     await rendered.cleanup();
+  }
+});
+
+test("production App file input imports Core and Lantern Market Datasets without warning information", async () => {
+  const rendered = await renderApp(fixture());
+  try {
+    const continueEditing = [...rendered.container.querySelectorAll(".home-actions button")]
+      .find((button) => button.textContent === "Continue Editing");
+    assert.ok(continueEditing);
+    await act(async () => continueEditing.click());
+
+    const sources = [
+      await readFile(new URL("./fixtures/dataset-replacement-safety-warning-free.e2r.json", import.meta.url), "utf8"),
+      await readFile(new URL("../../e2r-spec/docs/sample-drafts/relative-time-0.2.0-lantern-market.en.e2r.json", import.meta.url), "utf8"),
+      await readFile(new URL("../../e2r-spec/docs/sample-drafts/relative-time-0.2.0-lantern-market.ja.e2r.json", import.meta.url), "utf8"),
+    ];
+    for (const source of sources) {
+      const input = rendered.container.querySelector('input[type="file"]');
+      assert.ok(input);
+      Object.defineProperty(input, "files", {
+        configurable: true,
+        value: [{ text: async () => source }],
+      });
+      await act(async () => {
+        input.dispatchEvent(new rendered.environment.window.Event("change", { bubbles: true }));
+      });
+      assert.equal(rendered.container.querySelector(".import-information"), null);
+      assert.equal(rendered.container.querySelector("#timeline-import-errors-heading"), null);
+      assert.equal(rendered.container.querySelector(".timeline-screen").dataset.datasetModified, "false");
+    }
+  } finally {
+    rendered.cleanup();
   }
 });
 
@@ -203,6 +243,30 @@ test("production App treats a Perspective move as dirty Dataset content and guar
     await act(async () => rendered.container.querySelector(".replacement-cancel").click());
     assert.equal(rendered.container.querySelector(".dataset-replacement-dialog"), null);
     assert.deepEqual(JSON.parse(rendered.environment.window.localStorage.getItem("narrativeline.lastDataset")), persisted);
+
+    const replacementSource = await readFile(
+      new URL("./fixtures/dataset-replacement-safety-warning-free.e2r.json", import.meta.url),
+      "utf8",
+    );
+    const selectReplacement = async () => {
+      const input = rendered.container.querySelector('input[type="file"]');
+      Object.defineProperty(input, "files", {
+        configurable: true,
+        value: [{ text: async () => replacementSource }],
+      });
+      await act(async () => {
+        input.dispatchEvent(new rendered.environment.window.Event("change", { bubbles: true }));
+      });
+    };
+
+    await selectReplacement();
+    assert.ok(rendered.container.querySelector(".dataset-replacement-dialog"));
+    await act(async () => rendered.container.querySelector(".button-danger").click());
+    assert.equal(rendered.container.querySelector(".dataset-replacement-dialog"), null);
+    const replacement = JSON.parse(rendered.environment.window.localStorage.getItem("narrativeline.lastDataset"));
+    assert.deepEqual(replacement, JSON.parse(replacementSource));
+    assert.equal(replacement.extensions?.[PERSPECTIVE_EXTENSION_ID], undefined);
+    assert.deepEqual(cardOrder(rendered.container), ["A Quiet Morning"]);
   } finally {
     rendered.cleanup();
   }
