@@ -323,7 +323,36 @@ mismatch; the EN/JA Relative Time wording was verified by integration tests.
 No physical touch device was used. The pre-existing Edge tab and Dataset at
 port 5173 were not changed.
 
-Only H1 final warning/help presentation remains for targeted Human review.
-H2/H3/H4/H5/H6 and the accepted interaction direction remain closed. No
-Perspective, Relative Time, History, Core, or persisted-data semantics,
-schema, Validator, sample, or deployment changed.
+The H1 final warning/help presentation was the remaining targeted Human review
+at this dated checkpoint. H2/H3/H4/H5/H6 and the accepted interaction
+direction remained closed. No Perspective, Relative Time, History, Core, or
+persisted-data semantics, schema, Validator, sample, or deployment changed.
+
+## Perspective presentation closure and next-workstream direction — 2026-09-28
+
+The final H1 micro-refinement shares `--timeline-date-column-width` between
+the date column and disclosure alignment offset. Both `Review display order`
+and `About display order` now start at the Event title/description edge. Both
+summary headings use `font-weight: 600`. No interaction, disclosure content,
+ordering state, or E2R semantics changed.
+
+An isolated Edge session opened the built-in Berlin Wall sample from this
+checkout and made one in-memory order move to expose the affected-Event
+disclosure. In Japanese and English, screenshots showed both disclosure
+headings aligned to the Event content start and rendered at the same bold
+weight. The existing user tab at port 5173 was not changed. All 315 tests,
+lint, and build passed after this adjustment.
+
+Formal Human Acceptance is **ACCEPTED / CLOSED**. H1's selected interaction
+direction, density/help content, and final alignment/heading hierarchy are
+closed. H2, H3, H4, H5, and H6 remain closed on their recorded Human evidence;
+they were not reopened or rerun. The acceptance packet is the detailed
+authority.
+
+The next independent workstream is the Human-selected application direction
+for Relative Time progressive disclosure. The current E2R-SPEC Roadmap records
+it as **DIRECTION RECORDED / IMPLEMENTATION NOT STARTED**. It introduces no
+portable UI preference and makes no change to Relative Time semantics or
+preservation behavior; import/replacement lifecycle, safe detection of
+unsupported or malformed information, and cross-view state coordination must
+be researched in that workstream before implementation.

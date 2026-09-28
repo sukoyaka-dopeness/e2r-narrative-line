@@ -603,7 +603,7 @@ export function TimelineScreen({
               <div className="timeline-card__row">
                 <div
                   style={{
-                    width: "7rem",
+                    width: "var(--timeline-date-column-width)",
                     flexShrink: 0,
                     fontWeight: "bold",
                   }}
