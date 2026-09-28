@@ -2,7 +2,39 @@
 
 Date: 2026-09-28
 
-Status: **CURRENT EXACT-VERSION SUPPORT VERIFIED / HUMAN BROWSER WARNING REPORTED, DIAGNOSTIC AND CAUSE UNRESOLVED / CANDIDATE SAMPLE DRAFT ONLY**
+Status: **EXACT-VERSION SUPPORT VERIFIED / PRIOR EDGE WARNING REPRODUCED ON A STALE LOCAL DEV SERVER AND CLEARED AFTER RESTART / SOURCE UNCHANGED / CANDIDATE SAMPLE DRAFT ONLY**
+
+## Browser capture and local runtime diagnosis — 2026-09-28
+
+The Human opened the Lantern Market English and Japanese drafts in Edge at
+`http://127.0.0.1:5173/e2r-narrative-line/`. Both imports showed one warning:
+
+`specification_version_unsupported at /extensions/draft.github.sukoyaka-dopeness.specification/uses/1/version`
+
+The Timeline's `Import information` and expanded diagnostic details displayed
+the code and path above. The app receives this issue through the warning-only
+filter (`severity === "warning"`); the Validator diagnostic has no separate
+message field, so the UI exposes no additional explanatory sentence. In both
+files, `uses[1]` declares Relative Time `0.2.0` with `relative-position`.
+
+The warning reproduced on the long-running Vite process PID 30608, created
+2026-09-19. It persisted after reloading the `5173` page and opening a new Edge
+tab. The installed Validator `0.7.0` validated both files without diagnostics.
+A fresh Vite process from the current NarrativeLine checkout served the same
+files on port `5175`; neither EN nor JA showed import information. After
+restarting the original `5173` process from the same checkout, both drafts also
+opened without import warnings. The temporary `5175` server was stopped after
+the comparison; the original user Edge tab remains on the warning-free JA
+Dataset at `5173`.
+
+This isolates the observation to stale state associated with the previous
+long-running local Vite process or its served dependency cache. The exact
+in-memory cache object was not captured, so that internal mechanism remains an
+inference. Current source, package declaration, Validator, and sample files
+were not changed. No source defect or need to change Relative Time semantics
+was found. The English and Japanese files remain non-public candidate drafts.
+Formal Perspective Human Acceptance remains pending its separate visual,
+wording, and interaction review.
 
 ## Browser/runtime parity follow-up — 2026-09-28
 
