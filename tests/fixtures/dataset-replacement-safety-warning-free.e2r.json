@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "entities": [],
+  "events": [
+    {
+      "id": "quiet-morning",
+      "name": "A Quiet Morning",
+      "description": "A small Core-only Dataset for Dataset replacement-safety acceptance."
+    }
+  ],
+  "relations": []
+}
