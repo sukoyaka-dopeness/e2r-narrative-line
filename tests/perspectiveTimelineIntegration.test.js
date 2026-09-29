@@ -5,7 +5,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
-import { movePerspectiveEvent, PERSPECTIVE_EXTENSION_ID } from "../src/services/PerspectiveOrderingService.ts";
+import { movePerspectiveEvent, movePerspectiveEventTo, PERSPECTIVE_EXTENSION_ID } from "../src/services/PerspectiveOrderingService.ts";
 import { exportDatasetJson, importDatasetJson } from "../src/services/DatasetService.ts";
 import { isDatasetModified, serializeDatasetBaseline } from "../src/services/DatasetBaselineService.ts";
 
@@ -50,7 +50,7 @@ async function renderTimeline(initial, language = "en") {
     ]);
     await server.close();
     const baseline = serializeDatasetBaseline(initial);
-    function TimelineHarness({ dataset, selectedEvent, onSelectEvent, onMoveEvent, displayOrderEditingEnabled, onToggleDisplayOrderEditing, onEnableDisplayOrderEditing }) {
+    function TimelineHarness({ dataset, selectedEvent, onSelectEvent, onMoveEvent, onDropEvent, displayOrderEditingEnabled, onToggleDisplayOrderEditing, onEnableDisplayOrderEditing }) {
       const language = useLanguage();
       setHarnessLanguage = language.setLanguage;
       return React.createElement(TimelineScreen, {
@@ -61,6 +61,7 @@ async function renderTimeline(initial, language = "en") {
         onEditEvent() {},
         onAddEvent() {},
         onMoveEvent,
+        onDropEvent,
         onImportDataset() { return { isValid: false, issues: [] }; },
         onExportDataset() { return exportDatasetJson(dataset); },
         onUpdateDatasetTitle() {},
@@ -87,6 +88,12 @@ async function renderTimeline(initial, language = "en") {
         onMoveEvent(id, direction) {
           const result = movePerspectiveEvent(dataset, id, direction);
           if (result.ok) setDataset(result.dataset);
+          return result;
+        },
+        onDropEvent(id, targetId, position) {
+          if (!displayOrderEditingEnabled) return { ok: false, reason: "unavailable" };
+          const result = movePerspectiveEventTo(dataset, id, targetId, position);
+          if (result.ok && result.dataset !== dataset) setDataset(result.dataset);
           return result;
         },
       }));
@@ -121,6 +128,26 @@ async function enableDisplayOrderEditing(container, label = "Edit display order"
   await act(async () => container.querySelector(".workspace-more-trigger")?.click());
   await act(async () => [...container.querySelectorAll('[role="menuitem"]')]
     .find((item) => item.textContent?.trim() === label)?.click());
+}
+
+function placeCards(container) {
+  [...container.querySelectorAll(".timeline-card")].forEach((card, index) => {
+    card.getBoundingClientRect = () => ({
+      x: 0, y: index * 60, left: 0, right: 400,
+      top: index * 60, bottom: index * 60 + 50,
+      width: 400, height: 50,
+    });
+  });
+}
+
+function pointer(window, target, type, x, y, pointerType = "mouse") {
+  const event = new window.MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 });
+  Object.defineProperties(event, {
+    pointerId: { value: 1 },
+    pointerType: { value: pointerType },
+    isPrimary: { value: true },
+  });
+  target.dispatchEvent(event);
 }
 
 async function renderApp(initial) {
@@ -238,6 +265,78 @@ test("ordinary Timeline keeps ordering controls hidden until explicitly enabled,
     assert.equal(rendered.environment.document.activeElement, target);
   } finally {
     await rendered.cleanup();
+  }
+});
+
+test("card drag reorders only in editing mode and retains selection, focus, and portable sequence", async () => {
+  const rendered = await renderTimeline(fixture());
+  try {
+    placeCards(rendered.container);
+    const cards = [...rendered.container.querySelectorAll(".timeline-card")];
+    await act(async () => {
+      pointer(rendered.environment.window, cards[2], "pointerdown", 40, 145);
+      pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 15);
+      pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 15);
+    });
+    assert.deepEqual(cardOrder(rendered.container), ["First", "Second", "Third"]);
+    assert.equal(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID], undefined);
+
+    await enableDisplayOrderEditing(rendered.container);
+    placeCards(rendered.container);
+    const source = rendered.container.querySelectorAll(".timeline-card")[2];
+    await act(async () => pointer(rendered.environment.window, source, "pointerdown", 40, 145));
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 15));
+    assert.ok(rendered.container.querySelector(".timeline-card--dragging"));
+    assert.ok(rendered.container.querySelector(".timeline-card--drop-before"));
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 15));
+    assert.deepEqual(cardOrder(rendered.container), ["Third", "First", "Second"]);
+    assert.equal(rendered.container.querySelector(".timeline-card--selected .timeline-event-name")?.textContent, "Third");
+    assert.equal(rendered.environment.document.activeElement?.querySelector(".timeline-event-name")?.textContent, "Third");
+    assert.deepEqual(rendered.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives["timeline-order"].eventOrder, ["c", "a", "b"]);
+    assert.deepEqual(rendered.dataset.events.map(({ id }) => id), ["a", "b", "c"]);
+    assert.equal(rendered.container.querySelector(".timeline-order-actions") === null, false);
+    const moveButton = rendered.container.querySelector(".timeline-card--selected .timeline-order-actions button");
+    await act(async () => {
+      pointer(rendered.environment.window, moveButton, "pointerdown", 40, 15);
+      pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 145);
+      pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 145);
+    });
+    assert.deepEqual(cardOrder(rendered.container), ["Third", "First", "Second"]);
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("touch scroll wins before the hold; a held card can drag and auto-scroll", async () => {
+  const rendered = await renderTimeline(fixture());
+  try {
+    let scrollCalls = 0;
+    Object.defineProperty(rendered.environment.window, "innerHeight", { value: 160, configurable: true });
+    rendered.environment.window.scrollBy = () => { scrollCalls += 1; };
+    await enableDisplayOrderEditing(rendered.container);
+    placeCards(rendered.container);
+    const cards = [...rendered.container.querySelectorAll(".timeline-card")];
+    await act(async () => {
+      pointer(rendered.environment.window, cards[2], "pointerdown", 40, 145, "touch");
+      pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 120, "touch");
+      pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 120, "touch");
+    });
+    assert.deepEqual(cardOrder(rendered.container), ["First", "Second", "Third"]);
+
+    await act(async () => pointer(rendered.environment.window, cards[2], "pointerdown", 40, 145, "touch"));
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 370)); });
+    assert.ok(rendered.container.querySelector(".timeline-card--dragging"));
+    assert.ok(scrollCalls > 0);
+    const touchMove = new rendered.environment.window.Event("touchmove", { cancelable: true });
+    rendered.environment.window.dispatchEvent(touchMove);
+    assert.equal(touchMove.defaultPrevented, true);
+    await act(async () => {
+      pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 15, "touch");
+      pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 15, "touch");
+    });
+    assert.deepEqual(cardOrder(rendered.container), ["Third", "First", "Second"]);
+  } finally {
+    rendered.cleanup();
   }
 });
 

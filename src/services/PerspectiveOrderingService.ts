@@ -314,6 +314,32 @@ export function movePerspectiveEvent(
     : { ok: false, reason: "invalid_dataset" };
 }
 
+/** Apply a drop as adjacent Perspective moves, committing only the final Dataset. */
+export function movePerspectiveEventTo(
+  dataset: Dataset,
+  eventId: string,
+  targetEventId: string,
+  position: "before" | "after",
+): PerspectiveMoveResult {
+  const timeline = getPerspectiveTimeline(dataset);
+  if (!timeline.canAuthor) return { ok: false, reason: "unavailable" };
+  const sourceIndex = timeline.events.findIndex((event) => event.id === eventId);
+  const targetIndex = timeline.events.findIndex((event) => event.id === targetEventId);
+  if (sourceIndex < 0 || targetIndex < 0) return { ok: false, reason: "boundary" };
+  const insertionIndex = targetIndex + (position === "after" ? 1 : 0);
+  const destinationIndex = insertionIndex > sourceIndex ? insertionIndex - 1 : insertionIndex;
+  if (destinationIndex === sourceIndex) return { ok: true, dataset };
+
+  const direction = destinationIndex < sourceIndex ? "earlier" : "later";
+  let current = dataset;
+  for (let index = sourceIndex; index !== destinationIndex; index += direction === "earlier" ? -1 : 1) {
+    const step = movePerspectiveEvent(current, eventId, direction);
+    if (!step.ok) return step;
+    current = step.dataset;
+  }
+  return { ok: true, dataset: current };
+}
+
 export function removeDeletedEventFromPerspective(dataset: Dataset, eventId: string): Dataset | undefined {
   if (dataset.extensions?.[PERSPECTIVE_EXTENSION_ID] === undefined) {
     return [...dataset.entities, ...dataset.events, ...dataset.relations]

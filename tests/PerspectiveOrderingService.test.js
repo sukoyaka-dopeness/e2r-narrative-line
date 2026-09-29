@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   getPerspectiveTimeline,
   movePerspectiveEvent,
+  movePerspectiveEventTo,
   PERSPECTIVE_EXTENSION_ID,
   readPerspectiveAvailability,
 } from "../src/services/PerspectiveOrderingService.ts";
@@ -72,6 +73,34 @@ test("a first move authors a sparse sequence, declares exact version, and round-
   assert.deepEqual(reimported.dataset, authored);
   assert.deepEqual(ids(reimported.dataset), ["a", "c", "b"]);
   assert.equal(isDatasetModified(reimported.dataset, serializeDatasetBaseline(reimported.dataset)), false);
+});
+
+test("a distant drop composes existing adjacent moves without changing other Dataset content", () => {
+  const original = dataset(Array.from({ length: 24 }, (_, index) => ({ id: `event-${index}`, name: `Event ${String(index).padStart(2, "0")}` })));
+  const before = structuredClone(original);
+  const initialOrder = ids(original);
+  const dropped = movePerspectiveEventTo(original, "event-23", "event-0", "before");
+  assert.equal(dropped.ok, true);
+  assert.deepEqual(ids(dropped.dataset), ["event-23", ...initialOrder.filter((id) => id !== "event-23")]);
+  assert.deepEqual(dropped.dataset.events, before.events);
+  assert.deepEqual(dropped.dataset.relations, before.relations);
+  assert.equal(movePerspectiveEventTo(dropped.dataset, "event-23", "event-0", "before").dataset, dropped.dataset);
+  const exported = exportDatasetJson(dropped.dataset);
+  assert.equal(exported.isValid, true);
+  assert.deepEqual(importDatasetJson(exported.json).dataset, dropped.dataset);
+});
+
+test("drop keeps imported dangling IDs and refuses unsupported Perspective authoring", () => {
+  const original = withPerspective(dataset(), {
+    main: { name: "Main", eventOrder: ["a", "missing", "b"] },
+  });
+  const moved = movePerspectiveEventTo(original, "c", "a", "before");
+  assert.equal(moved.ok, true);
+  assert.ok(moved.dataset.extensions[PERSPECTIVE_EXTENSION_ID].perspectives.main.eventOrder.includes("missing"));
+  const unsupported = withPerspective(dataset(), {
+    main: { name: "Main", eventOrder: ["a"] },
+  }, "0.2.0");
+  assert.deepEqual(movePerspectiveEventTo(unsupported, "c", "a", "before"), { ok: false, reason: "unavailable" });
 });
 
 test("adjacent keyboard moves place an undated Event between dated Events without changing temporal data", () => {

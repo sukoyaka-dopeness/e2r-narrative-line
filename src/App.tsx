@@ -51,6 +51,7 @@ import {
 } from "./services/RelativeTimeService.ts";
 import {
   movePerspectiveEvent,
+  movePerspectiveEventTo,
   type PerspectiveMoveResult,
 } from "./services/PerspectiveOrderingService.ts";
 import {
@@ -1053,6 +1054,16 @@ function App() {
     if (result.ok) setDataset(result.dataset);
     return result;
   };
+  const handleDropPerspectiveEvent = (
+    eventId: string,
+    targetEventId: string,
+    position: "before" | "after",
+  ): PerspectiveMoveResult => {
+    if (!displayOrderEditingEnabled) return { ok: false, reason: "unavailable" };
+    const result = movePerspectiveEventTo(dataset, eventId, targetEventId, position);
+    if (result.ok && result.dataset !== dataset) setDataset(result.dataset);
+    return result;
+  };
 
   const renderDatasetReplacementFeedback = () => (
     <>
@@ -1232,6 +1243,7 @@ function App() {
         onEditEvent={handleEditEvent}
         onAddEvent={handleAddEvent}
         onMoveEvent={handleMovePerspectiveEvent}
+        onDropEvent={handleDropPerspectiveEvent}
         onImportDataset={handleImportDataset}
         onExportDataset={handleExportDataset}
       />

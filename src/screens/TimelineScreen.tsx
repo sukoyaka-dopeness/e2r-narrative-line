@@ -9,6 +9,7 @@ import type {
 } from "../services/DatasetService";
 import { downloadDatasetExport } from "../services/DatasetService";
 import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
+import { useTimelineCardDrag, type TimelineCardDrop } from "../components/useTimelineCardDrag";
 import { RelativeTimeTimelineProjection } from "../components/RelativeTimeTimelineProjection";
 import { RelativeTimeDiagnosticNotice } from "../components/RelativeTimeDiagnosticNotice";
 import type { RelativeTimeEvidenceState } from "../services/RelativeTimeService.ts";
@@ -38,6 +39,7 @@ type TimelineScreenProps = {
   onEditEvent: (eventId: string) => void;
   onAddEvent: () => void;
   onMoveEvent: (eventId: string, direction: "earlier" | "later") => PerspectiveMoveResult;
+  onDropEvent: (eventId: string, targetEventId: string, position: "before" | "after") => PerspectiveMoveResult;
   onImportDataset: (source: string) => DatasetImportResult;
   onExportDataset: () => DatasetExportResult;
   importWarnings?: DatasetImportWarning[];
@@ -127,6 +129,7 @@ export function TimelineScreen({
   onEditEvent,
   onAddEvent,
   onMoveEvent,
+  onDropEvent,
   onImportDataset,
   onExportDataset,
   importWarnings = [],
@@ -167,8 +170,15 @@ export function TimelineScreen({
     eventId: string;
     direction: "earlier" | "later";
   } | null>(null);
+  const pendingDragFocus = useRef<string | null>(null);
 
   useLayoutEffect(() => {
+    const dragFocus = pendingDragFocus.current;
+    if (dragFocus) {
+      timelineCardRefs.current.get(dragFocus)?.focus();
+      timelineCardRefs.current.get(dragFocus)?.scrollIntoView({ block: "nearest" });
+      pendingDragFocus.current = null;
+    }
     const pending = pendingMoveFocus.current;
     if (pending) {
       const buttonKey = (direction: "earlier" | "later") => `${pending.eventId}:${direction}`;
@@ -335,6 +345,37 @@ export function TimelineScreen({
       });
     }
   };
+
+  const handleDrop = ({ sourceId, targetId, position }: TimelineCardDrop) => {
+    const before = new Map(
+      [...timelineCardRefs.current].map(([id, node]) => [id, node.getBoundingClientRect()] as const),
+    );
+    const sourceIndex = timelineEvents.findIndex((event) => event.id === sourceId);
+    const result = onDropEvent(sourceId, targetId, position);
+    if (!result.ok) {
+      setMoveFeedback({ dataset, error: true });
+      return;
+    }
+    onSelectEvent(sourceId);
+    if (result.dataset === dataset) {
+      timelineCardRefs.current.get(sourceId)?.focus();
+      return;
+    }
+    pendingDragFocus.current = sourceId;
+    pendingOrderPositions.current = before;
+    const nextIndex = getPerspectiveTimeline(result.dataset).events.findIndex((event) => event.id === sourceId);
+    setMoveFeedback({
+      dataset: result.dataset,
+      direction: nextIndex < sourceIndex ? "earlier" : "later",
+      eventName: eventNames.get(sourceId) ?? sourceId,
+      error: false,
+    });
+  };
+  const cardDrag = useTimelineCardDrag({
+    enabled: displayOrderEditingEnabled && perspectiveTimeline.canAuthor,
+    cardRefs: timelineCardRefs,
+    onDrop: handleDrop,
+  });
 
   const handleImportFile = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -582,6 +623,20 @@ export function TimelineScreen({
               .replace("{event}", moveFeedback.eventName ?? "")}
         </p>
       )}
+      {displayOrderEditingEnabled && perspectiveTimeline.canAuthor && (
+        <p className="timeline-drag-hint">
+          {ja ? "カードをドラッグして表示順を変更できます。↑/↓でも操作できます。" : "Drag a card to change display order, or use ↑/↓."}
+        </p>
+      )}
+      {cardDrag.dragState && (
+        <p className="timeline-drag-feedback" role="status">
+          {cardDrag.dragState.targetId
+            ? (ja
+              ? `「${eventNames.get(cardDrag.dragState.sourceId)}」を「${eventNames.get(cardDrag.dragState.targetId)}」の${cardDrag.dragState.position === "before" ? "前" : "後"}へ移動`
+              : `Move ${eventNames.get(cardDrag.dragState.sourceId)} ${cardDrag.dragState.position} ${eventNames.get(cardDrag.dragState.targetId)}`)
+            : (ja ? "移動先のカードへドラッグしてください。" : "Drag to a destination card.")}
+        </p>
+      )}
       {perspectiveTimeline.diagnostics.length > 0 && (
         <section className="timeline-order-diagnostics" aria-label={ja ? "表示順の診断" : "Display order diagnostics"}>
           <p role="status">
@@ -629,14 +684,25 @@ export function TimelineScreen({
                 if (isSelected) selectedEventRef.current = node;
               }}
               tabIndex={perspectiveTimeline.canAuthor ? 0 : -1}
-              onClick={() => onSelectEvent(event.id)}
+              onPointerDown={(pointerEvent) => cardDrag.onPointerDown(event.id, pointerEvent)}
+              onDragStart={(dragEvent) => {
+                if (displayOrderEditingEnabled) dragEvent.preventDefault();
+              }}
+              onClick={(clickEvent) => {
+                if (cardDrag.consumeClick()) {
+                  clickEvent.preventDefault();
+                  clickEvent.stopPropagation();
+                  return;
+                }
+                onSelectEvent(event.id);
+              }}
               onKeyDown={(keyEvent) => {
                 if (keyEvent.target !== keyEvent.currentTarget) return;
                 if (keyEvent.key !== "Enter" && keyEvent.key !== " ") return;
                 keyEvent.preventDefault();
                 onSelectEvent(event.id);
               }}
-              className={`timeline-card${isSelected ? " timeline-card--selected" : ""}`}
+              className={`timeline-card${isSelected ? " timeline-card--selected" : ""}${displayOrderEditingEnabled && perspectiveTimeline.canAuthor ? " timeline-card--drag-enabled" : ""}${cardDrag.dragState?.sourceId === event.id ? " timeline-card--dragging" : ""}${cardDrag.dragState?.targetId === event.id ? ` timeline-card--drop-${cardDrag.dragState.position}` : ""}`}
             >
               <div className="timeline-card__row">
                 <div
