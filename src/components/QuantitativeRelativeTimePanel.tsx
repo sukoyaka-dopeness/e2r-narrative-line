@@ -4,7 +4,7 @@ import type { HistoryDate } from "../services/HistoryService.ts";
 import { useLanguage } from "../i18n/LanguageContext";
 import { createCoreObjectId } from "../services/IdentifierService.ts";
 import { getQuantitativeTimeCandidates } from "../services/QuantitativeTimeCandidateService.ts";
-import { formatQuantitativeCandidateForDisplay, quantitativeCandidateBasis, quantitativeRelationLabel } from "../services/QuantitativeTimePresentationService.ts";
+import { calendarDisplacementFromInput, formatQuantitativeCandidateForDisplay, quantitativeCandidateBasis, quantitativeRelationLabel } from "../services/QuantitativeTimePresentationService.ts";
 import {
   applyQuantitativeOperation,
   canCreateQuantitative,
@@ -30,32 +30,54 @@ const jaUnits: Record<Granularity, string> = {
   year: "年", month: "月", day: "日", hour: "時", minute: "分", second: "秒",
 };
 
-function PayloadEditor({ initial, onSave, disabled = false, ja }: {
+function PayloadEditor({ initial, onSave, disabled = false, ja, sourceName, targetName }: {
   initial: QuantitativePayload;
   onSave: (payload: QuantitativePayload) => void;
   disabled?: boolean;
   ja: boolean;
+  sourceName: string;
+  targetName: string;
 }) {
   const [granularity, setGranularity] = useState<Granularity>(initial.type === CALENDAR_GRANULE_FEATURE ? initial.granularity : "day");
-  const [displacement, setDisplacement] = useState(initial.type === CALENDAR_GRANULE_FEATURE ? String(initial.displacement) : "1");
+  const [magnitude, setMagnitude] = useState(initial.type === CALENDAR_GRANULE_FEATURE ? String(Math.abs(initial.displacement) || 1) : "1");
+  const [granuleDirection, setGranuleDirection] = useState<"before" | "same" | "after">(
+    initial.type === CALENDAR_GRANULE_FEATURE && initial.displacement === 0 ? "same"
+      : initial.type === CALENDAR_GRANULE_FEATURE && initial.displacement < 0 ? "before" : "after",
+  );
   const [direction, setDirection] = useState<"before" | "after">(initial.type === ELAPSED_OFFSET_FEATURE ? initial.direction : "after");
   const [value, setValue] = useState(initial.type === ELAPSED_OFFSET_FEATURE ? String(initial.value) : "1");
   const [unit, setUnit] = useState<ElapsedUnit>(initial.type === ELAPSED_OFFSET_FEATURE ? initial.unit : "hour");
-  const number = initial.type === CALENDAR_GRANULE_FEATURE ? Number(displacement) : Number(value);
+  const number = initial.type === CALENDAR_GRANULE_FEATURE ? Number(magnitude) : Number(value);
   const valid = initial.type === CALENDAR_GRANULE_FEATURE
-    ? displacement.trim() !== "" && Number.isSafeInteger(number)
+    ? granuleDirection === "same" || (magnitude.trim() !== "" && Number.isSafeInteger(number) && number > 0)
     : value.trim() !== "" && Number.isSafeInteger(number) && number > 0;
   return (
     <div className="quantitative-relative-time__fields">
       {initial.type === CALENDAR_GRANULE_FEATURE ? <>
-        <label>{ja ? "Calendar 単位" : "Calendar granule"}
-          <select value={granularity} onChange={(event) => setGranularity(event.target.value as Granularity)}>
+        <span>{ja ? `${targetName} は ${sourceName} と比べて` : "By"}</span>
+        <label className="quantitative-relative-time__inline-control">
+          <span className="visually-hidden">{ja ? "暦の単位" : "Calendar granule"}</span>
+          <select aria-label={ja ? "暦の単位" : "Calendar granule"} value={granularity} onChange={(event) => setGranularity(event.target.value as Granularity)}>
             {granules.map((item) => <option key={item} value={item}>{ja ? jaUnits[item] : item}</option>)}
           </select>
         </label>
-        <label>{ja ? "移動数（0＝同じ単位、負＝前）" : "Displacement (0=same granule, negative=previous)"}
-          <input type="number" step="1" value={displacement} onChange={(event) => setDisplacement(event.target.value)} />
+        <span>{ja ? "で見ると" : `granules, ${targetName} is`}</span>
+        {granuleDirection !== "same" && <>
+          <label className="quantitative-relative-time__inline-control">
+            <span className="visually-hidden">{ja ? "移動する数" : "Number of granule steps"}</span>
+            <input aria-label={ja ? "移動する数" : "Number of granule steps"} type="number" min="1" step="1" value={magnitude} onChange={(event) => setMagnitude(event.target.value)} />
+          </label>
+          <span>{ja ? "つ" : "step(s)"}</span>
+        </>}
+        <label className="quantitative-relative-time__inline-control">
+          <span className="visually-hidden">{ja ? "前後の方向" : "Granule direction"}</span>
+          <select aria-label={ja ? "前後の方向" : "Granule direction"} value={granuleDirection} onChange={(event) => setGranuleDirection(event.target.value as "before" | "same" | "after")}>
+            <option value="before">{ja ? "前" : "before"}</option>
+            <option value="same">{ja ? "同じ単位" : "in the same granule as"}</option>
+            <option value="after">{ja ? "後" : "after"}</option>
+          </select>
         </label>
+        <span>{ja ? "です。" : `${sourceName}.`}</span>
       </> : <>
         <label>{ja ? "方向" : "Direction"}
           <select value={direction} onChange={(event) => setDirection(event.target.value as "before" | "after")}>
@@ -73,7 +95,7 @@ function PayloadEditor({ initial, onSave, disabled = false, ja }: {
         </label>
       </>}
       <button type="button" disabled={disabled || !valid} onClick={() => onSave(initial.type === CALENDAR_GRANULE_FEATURE
-        ? { type: CALENDAR_GRANULE_FEATURE, granularity, displacement: number, ...(initial.calendar ? { calendar: initial.calendar } : {}) }
+        ? { type: CALENDAR_GRANULE_FEATURE, granularity, displacement: calendarDisplacementFromInput(number, granuleDirection), ...(initial.calendar ? { calendar: initial.calendar } : {}) }
         : { type: ELAPSED_OFFSET_FEATURE, direction, value: number, unit })}>
         {ja ? "記録する" : "Record"}
       </button>
@@ -88,6 +110,7 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
   const [feature, setFeature] = useState<QuantitativePayload["type"]>(CALENDAR_GRANULE_FEATURE);
   const [deletePending, setDeletePending] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [candidatesOpen, setCandidatesOpen] = useState(true);
   const relations = getQuantitativeRelations(dataset, eventId);
   const candidates = getQuantitativeTimeCandidates(dataset, eventId);
   const eventName = (id: string) => dataset.events.find((event) => event.id === id)?.name || id;
@@ -108,7 +131,7 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
     <section className="quantitative-relative-time" aria-label={ja ? "量的な相対時間" : "Quantitative relative time"}>
       <details>
         <summary>{ja ? "量的な相対時間" : "Quantitative relative time"}</summary>
-        <p>{ja ? "各Relationは独立した記録です。Calendar単位の移動と経過時間は別の意味です。" : "Each Relation is an independent recorded assertion. Calendar-granule displacement and elapsed time have different meanings."}</p>
+        <p>{ja ? "各時間関係は独立した記録です。暦の単位で見た前後と、経過時間は別の意味です。" : "Each Relation is an independent recorded assertion. Calendar-granule displacement and elapsed time have different meanings."}</p>
         <div className="quantitative-relative-time__recorded">
           <h3>{ja ? "記録済みの時間関係" : "Recorded time relations"}</h3>
         {relations.length > 0 && <ul className="quantitative-relative-time__list">
@@ -116,16 +139,20 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
             <strong>{quantitativeRelationLabel(payload, relation.targetId === eventId,
               eventName(relation.sourceId === eventId ? relation.targetId : relation.sourceId), language)}</strong>
             <details><summary>{ja ? "この記録を編集" : "Edit this assertion"}</summary>
-              <PayloadEditor key={relation.id} initial={payload} ja={ja} onSave={(next) => apply({ type: "update", relationId: relation.id, payload: next })} />
+              <PayloadEditor key={relation.id} initial={payload} ja={ja}
+                sourceName={eventName(relation.sourceId)} targetName={eventName(relation.targetId)}
+                onSave={(next) => apply({ type: "update", relationId: relation.id, payload: next })} />
+              <div className="quantitative-relative-time__delete-action">
               {deletePending === relation.id
                 ? <><button type="button" className="danger-action" onClick={() => apply({ type: "delete", relationId: relation.id })}>{ja ? "削除を確定" : "Confirm delete"}</button>
                     <button type="button" onClick={() => setDeletePending(null)}>{ja ? "キャンセル" : "Cancel"}</button></>
                 : <button type="button" onClick={() => setDeletePending(relation.id)}>{ja ? "この記録を削除" : "Delete this assertion"}</button>}
+              </div>
             </details>
           </li>)}
         </ul>}
         <details><summary>{ja ? "量的な時間関係を追加" : "Add quantitative time relation"}</summary>
-          <p>{ja ? "このEventを基準に、選択したEventとの時間関係を記録します。" : "Record one time relation from this Event to the selected Event."}</p>
+          <p>{ja ? "このできごとを基準に、選択したできごととの時間関係を記録します。" : "Record one time relation from this Event to the selected Event."}</p>
           <label>{ja ? "対象Event" : "Target Event"}
             <select value={otherId} onChange={(event) => setOtherId(event.target.value)}>
               <option value="">{ja ? "選択してください" : "Select an Event"}</option>
@@ -134,18 +161,24 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
           </label>
           <label>{ja ? "記録の種類" : "Assertion type"}
             <select value={feature} onChange={(event) => setFeature(event.target.value as QuantitativePayload["type"])}>
-              <option value={CALENDAR_GRANULE_FEATURE}>{ja ? "Calendar 単位の移動" : "Calendar granule displacement"}</option>
+              <option value={CALENDAR_GRANULE_FEATURE}>{ja ? "暦の単位で見た前後" : "Calendar granule displacement"}</option>
               <option value={ELAPSED_OFFSET_FEATURE}>{ja ? "経過時間" : "Elapsed duration"}</option>
             </select>
           </label>
-          <PayloadEditor key={feature} initial={initial} ja={ja} disabled={!otherId || !canCreateQuantitative(dataset, feature)}
+          <PayloadEditor key={feature} initial={initial} ja={ja}
+            sourceName={eventName(eventId)} targetName={otherId ? eventName(otherId) : (ja ? "対象のできごと" : "The selected Event")}
+            disabled={!otherId || !canCreateQuantitative(dataset, feature)}
             onSave={(payload) => apply({ type: "create", sourceId: eventId, targetId: otherId, payload, relationId: createCoreObjectId(dataset) })} />
           {!canCreateQuantitative(dataset, feature) && <p role="status">{ja ? "このDatasetでは安全に記録を追加できません。" : "Authoring is unavailable for this Dataset."}</p>}
         </details>
         </div>
-        {candidates.length > 0 && <div className="quantitative-relative-time__candidates">
-          <h3>{ja ? "日時候補（未記録）" : "Date/time candidates (not recorded)"}</h3>
-          <p>{ja ? "相対時間の記録とRecorded Historyから計算した、まだHistoryに記録されていない候補です。Time Zone / DSTは考慮していません。候補を選んでも保存されません。History編集画面で確認し、通常の保存を行ってください。" : "These candidates are calculated from a direct Relative Time Relation and Recorded History. Time Zone / DST are not evaluated. Selecting a candidate does not save it. Review it in the History editor and use the normal Save action."}</p>
+        {candidates.length > 0 && <details className="quantitative-relative-time__candidates" open={candidatesOpen}
+          onToggle={(event) => setCandidatesOpen(event.currentTarget.open)}>
+          <summary>{ja ? "日時候補（未記録）" : "Date/time candidates (not recorded)"}
+            <span className="relative-time-authoring__count">{ja ? `${candidates.length}件` : `${candidates.length}`}</span>
+          </summary>
+          <div className="quantitative-relative-time__candidate-content">
+          <p>{ja ? "相対時間の記録と記録済みの日時から計算した、まだ日時として保存していない候補です。タイムゾーン / サマータイムは考慮していません。候補を選んでも保存されません。日時編集欄で確認し、通常の保存を行ってください。" : "These candidates are calculated from a direct Relative Time Relation and Recorded History. Time Zone / DST are not evaluated. Selecting a candidate does not save it. Review it in the History editor and use the normal Save action."}</p>
           <ul>{candidates.map((candidate) => <li key={candidate.relationId}>
             <strong>{formatQuantitativeCandidateForDisplay(candidate.date, language).value}</strong>
             {formatQuantitativeCandidateForDisplay(candidate.date, language).precision &&
@@ -154,10 +187,11 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
               dataset.relations.find(({ id }) => id === candidate.relationId)?.targetId === eventId,
               eventName(candidate.anchorEventId), language)}</span>
             {canUseCandidate(candidate.date)
-              ? <button type="button" onClick={() => onUseCandidate(candidate.date)}>{ja ? "History編集へ" : "Review in History"}</button>
-              : <span>{ja ? "この候補は現在のHistory編集欄には安全に入力できません。" : "This candidate cannot be safely entered into the current History editor."}</span>}
+              ? <button type="button" onClick={() => onUseCandidate(candidate.date)}>{ja ? "日時を確認・編集" : "Review in History"}</button>
+              : <span>{ja ? "この候補は現在の日時編集欄には安全に入力できません。" : "This candidate cannot be safely entered into the current History editor."}</span>}
           </li>)}</ul>
-        </div>}
+          </div>
+        </details>}
         {feedback && <p role="status">{feedback}</p>}
       </details>
     </section>

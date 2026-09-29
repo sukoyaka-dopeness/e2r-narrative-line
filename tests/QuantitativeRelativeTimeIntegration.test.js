@@ -67,8 +67,15 @@ test("quantitative candidate remains supplementary until normal History save", a
     const initialPanel = environment.document.querySelector(".quantitative-relative-time");
     assert.equal(initialPanel.querySelector(".quantitative-relative-time__recorded h3").textContent,
       "Recorded time relations");
-    assert.equal(initialPanel.querySelector(".quantitative-relative-time__candidates h3").textContent,
-      "Date/time candidates (not recorded)");
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__candidates summary").textContent.includes(
+      "Date/time candidates (not recorded)"));
+    assert.equal(initialPanel.querySelector(".quantitative-relative-time__candidates").open, true);
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__candidates summary").textContent.includes("1"));
+    const candidateDisclosure = initialPanel.querySelector(".quantitative-relative-time__candidates");
+    await act(async () => candidateDisclosure.querySelector("summary").click());
+    assert.equal(candidateDisclosure.open, false);
+    await act(async () => candidateDisclosure.querySelector("summary").click());
+    assert.equal(candidateDisclosure.open, true);
     assert.ok(initialPanel.querySelector(".quantitative-relative-time__list").textContent.includes("Next month relative to Anchor"));
     assert.ok(initialPanel.querySelector(".quantitative-relative-time__basis").textContent.includes("Anchor's recorded time"));
     assert.ok(!initialPanel.querySelector(".quantitative-relative-time__candidates").textContent.includes("calendar"));
@@ -112,6 +119,16 @@ test("quantitative candidate remains supplementary until normal History save", a
       .find((item) => item.textContent.includes("Next month"));
     const calendarEdit = calendarRow.querySelector("details");
     calendarEdit.open = true;
+    const granuleDirection = calendarEdit.querySelector('select[aria-label="Granule direction"]');
+    assert.ok(calendarEdit.textContent.includes("granules, Target is"));
+    await act(async () => changeSelect(environment.window, granuleDirection, "before"));
+    await act(async () => button(calendarEdit, "Record").click());
+    assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
+      .relations[0].extensions[relativeId].displacement, -1);
+    await act(async () => changeSelect(environment.window, granuleDirection, "same"));
+    await act(async () => button(calendarEdit, "Record").click());
+    assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
+      .relations[0].extensions[relativeId].displacement, 0);
     await act(async () => button(calendarEdit, "Delete this assertion").click());
     await act(async () => button(calendarEdit, "Confirm delete").click());
     const empty = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));

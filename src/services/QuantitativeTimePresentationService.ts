@@ -3,6 +3,10 @@ import type { QuantitativePayload } from "./QuantitativeRelativeTimeService.ts";
 
 type Language = "ja" | "en";
 
+export function calendarDisplacementFromInput(magnitude: number, direction: "before" | "same" | "after"): number {
+  return direction === "same" ? 0 : direction === "before" ? -magnitude : magnitude;
+}
+
 const granules = {
   year: ["年", "year"], month: ["月", "month"], day: ["日", "day"],
   hour: ["時", "hour"], minute: ["分", "minute"], second: ["秒", "second"],
@@ -24,7 +28,7 @@ export function quantitativeRelationMovement(
     return ja ? `${steps > 0 ? "次" : "前"}の${jaGranule}` : `${steps > 0 ? "Next" : "Previous"} ${enGranule}`;
   }
   return ja
-    ? `${jaGranule}単位で${Math.abs(steps)}つ${steps > 0 ? "先" : "前"}`
+    ? `${jaGranule}で見ると${Math.abs(steps)}つ${steps > 0 ? "後" : "前"}`
     : `${enGranule[0].toUpperCase()}${enGranule.slice(1)} granule, ${Math.abs(steps)} steps ${steps > 0 ? "ahead" : "back"}`;
 }
 
@@ -32,7 +36,9 @@ export function quantitativeRelationLabel(
   payload: QuantitativePayload, currentIsTarget: boolean, otherName: string, language: Language,
 ): string {
   const movement = quantitativeRelationMovement(payload, currentIsTarget, language);
-  return language === "ja" ? `${otherName} の${movement}`
+  return language === "ja" ? movement.startsWith("同じ") ? `${otherName} と${movement}`
+    : payload.type === "calendar-granule-relation" && Math.abs(payload.displacement) > 1
+      ? `${otherName} より、${movement}` : `${otherName} の${movement}`
     : payload.type === "elapsed-offset" ? `${movement} ${otherName}` : `${movement} relative to ${otherName}`;
 }
 

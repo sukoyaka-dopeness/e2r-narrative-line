@@ -781,7 +781,7 @@ export function TimelineScreen({
                           </li>;
                         })}
                       </ul>}
-                      {isSelected && <small>{ja ? "未記録・Time Zone / DST 未考慮" : "Not recorded · Time Zone / DST not evaluated"}</small>}
+                      {isSelected && <small>{ja ? "未記録・タイムゾーン / サマータイム未考慮" : "Not recorded · Time Zone / DST not evaluated"}</small>}
                     </div>
                   )}
 

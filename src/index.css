@@ -585,16 +585,20 @@ button:disabled {
   padding: 10px 12px;
 }
 
-.quantitative-relative-time summary { cursor: pointer; font-weight: 600; }
+.quantitative-relative-time summary { cursor: pointer; color: var(--text-h); font-weight: 600; }
 .quantitative-relative-time details details { margin-top: 12px; }
 .quantitative-relative-time__recorded,
 .quantitative-relative-time__candidates { padding: 12px; margin-top: 14px; border: 1px solid var(--border); }
 .quantitative-relative-time__recorded h3,
 .quantitative-relative-time__candidates h3 { margin-top: 0; }
+.quantitative-relative-time__candidate-content { padding-top: 8px; }
 .quantitative-relative-time__list { display: grid; gap: 12px; padding-inline-start: 20px; }
 .quantitative-relative-time__list li { overflow-wrap: anywhere; }
-.quantitative-relative-time__fields { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 10px; }
-.quantitative-relative-time__fields label { display: grid; gap: 4px; min-width: 120px; }
+.quantitative-relative-time__fields { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 10px; }
+.quantitative-relative-time__fields label { display: grid; gap: 4px; min-width: 0; }
+.quantitative-relative-time__fields .quantitative-relative-time__inline-control { display: inline-flex; }
+.quantitative-relative-time__fields input[type="number"] { width: 6rem; }
+.quantitative-relative-time__delete-action { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .quantitative-relative-time__candidates { background: var(--social-bg); }
 .quantitative-relative-time__candidates li { margin-bottom: 12px; overflow-wrap: anywhere; }
 .quantitative-relative-time__precision,
@@ -602,7 +606,7 @@ button:disabled {
 .quantitative-relative-time__precision { font-size: .85em; }
 .quantitative-relative-time__candidates button { display: block; margin-top: 6px; }
 .timeline-time-candidate { display: block; margin-top: 5px; color: var(--text); }
-.timeline-time-candidate__values { margin: 4px 0; padding-inline-start: 18px; overflow-wrap: anywhere; }
+.timeline-time-candidate__values { margin: 4px 0; padding-inline-start: 0; list-style-position: inside; overflow-wrap: anywhere; }
 .timeline-time-candidate__values li + li { margin-top: 5px; }
 .timeline-time-candidate__values span { display: block; }
 
@@ -1627,7 +1631,8 @@ button:disabled {
 
 .relative-time-create__sentence button,
 .relative-time-assertion__sentence button,
-.relative-time-assertions button {
+.relative-time-assertions button,
+.quantitative-relative-time button {
   min-height: 36px;
   padding: 5px 9px;
   border-radius: 4px;
@@ -1635,7 +1640,9 @@ button:disabled {
   line-height: 120%;
 }
 
-.relative-time-authoring select {
+.relative-time-authoring select,
+.quantitative-relative-time select,
+.quantitative-relative-time input[type="number"] {
   box-sizing: border-box;
   min-height: 36px;
   padding: 5px 8px;
