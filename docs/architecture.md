@@ -74,6 +74,7 @@ Responsibilities:
 * Create Event
 * Export the current Dataset as E2R JSON
 * Move Events in non-temporal display order through keyboard-operable controls
+  or card-wide drag during explicit session-only display-order editing
 
 The Timeline is Event-centric.
 

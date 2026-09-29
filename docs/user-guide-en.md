@@ -31,14 +31,22 @@ whereas export downloads a copy and keeps the current workspace open.
 
 ## Change the display order
 
-Select an Event card, or move keyboard focus to it with **Tab**. The ↑/↓
-controls appear only on the selected or focused Event. On a touch screen, tap
-the Event card to select it and reveal the same controls. With the card focused,
-press **Enter** or **Space** to select it; then use **Tab** to reach a move
-control. Open **About display order** beside the controls when you need the
-safety explanation or the selected Event's placement status. The disclosure
-explains that moving an Event changes display order only and leaves its date
-and Relative Time records unchanged.
+Choose **More** → **Edit display order** to start ordering. In ordinary
+Timeline reading mode, selecting or focusing a card does not show move
+controls, and dragging cannot change the order. While editing, drag any
+non-control part of an Event card onto another card. The destination card's
+background shows the drop target; a small line shows whether the Event will be
+inserted before or after it. You can also select a card, or focus it with
+**Tab**, and use its ↑/↓ controls. On touch screens, tap a card to select it;
+hold before dragging so ordinary vertical scrolling remains available. With
+the card focused, press **Enter** or **Space** to select it, then use **Tab**
+to reach a move control. Choose **More** → **Finish editing display order** to
+return to ordinary reading mode.
+
+Open **About display order** beside the editing controls when you need the
+safety explanation or the selected Event's placement status. Moving an Event
+changes display order only and leaves its date and Relative Time records
+unchanged.
 
 **Placed in display order** means the Event is included in the saved display
 sequence. **Unplaced · derived display** means no position for that Event is
@@ -49,9 +57,11 @@ on demand so it does not remain in the Timeline card while you read or reorder.
 
 When a saved display order differs from History chronology or an applicable
 Relative Time band, the affected Event shows **Review display order**. Open it
-to read the specific difference. A compact summary above the Timeline also
-provides the full diagnostic list. The diagnostic is informational; it does
-not change the records or disable export.
+to read the specific difference. Opening the review does not start editing;
+its **Edit display order** action enters the same editing mode as More. A
+compact summary above the Timeline also provides the full diagnostic list.
+The diagnostic is informational; it does not change the records or disable
+export.
 
 ```text
 Home

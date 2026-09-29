@@ -636,7 +636,6 @@ Future versions may extend the state machine with additional transitions for:
 
 - Undo / Redo
 - Multiple datasets
-- Drag and Drop
 - Clipboard operations
 - Extension editors
 - Plugin actions
