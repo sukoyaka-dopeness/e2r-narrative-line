@@ -381,6 +381,11 @@ test("drop targets highlight the whole card while retaining a before or after in
   assert.match(styles, /\.timeline-card--drop-after\s*\{\s*box-shadow:\s*inset 0 -2px var\(--accent-border\)/);
 });
 
+test("Timeline candidate and order disclosures leave the rest of their row as card surface", async () => {
+  const styles = await readFile(new URL("../src/index.css", import.meta.url), "utf8");
+  assert.match(styles, /\.timeline-time-candidate__disclosure > summary,\s*\.timeline-card__order-diagnostic > summary\s*\{[^}]*width: fit-content;[^}]*max-width: 100%;[^}]*padding-inline-end: 8px;/);
+});
+
 test("touch scroll wins before the hold; a held card can drag and auto-scroll", async () => {
   const rendered = await renderTimeline(fixture());
   try {
@@ -465,6 +470,19 @@ test("Perspective mismatch details are available beside each affected Event and 
     assert.equal(localIndicators[0].open, true);
     assert.equal(rendered.environment.document.activeElement?.classList.contains("timeline-card"), true);
     assert.equal(localIndicators[0].closest(".timeline-card")?.querySelectorAll(".timeline-order-actions button").length, 2);
+    placeCards(rendered.container);
+    await act(async () => {
+      pointer(rendered.environment.window, localIndicators[0].querySelector("summary"), "pointerdown", 40, 15);
+      pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 75);
+    });
+    assert.equal(rendered.container.querySelector(".timeline-card--dragging"), null);
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 75));
+    await act(async () => {
+      pointer(rendered.environment.window, localIndicators[0], "pointerdown", 250, 15);
+      pointer(rendered.environment.window, rendered.environment.window, "pointermove", 250, 75);
+    });
+    assert.ok(rendered.container.querySelector(".timeline-card--dragging"));
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointercancel", 250, 75));
     await act(async () => rendered.container.querySelector(".workspace-more-trigger")?.click());
     const finishEditing = [...rendered.container.querySelectorAll('[role="menuitem"]')]
       .find((item) => item.textContent?.trim() === "Finish editing display order");
