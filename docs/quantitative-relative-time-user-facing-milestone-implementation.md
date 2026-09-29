@@ -78,15 +78,21 @@ not authorize changes to QRT or Perspective semantics.
 The refinement at `8c76ecb` compacted the Timeline candidate's internal
 value/basis/warning spacing while retaining separation between candidates,
 and aligned Event Detail date/time inputs with its ordinary QRT controls.
-Human subsequently reported two remaining Event Detail visual inconsistencies:
-the Name input appeared shorter than peer ordinary controls, and the following
-Gregorian Calendar label appeared too close to the Name field. The bounded
-follow-up aligns that Event Detail Name input with the same control density
-and separates the Name field from the calendar group without changing the
-calendar label-to-date relationship or narrow layout rules. Formal QRT Human
-Browser Acceptance and milestone closure remain **pending** until Human
-explicitly reviews the changed Name geometry and group spacing at ordinary
-and narrow widths. Do not infer PASS from automated CSS coverage.
+Human subsequently reported two Event Detail inconsistencies: the Name input
+appeared shorter than peer controls, and the Gregorian Calendar label appeared
+too close to the Name field. The bounded follow-up at `55f8d2c` aligned the
+Event Detail Name input with the same control density and separated the Name
+field from the calendar group without changing the calendar label-to-date
+relationship or narrow layout rules. Human Browser Acceptance explicitly
+passed the Name input geometry, Name-to-calendar spacing, and the calendar
+label/date grouping after this follow-up.
+
+Formal QRT Human Browser Acceptance remains **pending** for one item: explicit
+Human visual confirmation that the final Timeline candidate internal spacing
+reads compactly for one candidate while keeping its warning identifiable and
+multiple candidates distinct. The earlier acceptance of the disclosure
+hierarchy does not substitute for review of this later spacing refinement.
+Do not infer PASS from automated CSS coverage.
 
 Reusable NarrativeLine presentation direction from this review: Timeline
 supplementary disclosures sit below the Event's primary content; peer
