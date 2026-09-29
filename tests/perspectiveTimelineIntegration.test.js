@@ -369,6 +369,16 @@ test("the full height of a destination card selects its before or after insertio
   }
 });
 
+test("drop targets highlight the whole card while retaining a before or after insertion line", async () => {
+  const styles = await readFile(new URL("../src/index.css", import.meta.url), "utf8");
+  const targetStyle = styles.match(/\.timeline-card\.timeline-card--drop-before,\s*\.timeline-card\.timeline-card--drop-after\s*\{([^}]*)\}/)?.[1];
+  assert.ok(targetStyle);
+  assert.match(targetStyle, /background:\s*var\(--accent-bg\)/);
+  assert.match(targetStyle, /outline:\s*2px solid var\(--accent\)/);
+  assert.match(styles, /\.timeline-card--drop-before\s*\{\s*box-shadow:\s*inset 0 3px var\(--accent\)/);
+  assert.match(styles, /\.timeline-card--drop-after\s*\{\s*box-shadow:\s*inset 0 -3px var\(--accent\)/);
+});
+
 test("touch scroll wins before the hold; a held card can drag and auto-scroll", async () => {
   const rendered = await renderTimeline(fixture());
   try {
