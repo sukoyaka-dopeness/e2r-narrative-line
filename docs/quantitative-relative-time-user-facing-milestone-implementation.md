@@ -52,8 +52,49 @@ contract was changed. This implementation does not add Citation, Relation
 graph editing, cross-feature diagnostics, transitive inference, a solver,
 automatic History repair, or a portable UI preference.
 
-Automated coverage: `tests/QuantitativeRelativeTimeService.test.js` and
-`tests/QuantitativeRelativeTimeIntegration.test.js`, plus existing NarrativeLine
-tests. Human Browser Acceptance should check the two authoring forms, selected
-Relation edit/delete, multiple separate date candidates, the History prefill
-versus Save boundary, Timeline candidate labeling, and EN/JA narrow layout.
+Automated coverage: `tests/QuantitativeRelativeTimeService.test.js`,
+`tests/QuantitativeRelativeTimeIntegration.test.js`,
+`tests/QuantitativeRelativeTimeAcceptanceFixture.test.js`, and existing
+NarrativeLine tests. At `8c76ecb64aa7239b6419ecbf483e7f922d58817f`,
+344/344 tests, lint, build, and diff check passed. The fixture verifies
+separate direct candidates, both Relation directions, calendar versus elapsed
+wording, month precision, same-name chronology and short-ID fallback, and
+Recorded Timeline placement. Integration coverage verifies that disclosure
+does not change selection or Dataset content; candidate prefill does not save
+History; discard leaves History unchanged; ordinary Save records History while
+retaining the Relation; later Relation edit/delete does not repair saved
+History. The candidate service remains direct one-hop with no winner selection.
+
+## Human Browser Acceptance checkpoint
+
+Human review has accepted the Timeline candidate disclosure hierarchy and
+basic interaction, candidate disclosure versus Event selection, and disclosure
+versus card-wide drag hit areas. Human also reviewed JA/EN at ordinary and
+narrow widths, long and same-name Events including chronology/short-ID hints,
+one and multiple candidates, wording from both Relation endpoints, calendar
+versus elapsed meaning, and month-granule precision. These observations do
+not authorize changes to QRT or Perspective semantics.
+
+The last visual refinement at `8c76ecb` compacted the Timeline candidate's
+internal value/basis/warning spacing while retaining separation between
+candidates, and aligned Event Detail date/time inputs with its ordinary QRT
+controls. Human has not yet explicitly accepted these two post-refinement
+visual results. Formal QRT Human Browser Acceptance and milestone closure
+therefore remain **pending**. The minimum remaining browser check is (1) one
+and multiple Timeline candidates remain readable, with the warning distinct,
+and (2) Event Detail date inputs and QRT controls look naturally aligned at
+ordinary and narrow widths. Do not infer PASS from automated CSS coverage.
+
+Reusable NarrativeLine presentation direction from this review: Timeline
+supplementary disclosures sit below the Event's primary content; peer
+secondary disclosures share a visual hierarchy; a candidate's value, basis,
+and warning read as one compact unit while separate candidates remain
+distinct; peer ordinary editing inputs and selects on one surface share
+natural geometry. New features should reuse accepted NarrativeLine ordinary
+control density. Exact CSS values are implementation details, not a portable
+design contract or E2R-wide/Cross-App visual rule. Cross-App Visual Style /
+Flatness remains a separate workstream.
+
+After explicit Human PASS, record QRT closure before the next NarrativeLine
+current-state/documentation/final release-readiness audit. That audit and a
+later Human decision precede any release.
