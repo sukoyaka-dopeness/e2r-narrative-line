@@ -594,10 +594,16 @@ button:disabled {
 .quantitative-relative-time__candidate-content { padding-top: 8px; }
 .quantitative-relative-time__list { display: grid; gap: 12px; padding-inline-start: 20px; }
 .quantitative-relative-time__list li { overflow-wrap: anywhere; }
-.quantitative-relative-time__fields { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 10px; }
+.quantitative-relative-time__fields { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; max-width: 100%; margin-top: 10px; overflow-wrap: anywhere; }
+.quantitative-relative-time__fields > span { min-width: 0; overflow-wrap: anywhere; }
 .quantitative-relative-time__fields label { display: grid; gap: 4px; min-width: 0; }
 .quantitative-relative-time__fields .quantitative-relative-time__inline-control { display: inline-flex; }
+.quantitative-relative-time__fields select,
+.quantitative-relative-time__fields input { min-width: 0; max-width: 100%; }
 .quantitative-relative-time__fields input[type="number"] { width: 6rem; }
+.quantitative-relative-time__create-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; max-width: 100%; }
+.quantitative-relative-time__create-controls label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.quantitative-relative-time__create-controls select { width: min(18rem, 100%); min-width: 0; max-width: 100%; }
 .quantitative-relative-time__delete-action { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .quantitative-relative-time__candidates { background: var(--social-bg); }
 .quantitative-relative-time__candidates li { margin-bottom: 12px; overflow-wrap: anywhere; }

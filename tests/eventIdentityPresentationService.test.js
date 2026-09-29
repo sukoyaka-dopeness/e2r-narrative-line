@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveEventIdentityPresentations } from "../src/services/EventIdentityPresentationService.ts";
+import { formatEventIdentityLabel, resolveEventIdentityPresentations } from "../src/services/EventIdentityPresentationService.ts";
 
 function event(id, name, chronology, temporalOrder) {
   return {
@@ -126,4 +126,19 @@ test("R11 canonical Event IDs remain separate from display hints", () => {
   const presentation = result.get("event-canonical-123456");
   assert.equal(presentation?.eventId, "event-canonical-123456");
   assert.notEqual(presentation?.eventId, presentation?.shortIdHint);
+});
+
+test("QRT-readable labels use chronology before a short ID and leave canonical IDs separate", () => {
+  const chronology = resolve([
+    event("event-early", "Anchor", "2024-01-31"),
+    event("event-late", "Anchor", "2024-03-01"),
+  ]);
+  assert.equal(formatEventIdentityLabel(chronology.get("event-early")), "Anchor (2024-01-31)");
+  const collision = resolve([
+    event("anchor-a-123456", "Anchor"),
+    event("anchor-b-123456", "Anchor"),
+  ]);
+  const label = formatEventIdentityLabel(collision.get("anchor-a-123456"));
+  assert.equal(label, "Anchor (anchor-a)");
+  assert.equal(collision.get("anchor-a-123456").eventId, "anchor-a-123456");
 });

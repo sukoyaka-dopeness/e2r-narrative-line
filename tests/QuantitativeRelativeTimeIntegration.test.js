@@ -162,3 +162,61 @@ test("quantitative candidate remains supplementary until normal History save", a
     environment.cleanup();
   }
 });
+
+test("QRT identifies same-name Events in selector, relation text, and candidate basis", async () => {
+  const value = dataset();
+  const longName = `Target ${"VeryLongName".repeat(12)}`;
+  value.events = [
+    { id: "anchor-early", name: "Anchor", extensions: { history: { time: { year: 2024, month: 1, day: 31 } } } },
+    { id: "anchor-late", name: "Anchor", extensions: { history: { time: { year: 2024, month: 3, day: 1 } } } },
+    { id: "undated-a-123456", name: "Undated" },
+    { id: "undated-b-123456", name: "Undated" },
+    { id: "target-long", name: longName },
+  ];
+  value.relations[0].sourceId = "anchor-early";
+  value.relations[0].targetId = "target-long";
+  const environment = createDomTestEnvironment("https://narrativeline.test/");
+  environment.window.localStorage.setItem("narrativeline.language", "en");
+  environment.window.localStorage.setItem("narrativeline.lastDataset", JSON.stringify(value));
+  environment.window.scrollTo = () => {};
+  environment.window.requestAnimationFrame = (callback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
+  try {
+    const [{ default: App }, { LanguageProvider }] = await Promise.all([
+      server.ssrLoadModule("/src/App.tsx"), server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+    ]);
+    await act(async () => root.render(React.createElement(LanguageProvider, null, React.createElement(App))));
+    await act(async () => button(environment.document, "Continue Editing").click());
+    const target = [...environment.document.querySelectorAll(".timeline-card")]
+      .find((item) => item.textContent?.includes(longName));
+    assert.ok(target);
+    await act(async () => target.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true })));
+    assert.ok(target.textContent.includes("Anchor (2024-01-31)"));
+    await act(async () => button(environment.document, "Edit").click());
+    const panel = environment.document.querySelector(".quantitative-relative-time");
+    assert.ok(panel.querySelector(".quantitative-relative-time__list").textContent.includes("Anchor (2024-01-31)"));
+    assert.ok(panel.querySelector(".quantitative-relative-time__basis").textContent.includes("Anchor (2024-01-31)"));
+    const edit = panel.querySelector(".quantitative-relative-time__list details");
+    edit.open = true;
+    assert.ok(edit.textContent.includes(longName));
+    assert.ok(edit.textContent.includes("Anchor (2024-01-31)"));
+    const create = [...panel.querySelectorAll("details")]
+      .find((item) => item.querySelector("summary")?.textContent === "Add quantitative time relation");
+    create.open = true;
+    const options = [...create.querySelector("select").options];
+    assert.equal(options.find(({ value: id }) => id === "anchor-early").textContent, "Anchor (2024-01-31)");
+    assert.equal(options.find(({ value: id }) => id === "anchor-late").textContent, "Anchor (2024-03-01)");
+    assert.equal(options.find(({ value: id }) => id === "undated-a-123456").textContent, "Undated (undated-a)");
+    assert.equal(options.find(({ value: id }) => id === "undated-b-123456").textContent, "Undated (undated-b)");
+    assert.ok(!options.some(({ textContent }) => textContent?.includes("undated-a-123456")));
+  } finally {
+    await server.close();
+    act(() => root.unmount());
+    environment.cleanup();
+  }
+});

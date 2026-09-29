@@ -3,6 +3,8 @@ import type { Dataset } from "../models/Dataset";
 import type { HistoryDate } from "../services/HistoryService.ts";
 import { useLanguage } from "../i18n/LanguageContext";
 import { createCoreObjectId } from "../services/IdentifierService.ts";
+import { formatEventIdentityLabel, getEventIdentityChronology, resolveEventIdentityPresentations } from "../services/EventIdentityPresentationService.ts";
+import { getPresentationMessages } from "../i18n/messages";
 import { getQuantitativeTimeCandidates } from "../services/QuantitativeTimeCandidateService.ts";
 import { calendarDisplacementFromInput, formatQuantitativeCandidateForDisplay, quantitativeCandidateBasis, quantitativeRelationLabel } from "../services/QuantitativeTimePresentationService.ts";
 import {
@@ -106,6 +108,7 @@ function PayloadEditor({ initial, onSave, disabled = false, ja, sourceName, targ
 export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, onUseCandidate, canUseCandidate }: Props) {
   const { language } = useLanguage();
   const ja = language === "ja";
+  const copy = getPresentationMessages(language);
   const [otherId, setOtherId] = useState("");
   const [feature, setFeature] = useState<QuantitativePayload["type"]>(CALENDAR_GRANULE_FEATURE);
   const [deletePending, setDeletePending] = useState<string | null>(null);
@@ -113,7 +116,14 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
   const [candidatesOpen, setCandidatesOpen] = useState(true);
   const relations = getQuantitativeRelations(dataset, eventId);
   const candidates = getQuantitativeTimeCandidates(dataset, eventId);
-  const eventName = (id: string) => dataset.events.find((event) => event.id === id)?.name || id;
+  const eventIdentities = resolveEventIdentityPresentations(dataset.events, {
+    getPrimary: (event) => event.name || copy.unnamedEvent,
+    getChronology: getEventIdentityChronology,
+  });
+  const eventName = (id: string) => {
+    const identity = eventIdentities.get(id);
+    return identity ? formatEventIdentityLabel(identity) : id;
+  };
   const apply = (operation: QuantitativeOperation) => {
     const result = applyQuantitativeOperation(dataset, operation);
     if (!result.ok) {
@@ -153,18 +163,20 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
         </ul>}
         <details><summary>{ja ? "量的な時間関係を追加" : "Add quantitative time relation"}</summary>
           <p>{ja ? "このできごとを基準に、選択したできごととの時間関係を記録します。" : "Record one time relation from this Event to the selected Event."}</p>
-          <label>{ja ? "対象Event" : "Target Event"}
+          <div className="quantitative-relative-time__create-controls">
+          <label><span>{ja ? "対象Event" : "Target Event"}</span>
             <select value={otherId} onChange={(event) => setOtherId(event.target.value)}>
               <option value="">{ja ? "選択してください" : "Select an Event"}</option>
-              {dataset.events.filter(({ id }) => id !== eventId).map((event) => <option key={event.id} value={event.id}>{event.name || event.id} ({event.id})</option>)}
+              {dataset.events.filter(({ id }) => id !== eventId).map((event) => <option key={event.id} value={event.id}>{eventName(event.id)}</option>)}
             </select>
           </label>
-          <label>{ja ? "記録の種類" : "Assertion type"}
+          <label><span>{ja ? "記録の種類" : "Assertion type"}</span>
             <select value={feature} onChange={(event) => setFeature(event.target.value as QuantitativePayload["type"])}>
               <option value={CALENDAR_GRANULE_FEATURE}>{ja ? "暦の単位で見た前後" : "Calendar granule displacement"}</option>
               <option value={ELAPSED_OFFSET_FEATURE}>{ja ? "経過時間" : "Elapsed duration"}</option>
             </select>
           </label>
+          </div>
           <PayloadEditor key={feature} initial={initial} ja={ja}
             sourceName={eventName(eventId)} targetName={otherId ? eventName(otherId) : (ja ? "対象のできごと" : "The selected Event")}
             disabled={!otherId || !canCreateQuantitative(dataset, feature)}

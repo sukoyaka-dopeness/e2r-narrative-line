@@ -20,6 +20,12 @@ export type EventIdentityPresentation = {
   shortIdHint?: string;
 };
 
+export function formatEventIdentityLabel(identity: EventIdentityPresentation): string {
+  if (!identity.ambiguousPrimary) return identity.primary;
+  const hints = [identity.chronologyHint, identity.shortIdHint].filter((hint): hint is string => Boolean(hint));
+  return hints.reduce((label, hint) => `${label} (${hint})`, identity.primary);
+}
+
 type EventIdentityPresentationOptions = {
   getPrimary: (event: Event) => string;
   getChronology: (event: Event) => EventIdentityChronology | undefined;

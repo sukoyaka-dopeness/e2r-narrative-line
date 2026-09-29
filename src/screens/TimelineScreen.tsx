@@ -27,6 +27,7 @@ import {
   type PerspectiveMoveResult,
 } from "../services/PerspectiveOrderingService.ts";
 import {
+  formatEventIdentityLabel,
   getEventIdentityChronology,
   resolveEventIdentityPresentations,
 } from "../services/EventIdentityPresentationService";
@@ -771,7 +772,8 @@ export function TimelineScreen({
                       {isSelected && <ul className="timeline-time-candidate__values">
                         {timeCandidates.map((candidate) => {
                           const date = formatQuantitativeCandidateForDisplay(candidate.date, language);
-                          const anchor = dataset.events.find(({ id }) => id === candidate.anchorEventId)?.name || candidate.anchorEventId;
+                          const anchorIdentity = eventIdentity.get(candidate.anchorEventId);
+                          const anchor = anchorIdentity ? formatEventIdentityLabel(anchorIdentity) : candidate.anchorEventId;
                           const currentIsTarget = dataset.relations.find(({ id }) => id === candidate.relationId)?.targetId === event.id;
                           return <li key={candidate.relationId}>
                             <strong>{date.value}</strong>
