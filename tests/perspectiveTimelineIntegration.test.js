@@ -307,6 +307,68 @@ test("card drag reorders only in editing mode and retains selection, focus, and 
   }
 });
 
+test("editing drag suppresses card text selection without affecting ordinary mode or card controls", async () => {
+  const rendered = await renderTimeline(fixture());
+  try {
+    const card = rendered.container.querySelector(".timeline-card");
+    const text = card.querySelector(".timeline-event-name");
+    await act(async () => pointer(rendered.environment.window, text, "pointerdown", 40, 15));
+    const ordinarySelection = new rendered.environment.window.Event("selectstart", { bubbles: true, cancelable: true });
+    text.dispatchEvent(ordinarySelection);
+    assert.equal(ordinarySelection.defaultPrevented, false);
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 15));
+
+    await enableDisplayOrderEditing(rendered.container);
+    await act(async () => pointer(rendered.environment.window, text, "pointerdown", 40, 15));
+    const editingSelection = new rendered.environment.window.Event("selectstart", { bubbles: true, cancelable: true });
+    text.dispatchEvent(editingSelection);
+    assert.equal(editingSelection.defaultPrevented, true);
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 15));
+
+    await act(async () => card.click());
+    const button = card.querySelector(".timeline-order-actions button");
+    assert.ok(button);
+    await act(async () => pointer(rendered.environment.window, button, "pointerdown", 40, 15));
+    const controlSelection = new rendered.environment.window.Event("selectstart", { bubbles: true, cancelable: true });
+    button.dispatchEvent(controlSelection);
+    assert.equal(controlSelection.defaultPrevented, false);
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 15));
+  } finally {
+    rendered.cleanup();
+  }
+});
+
+test("the full height of a destination card selects its before or after insertion line", async () => {
+  const rendered = await renderTimeline(fixture());
+  try {
+    await enableDisplayOrderEditing(rendered.container);
+    const cards = [...rendered.container.querySelectorAll(".timeline-card")];
+    const bounds = [[0, 50], [60, 260], [270, 320]];
+    cards.forEach((card, index) => {
+      const [top, bottom] = bounds[index];
+      card.getBoundingClientRect = () => ({ left: 0, right: 400, top, bottom, width: 400, height: bottom - top });
+    });
+    await act(async () => pointer(rendered.environment.window, cards[2], "pointerdown", 40, 295));
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 85));
+    assert.equal(cards[1].classList.contains("timeline-card--drop-before"), true);
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 85));
+    assert.deepEqual(cardOrder(rendered.container), ["First", "Third", "Second"]);
+
+    const reordered = [...rendered.container.querySelectorAll(".timeline-card")];
+    reordered.forEach((card, index) => {
+      const [top, bottom] = bounds[index];
+      card.getBoundingClientRect = () => ({ left: 0, right: 400, top, bottom, width: 400, height: bottom - top });
+    });
+    await act(async () => pointer(rendered.environment.window, reordered[0], "pointerdown", 40, 25));
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointermove", 40, 235));
+    assert.equal(reordered[1].classList.contains("timeline-card--drop-after"), true);
+    await act(async () => pointer(rendered.environment.window, rendered.environment.window, "pointerup", 40, 235));
+    assert.deepEqual(cardOrder(rendered.container), ["Third", "First", "Second"]);
+  } finally {
+    rendered.cleanup();
+  }
+});
+
 test("touch scroll wins before the hold; a held card can drag and auto-scroll", async () => {
   const rendered = await renderTimeline(fixture());
   try {

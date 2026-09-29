@@ -49,14 +49,16 @@ export function useTimelineCardDrag({
       const top = Math.min(...rectangles.map(({ rect }) => rect.top));
       const bottom = Math.max(...rectangles.map(({ rect }) => rect.bottom));
       if (x < left - 32 || x > right + 32 || y < top - 32 || y > bottom + 32) return null;
-      const nearest = rectangles.reduce((best, item) =>
-        Math.abs(y - (item.rect.top + item.rect.bottom) / 2) <
-        Math.abs(y - (best.rect.top + best.rect.bottom) / 2) ? item : best);
-      if (nearest.id === eventId) return null;
+      const containing = rectangles.find(({ rect }) =>
+        x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom);
+      const target = containing ?? rectangles.reduce((best, item) =>
+        Math.max(item.rect.top - y, 0, y - item.rect.bottom) <
+        Math.max(best.rect.top - y, 0, y - best.rect.bottom) ? item : best);
+      if (target.id === eventId) return null;
       return {
         sourceId: eventId,
-        targetId: nearest.id,
-        position: y < (nearest.rect.top + nearest.rect.bottom) / 2 ? "before" : "after",
+        targetId: target.id,
+        position: y < (target.rect.top + target.rect.bottom) / 2 ? "before" : "after",
       };
     };
 
@@ -73,6 +75,9 @@ export function useTimelineCardDrag({
     const preventContextMenu = (contextEvent: MouseEvent) => {
       if (active) contextEvent.preventDefault();
     };
+    const preventSelection = (selectionEvent: Event) => {
+      if (selectionEvent.cancelable) selectionEvent.preventDefault();
+    };
     const stop = (wasActive: boolean) => {
       if (holdTimer !== undefined) window.clearTimeout(holdTimer);
       if (scrollTimer !== undefined) window.clearInterval(scrollTimer);
@@ -83,6 +88,7 @@ export function useTimelineCardDrag({
       window.removeEventListener("blur", cancel);
       window.removeEventListener("touchmove", preventTouchScroll);
       window.removeEventListener("contextmenu", preventContextMenu);
+      card.removeEventListener("selectstart", preventSelection);
       if (card.hasPointerCapture?.(pointerId)) card.releasePointerCapture(pointerId);
       sessionRef.current = null;
       if (wasActive) {
@@ -148,6 +154,7 @@ export function useTimelineCardDrag({
     };
 
     sessionRef.current = { cancel };
+    card.addEventListener("selectstart", preventSelection);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", cancel);
