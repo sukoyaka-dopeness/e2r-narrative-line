@@ -1,0 +1,118 @@
+{
+  "version": "1.0",
+  "entities": [],
+  "events": [
+    {
+      "id": "anchor-jan31",
+      "name": "Anchor",
+      "extensions": { "history": { "time": { "year": 2024, "month": 1, "day": 31, "hour": 23, "minute": 0 } } }
+    },
+    {
+      "id": "anchor-feb03",
+      "name": "Anchor",
+      "extensions": { "history": { "time": { "year": 2024, "month": 2, "day": 3 } } }
+    },
+    {
+      "id": "anchor-feb19",
+      "name": "Month anchor",
+      "extensions": { "history": { "time": { "year": 2024, "month": 2, "day": 19 } } }
+    },
+    {
+      "id": "twin-anchor-a-123456",
+      "name": "Twin anchor",
+      "extensions": { "history": { "time": { "year": 2024, "month": 1, "day": 31 } } }
+    },
+    {
+      "id": "twin-anchor-b-123456",
+      "name": "Twin anchor",
+      "extensions": { "history": { "time": { "year": 2024, "month": 1, "day": 31 } } }
+    },
+    {
+      "id": "target-many",
+      "name": "A very long event name used to check how several date and time candidates wrap within a narrow Timeline card without obscuring the event itself"
+    },
+    { "id": "reverse-source", "name": "Reverse source with one candidate" },
+    {
+      "id": "dated-target",
+      "name": "Dated target",
+      "extensions": { "history": { "time": { "year": 2024, "month": 3, "day": 1 } } }
+    },
+    { "id": "target-one", "name": "Single candidate event" },
+    {
+      "id": "recorded-target",
+      "name": "Recorded event with an additional candidate",
+      "extensions": { "history": { "time": { "year": 2024, "month": 2, "day": 5 } } }
+    }
+  ],
+  "relations": [
+    {
+      "id": "calendar-plus-one-day",
+      "sourceId": "anchor-jan31",
+      "targetId": "target-many",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "day", "displacement": 1 } }
+    },
+    {
+      "id": "calendar-minus-two-days",
+      "sourceId": "anchor-feb03",
+      "targetId": "target-many",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "day", "displacement": -2 } }
+    },
+    {
+      "id": "calendar-same-month",
+      "sourceId": "anchor-feb19",
+      "targetId": "target-many",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "month", "displacement": 0 } }
+    },
+    {
+      "id": "elapsed-two-hours",
+      "sourceId": "anchor-jan31",
+      "targetId": "target-many",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "elapsed-offset", "direction": "after", "value": 2, "unit": "hour" } }
+    },
+    {
+      "id": "twin-calendar-one-day",
+      "sourceId": "twin-anchor-a-123456",
+      "targetId": "target-many",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "day", "displacement": 1 } }
+    },
+    {
+      "id": "twin-calendar-two-days",
+      "sourceId": "twin-anchor-b-123456",
+      "targetId": "target-many",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "day", "displacement": 2 } }
+    },
+    {
+      "id": "reverse-calendar-plus-one-day",
+      "sourceId": "reverse-source",
+      "targetId": "dated-target",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "day", "displacement": 1 } }
+    },
+    {
+      "id": "single-calendar-next-month",
+      "sourceId": "anchor-jan31",
+      "targetId": "target-one",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "month", "displacement": 1 } }
+    },
+    {
+      "id": "recorded-plus-one-day",
+      "sourceId": "anchor-jan31",
+      "targetId": "recorded-target",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "day", "displacement": 1 } }
+    }
+  ],
+  "extensions": {
+    "metadata": { "datasetId": "qrt-human-acceptance-local", "title": "QRT Human Acceptance — local test fixture" },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        { "extension": "history", "version": "1.0.0" },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.relative-time",
+          "version": "0.2.0",
+          "features": ["calendar-granule-relation", "elapsed-offset"]
+        }
+      ]
+    }
+  }
+}

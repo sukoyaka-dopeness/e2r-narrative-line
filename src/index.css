@@ -612,9 +612,9 @@ button:disabled {
 .quantitative-relative-time__basis { display: block; }
 .quantitative-relative-time__precision { font-size: .85em; }
 .quantitative-relative-time__candidates button { display: block; margin-top: 6px; }
-.timeline-time-candidate { display: block; margin-top: 5px; color: var(--text); }
-.timeline-time-candidate__disclosure { font-size: .88em; }
-.timeline-time-candidate__disclosure > summary { cursor: pointer; font-weight: 500; }
+.timeline-time-candidate { display: block; margin-top: 5px; }
+.timeline-time-candidate__disclosure { color: var(--text-muted, var(--text)); font-size: .8rem; }
+.timeline-time-candidate__disclosure > summary { cursor: pointer; font-weight: 600; }
 .timeline-time-candidate__details { margin-top: 4px; }
 .timeline-time-candidate__values { margin: 4px 0; padding-inline-start: 0; list-style-position: inside; overflow-wrap: anywhere; }
 .timeline-time-candidate__values li + li { margin-top: 5px; }

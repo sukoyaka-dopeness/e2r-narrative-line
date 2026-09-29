@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -62,17 +63,37 @@ test("quantitative candidate remains supplementary until normal History save", a
     ]);
     await act(async () => root.render(React.createElement(LanguageProvider, null, React.createElement(App))));
     await act(async () => button(environment.document, "Continue Editing").click());
-    const target = [...environment.document.querySelectorAll(".timeline-card")]
-      .find((item) => item.textContent?.includes("Target"));
+    const cards = [...environment.document.querySelectorAll(".timeline-card")];
+    const anchorCard = cards.find((item) => item.querySelector(".timeline-event-name")?.textContent === "Anchor");
+    const target = cards.find((item) => item.querySelector(".timeline-event-name")?.textContent === "Target");
     assert.ok(target.textContent.includes("1 date/time candidate"));
     assert.ok(target.textContent.includes("----/--/--"));
-    await act(async () => target.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true })));
     const timelineCandidateDisclosure = target.querySelector(".timeline-time-candidate__disclosure");
     assert.ok(timelineCandidateDisclosure.querySelector("summary").textContent.includes("1 date/time candidate"));
     assert.equal(timelineCandidateDisclosure.open, false);
     assert.ok(timelineCandidateDisclosure.querySelector(".timeline-time-candidate__details"));
+    await act(async () => anchorCard.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true })));
+    const beforeDisclosure = environment.window.localStorage.getItem("narrativeline.lastDataset");
+    assert.ok(anchorCard.classList.contains("timeline-card--selected"));
     await act(async () => timelineCandidateDisclosure.querySelector("summary").click());
     assert.equal(timelineCandidateDisclosure.open, true);
+    assert.ok(anchorCard.classList.contains("timeline-card--selected"));
+    assert.ok(!target.classList.contains("timeline-card--selected"));
+    assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), beforeDisclosure);
+    await act(async () => timelineCandidateDisclosure.querySelector("summary").click());
+    assert.equal(timelineCandidateDisclosure.open, false);
+    const summary = timelineCandidateDisclosure.querySelector("summary");
+    await act(async () => {
+      summary.dispatchEvent(new environment.window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      summary.click();
+    });
+    assert.equal(timelineCandidateDisclosure.open, true);
+    assert.ok(anchorCard.classList.contains("timeline-card--selected"));
+    await act(async () => summary.click());
+    await act(async () => target.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true })));
+    assert.ok(target.classList.contains("timeline-card--selected"));
+    assert.equal(timelineCandidateDisclosure.open, false);
+    await act(async () => summary.click());
     assert.ok(timelineCandidateDisclosure.textContent.includes("Month precision candidate"));
     assert.ok(timelineCandidateDisclosure.textContent.includes("Not recorded · time zone and daylight saving time not evaluated"));
     assert.ok(!target.textContent.includes("[calendar]"));
@@ -97,6 +118,12 @@ test("quantitative candidate remains supplementary until normal History save", a
     await act(async () => button(environment.document, "Review date/time").click());
     const pending = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(pending.events[1].extensions?.history, undefined);
+    await act(async () => button(environment.document, "Discard Unsaved Changes and Return").click());
+    const cancelled = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
+    assert.equal(cancelled.events[1].extensions?.history, undefined);
+    assert.deepEqual(cancelled.relations, before.relations);
+    await act(async () => button(environment.document, "Edit").click());
+    await act(async () => button(environment.document, "Review date/time").click());
     await act(async () => button(environment.document, "Save Event").click());
     const saved = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.deepEqual(saved.events[1].extensions.history.time, { year: 2024, month: 2 });
@@ -162,6 +189,7 @@ test("quantitative candidate remains supplementary until normal History save", a
     await act(async () => button(calendarEdit, "Confirm delete").click());
     const empty = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(empty.relations.length, 0);
+    assert.deepEqual(empty.events[1].extensions.history.time, { year: 2024, month: 2 });
     assert.ok(environment.document.querySelector(".quantitative-relative-time"));
   } finally {
     await server.close();
@@ -221,6 +249,43 @@ test("QRT identifies same-name Events in selector, relation text, and candidate 
     assert.equal(options.find(({ value: id }) => id === "undated-a-123456").textContent, "Undated (undated-a)");
     assert.equal(options.find(({ value: id }) => id === "undated-b-123456").textContent, "Undated (undated-b)");
     assert.ok(!options.some(({ textContent }) => textContent?.includes("undated-a-123456")));
+  } finally {
+    await server.close();
+    act(() => root.unmount());
+    environment.cleanup();
+  }
+});
+
+test("acceptance fixture keeps Recorded Timeline placement and all candidate entries", async () => {
+  const source = readFileSync(new URL("./fixtures/quantitative-relative-time-human-acceptance.e2r.json", import.meta.url), "utf8");
+  const environment = createDomTestEnvironment("https://narrativeline.test/");
+  environment.window.localStorage.setItem("narrativeline.language", "en");
+  environment.window.localStorage.setItem("narrativeline.lastDataset", source);
+  environment.window.scrollTo = () => {};
+  environment.window.requestAnimationFrame = (callback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
+  try {
+    const [{ default: App }, { LanguageProvider }] = await Promise.all([
+      server.ssrLoadModule("/src/App.tsx"), server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+    ]);
+    await act(async () => root.render(React.createElement(LanguageProvider, null, React.createElement(App))));
+    await act(async () => button(environment.document, "Continue Editing").click());
+    const cards = [...environment.document.querySelectorAll(".timeline-card")];
+    const recorded = cards.find((item) => item.querySelector(".timeline-event-name")?.textContent === "Recorded event with an additional candidate");
+    const dense = cards.find((item) => item.querySelector(".timeline-event-name")?.textContent?.startsWith("A very long event name"));
+    assert.equal(recorded.querySelector(".timeline-card__row > div:first-child > div")?.textContent, "2024-02-05");
+    assert.ok(recorded.querySelector(".timeline-time-candidate summary")?.textContent.includes("1 date/time candidate"));
+    const disclosure = dense.querySelector(".timeline-time-candidate__disclosure");
+    assert.ok(disclosure.querySelector("summary").textContent.includes("6 date/time candidates"));
+    assert.equal(disclosure.open, false);
+    await act(async () => disclosure.querySelector("summary").click());
+    assert.equal(disclosure.querySelectorAll(".timeline-time-candidate__values li").length, 6);
+    assert.deepEqual(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset")), JSON.parse(source));
   } finally {
     await server.close();
     act(() => root.unmount());

@@ -767,7 +767,7 @@ export function TimelineScreen({
 
                   {timeCandidates.length > 0 && (
                     <div className="timeline-time-candidate">
-                      <details className="timeline-time-candidate__disclosure">
+                      <details className="timeline-time-candidate__disclosure" onClick={(clickEvent) => clickEvent.stopPropagation()}>
                         <summary>{ja ? `日時候補 ${timeCandidates.length}件（未記録）` :
                           `${timeCandidates.length} date/time candidate${timeCandidates.length === 1 ? "" : "s"} (not recorded)`}</summary>
                         <div className="timeline-time-candidate__details">
@@ -785,7 +785,7 @@ export function TimelineScreen({
                           </li>;
                         })}
                         </ul>
-                        <small className="timeline-time-candidate__warning">{ja ? "未記録・タイムゾーンとサマータイム未考慮" : "Not recorded · time zone and daylight saving time not evaluated"}</small>
+                        <span className="timeline-time-candidate__warning">{ja ? "未記録・タイムゾーンとサマータイム未考慮" : "Not recorded · time zone and daylight saving time not evaluated"}</span>
                         </div>
                       </details>
                     </div>
