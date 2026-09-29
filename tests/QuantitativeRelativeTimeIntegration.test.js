@@ -9,6 +9,14 @@ import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
 const relativeId = "draft.github.sukoyaka-dopeness.relative-time";
 const specificationId = "draft.github.sukoyaka-dopeness.specification";
 
+test("Timeline candidate spacing stays scoped and Event Detail date inputs share QRT control density", () => {
+  const styles = readFileSync(new URL("../src/index.css", import.meta.url), "utf8");
+  assert.match(styles, /\.timeline-time-candidate__values li \{ line-height: 1\.3; \}/);
+  assert.match(styles, /\.timeline-time-candidate__values li \+ li \{ margin-top: 5px; \}/);
+  assert.match(styles, /\.timeline-time-candidate__warning \{ display: block; margin-top: 3px; \}/);
+  assert.match(styles, /\.quantitative-relative-time input\[type="number"\],\s*\.detail-screen \.date-fields input\[type="number"\] \{[^}]*min-height: 36px;[^}]*padding: 5px 8px;/);
+});
+
 function dataset() {
   return {
     version: "1.0", entities: [],
