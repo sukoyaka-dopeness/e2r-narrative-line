@@ -483,6 +483,10 @@ button:disabled {
   max-width: 100%;
 }
 
+.detail-screen--event .detail-name-field {
+  margin-bottom: 16px;
+}
+
 .event-text-fields {
   display: grid;
   gap: 16px;
@@ -1662,7 +1666,8 @@ button:disabled {
 .relative-time-authoring select,
 .quantitative-relative-time select,
 .quantitative-relative-time input[type="number"],
-.detail-screen .date-fields input[type="number"] {
+.detail-screen .date-fields input[type="number"],
+.detail-screen--event .detail-name-field input {
   box-sizing: border-box;
   min-height: 36px;
   padding: 5px 8px;

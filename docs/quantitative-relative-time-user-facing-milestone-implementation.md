@@ -75,15 +75,18 @@ one and multiple candidates, wording from both Relation endpoints, calendar
 versus elapsed meaning, and month-granule precision. These observations do
 not authorize changes to QRT or Perspective semantics.
 
-The last visual refinement at `8c76ecb` compacted the Timeline candidate's
-internal value/basis/warning spacing while retaining separation between
-candidates, and aligned Event Detail date/time inputs with its ordinary QRT
-controls. Human has not yet explicitly accepted these two post-refinement
-visual results. Formal QRT Human Browser Acceptance and milestone closure
-therefore remain **pending**. The minimum remaining browser check is (1) one
-and multiple Timeline candidates remain readable, with the warning distinct,
-and (2) Event Detail date inputs and QRT controls look naturally aligned at
-ordinary and narrow widths. Do not infer PASS from automated CSS coverage.
+The refinement at `8c76ecb` compacted the Timeline candidate's internal
+value/basis/warning spacing while retaining separation between candidates,
+and aligned Event Detail date/time inputs with its ordinary QRT controls.
+Human subsequently reported two remaining Event Detail visual inconsistencies:
+the Name input appeared shorter than peer ordinary controls, and the following
+Gregorian Calendar label appeared too close to the Name field. The bounded
+follow-up aligns that Event Detail Name input with the same control density
+and separates the Name field from the calendar group without changing the
+calendar label-to-date relationship or narrow layout rules. Formal QRT Human
+Browser Acceptance and milestone closure remain **pending** until Human
+explicitly reviews the changed Name geometry and group spacing at ordinary
+and narrow widths. Do not infer PASS from automated CSS coverage.
 
 Reusable NarrativeLine presentation direction from this review: Timeline
 supplementary disclosures sit below the Event's primary content; peer

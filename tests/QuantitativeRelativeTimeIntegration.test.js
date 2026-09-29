@@ -14,7 +14,8 @@ test("Timeline candidate spacing stays scoped and Event Detail date inputs share
   assert.match(styles, /\.timeline-time-candidate__values li \{ line-height: 1\.3; \}/);
   assert.match(styles, /\.timeline-time-candidate__values li \+ li \{ margin-top: 5px; \}/);
   assert.match(styles, /\.timeline-time-candidate__warning \{ display: block; margin-top: 3px; \}/);
-  assert.match(styles, /\.quantitative-relative-time input\[type="number"\],\s*\.detail-screen \.date-fields input\[type="number"\] \{[^}]*min-height: 36px;[^}]*padding: 5px 8px;/);
+  assert.match(styles, /\.quantitative-relative-time input\[type="number"\],\s*\.detail-screen \.date-fields input\[type="number"\],\s*\.detail-screen--event \.detail-name-field input \{[^}]*min-height: 36px;[^}]*padding: 5px 8px;/);
+  assert.match(styles, /\.detail-screen--event \.detail-name-field \{\s*margin-bottom: 16px;/);
 });
 
 function dataset() {
