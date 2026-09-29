@@ -20,7 +20,8 @@ import {
   validateHistoryDate,
 } from "../services/HistoryService";
 import { getHistory2PositionEditorValues } from "../services/History2Service";
-import { formatQuantitativeCandidateDate, getQuantitativeTimeCandidates } from "../services/QuantitativeTimeCandidateService.ts";
+import { getQuantitativeTimeCandidates } from "../services/QuantitativeTimeCandidateService.ts";
+import { formatQuantitativeCandidateForDisplay, quantitativeRelationLabel, quantitativeRelationMovement } from "../services/QuantitativeTimePresentationService.ts";
 import {
   getPerspectiveTimeline,
   type PerspectiveMoveResult,
@@ -764,15 +765,24 @@ export function TimelineScreen({
                   )}
 
                   {timeCandidates.length > 0 && (
-                    <small className="timeline-time-candidate">
-                      {ja ? `日時候補 ${timeCandidates.length} 件（未記録・Time Zone / DST 未考慮）` :
-                        `${timeCandidates.length} date candidate${timeCandidates.length === 1 ? "" : "s"} (not recorded; time zone / DST not evaluated)`}
-                      {isSelected && <span className="timeline-time-candidate__values">
-                        {timeCandidates.map((candidate) =>
-                          `${formatQuantitativeCandidateDate(candidate.date)} ← ${dataset.events.find(({ id }) => id === candidate.anchorEventId)?.name || candidate.anchorEventId} [${candidate.relationId}]`,
-                        ).join("; ")}
-                      </span>}
-                    </small>
+                    <div className="timeline-time-candidate">
+                      <small>{ja ? `日時候補 ${timeCandidates.length} 件（未記録）` :
+                        `${timeCandidates.length} date/time candidate${timeCandidates.length === 1 ? "" : "s"} (not recorded)`}</small>
+                      {isSelected && <ul className="timeline-time-candidate__values">
+                        {timeCandidates.map((candidate) => {
+                          const date = formatQuantitativeCandidateForDisplay(candidate.date, language);
+                          const anchor = dataset.events.find(({ id }) => id === candidate.anchorEventId)?.name || candidate.anchorEventId;
+                          const currentIsTarget = dataset.relations.find(({ id }) => id === candidate.relationId)?.targetId === event.id;
+                          return <li key={candidate.relationId}>
+                            <strong>{date.value}</strong>
+                            {date.precision && <span>{date.precision}</span>}
+                            <span>{ja ? `${anchor}との「${quantitativeRelationMovement(candidate.payload, currentIsTarget, language)}」の記録から算出` :
+                              `Calculated from the “${quantitativeRelationLabel(candidate.payload, currentIsTarget, anchor, language)}” relation`}</span>
+                          </li>;
+                        })}
+                      </ul>}
+                      {isSelected && <small>{ja ? "未記録・Time Zone / DST 未考慮" : "Not recorded · Time Zone / DST not evaluated"}</small>}
+                    </div>
                   )}
 
                   {isSelected && event.description && (

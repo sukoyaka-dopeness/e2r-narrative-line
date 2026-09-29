@@ -57,14 +57,24 @@ test("quantitative candidate remains supplementary until normal History save", a
     await act(async () => button(environment.document, "Continue Editing").click());
     const target = [...environment.document.querySelectorAll(".timeline-card")]
       .find((item) => item.textContent?.includes("Target"));
-    assert.ok(target.textContent.includes("1 date candidate"));
+    assert.ok(target.textContent.includes("1 date/time candidate"));
     assert.ok(target.textContent.includes("----/--/--"));
     await act(async () => target.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true })));
+    assert.ok(target.textContent.includes("Month precision candidate"));
+    assert.ok(target.textContent.includes("Not recorded · Time Zone / DST not evaluated"));
+    assert.ok(!target.textContent.includes("[calendar]"));
     await act(async () => button(environment.document, "Edit").click());
-    assert.ok(environment.document.querySelector(".quantitative-relative-time"));
+    const initialPanel = environment.document.querySelector(".quantitative-relative-time");
+    assert.equal(initialPanel.querySelector(".quantitative-relative-time__recorded h3").textContent,
+      "Recorded time relations");
+    assert.equal(initialPanel.querySelector(".quantitative-relative-time__candidates h3").textContent,
+      "Date/time candidates (not recorded)");
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__list").textContent.includes("Next month relative to Anchor"));
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__basis").textContent.includes("Anchor's recorded time"));
+    assert.ok(!initialPanel.querySelector(".quantitative-relative-time__candidates").textContent.includes("calendar"));
     const before = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(before.events[1].extensions?.history, undefined);
-    await act(async () => button(environment.document, "Use in History editor").click());
+    await act(async () => button(environment.document, "Review in History").click());
     const pending = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(pending.events[1].extensions?.history, undefined);
     await act(async () => button(environment.document, "Save Event").click());
@@ -75,7 +85,7 @@ test("quantitative candidate remains supplementary until normal History save", a
     await act(async () => button(environment.document, "Edit").click());
     const panel = environment.document.querySelector(".quantitative-relative-time");
     const create = [...panel.querySelectorAll("details")]
-      .find((item) => item.querySelector("summary")?.textContent === "Add quantitative assertion");
+      .find((item) => item.querySelector("summary")?.textContent === "Add quantitative time relation");
     create.open = true;
     const choices = create.querySelectorAll("select");
     await act(async () => changeSelect(environment.window, choices[0], "a"));
@@ -86,7 +96,7 @@ test("quantitative candidate remains supplementary until normal History save", a
     assert.equal(added.relations[1].extensions[relativeId].type, "elapsed-offset");
 
     const elapsedRow = [...panel.querySelectorAll(".quantitative-relative-time__list li")]
-      .find((item) => item.textContent.includes("elapsed"));
+      .find((item) => item.textContent.includes("hour before"));
     const edit = elapsedRow.querySelector("details");
     edit.open = true;
     await act(async () => changeSelect(environment.window, edit.querySelector("select"), "before"));
@@ -99,7 +109,7 @@ test("quantitative candidate remains supplementary until normal History save", a
     assert.equal(deleted.relations.length, 1);
     assert.equal(deleted.relations[0].id, "calendar");
     const calendarRow = [...panel.querySelectorAll(".quantitative-relative-time__list li")]
-      .find((item) => item.textContent.includes("calendar granules"));
+      .find((item) => item.textContent.includes("Next month"));
     const calendarEdit = calendarRow.querySelector("details");
     calendarEdit.open = true;
     await act(async () => button(calendarEdit, "Delete this assertion").click());
