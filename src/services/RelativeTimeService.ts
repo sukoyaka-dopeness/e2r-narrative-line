@@ -15,6 +15,8 @@ export const RELATIVE_TIME_EXTENSION_ID =
   "draft.github.sukoyaka-dopeness.relative-time";
 export const RELATIVE_TIME_VERSION = "0.2.0";
 export const RELATIVE_POSITION_FEATURE = "relative-position";
+export const CALENDAR_GRANULE_FEATURE = "calendar-granule-relation";
+export const ELAPSED_OFFSET_FEATURE = "elapsed-offset";
 
 export type RelativePosition = "before" | "after";
 export type RelativeTimeResult =
@@ -74,26 +76,36 @@ export function classifyRelativeTimeEvidence(dataset: Dataset): RelativeTimeEvid
     specification.uses.some((use) => isRecord(use) && use.extension === RELATIVE_TIME_EXTENSION_ID);
 
   if (payloads.length === 0 && !declared) return "off";
-  if (payloads.length === 0 || !supportsRelativeTimeAuthoring(dataset)) return "diagnostic";
+  if (payloads.length === 0 || !hasExactRelativeTimeDeclaration(dataset)) return "diagnostic";
 
   const knownFeatures = new Set(RELATIVE_TIME_FEATURES);
   const actualFeatures = usedRelativeTimeFeatures(dataset);
-  if (!actualFeatures || [...actualFeatures].some((feature) => !knownFeatures.has(feature) || feature !== RELATIVE_POSITION_FEATURE)) {
+  if (!actualFeatures || [...actualFeatures].some((feature) => !knownFeatures.has(feature))) {
     return "diagnostic";
   }
   const hasUnsupportedPayload = payloads.some(({ object, payload }) => {
     if (object !== dataset && !dataset.relations.includes(object as Relation)) return true;
-    if (!isRecord(payload) || payload.type !== RELATIVE_POSITION_FEATURE ||
-        (payload.relation !== "before" && payload.relation !== "after")) return true;
+    if (!isRecord(payload)) return true;
+    const qualitative = payload.type === RELATIVE_POSITION_FEATURE &&
+      (payload.relation === "before" || payload.relation === "after");
+    const calendar = payload.type === CALENDAR_GRANULE_FEATURE &&
+      ["year", "month", "day", "hour", "minute", "second"].includes(payload.granularity as string) &&
+      Number.isSafeInteger(payload.displacement) &&
+      (payload.calendar === undefined || payload.calendar === "gregorian");
+    const elapsed = payload.type === ELAPSED_OFFSET_FEATURE &&
+      (payload.direction === "before" || payload.direction === "after") &&
+      Number.isSafeInteger(payload.value) && (payload.value as number) > 0 &&
+      ["second", "minute", "hour"].includes(payload.unit as string);
+    if (!qualitative && !calendar && !elapsed) return true;
     const relation = object as Relation;
     return !dataset.events.some(({ id }) => id === relation.sourceId) ||
       !dataset.events.some(({ id }) => id === relation.targetId);
   });
   if (hasUnsupportedPayload) return "diagnostic";
 
-  const usable = dataset.events.some((event) =>
-    getEditableRelativeTimeAssertions(dataset, event.id).length > 0,
-  );
+  const usable = payloads.some(({ payload }) => isRecord(payload) &&
+    (payload.type === CALENDAR_GRANULE_FEATURE || payload.type === ELAPSED_OFFSET_FEATURE)) ||
+    dataset.events.some((event) => getEditableRelativeTimeAssertions(dataset, event.id).length > 0);
   return usable ? "on" : "diagnostic";
 }
 
@@ -120,6 +132,21 @@ function exactRelativeTimeUse(dataset: Dataset): JsonRecord | undefined {
     return undefined;
   }
   return uses[0];
+}
+
+export function hasExactRelativeTimeDeclaration(dataset: Dataset): boolean {
+  const specification = dataset.extensions?.[SPECIFICATION_EXTENSION_ID];
+  if (!isRecord(specification) || specification.specVersion !== SPECIFICATION_EXTENSION_VERSION ||
+      !Array.isArray(specification.uses)) return false;
+  const uses = specification.uses.filter((use) => isRecord(use) &&
+    use.extension === RELATIVE_TIME_EXTENSION_ID);
+  return uses.length === 1 && isRecord(uses[0]) && uses[0].version === RELATIVE_TIME_VERSION &&
+    Array.isArray(uses[0].features) && hasCompleteUseCoverage(dataset, specification) &&
+    (() => {
+      const actual = usedRelativeTimeFeatures(dataset);
+      return actual !== undefined &&
+        JSON.stringify([...actual].sort()) === JSON.stringify([...uses[0].features].sort());
+    })();
 }
 
 export function supportsRelativeTimeAuthoring(dataset: Dataset): boolean {
@@ -235,7 +262,7 @@ export function getEditableRelativeTimeAssertions(
   });
 }
 
-function ensureRelativeTimeDeclaration(dataset: Dataset): Dataset | undefined {
+export function ensureRelativeTimeDeclaration(dataset: Dataset, feature = RELATIVE_POSITION_FEATURE): Dataset | undefined {
   const uses = dataset.extensions?.[SPECIFICATION_EXTENSION_ID];
   const existingRelativePayload = dataset.relations.some(
     (relation) => relation.extensions?.[RELATIVE_TIME_EXTENSION_ID] !== undefined,
@@ -268,7 +295,7 @@ function ensureRelativeTimeDeclaration(dataset: Dataset): Dataset | undefined {
             {
               extension: RELATIVE_TIME_EXTENSION_ID,
               version: RELATIVE_TIME_VERSION,
-              features: [RELATIVE_POSITION_FEATURE],
+              features: [feature],
             },
           ],
         },
@@ -301,7 +328,7 @@ function ensureRelativeTimeDeclaration(dataset: Dataset): Dataset | undefined {
             {
               extension: RELATIVE_TIME_EXTENSION_ID,
               version: RELATIVE_TIME_VERSION,
-              features: [RELATIVE_POSITION_FEATURE],
+              features: [feature],
             },
           ],
         },
@@ -325,7 +352,7 @@ function ensureRelativeTimeDeclaration(dataset: Dataset): Dataset | undefined {
   ) return undefined;
   const features = [...new Set([
     ...relativeUse.features,
-    RELATIVE_POSITION_FEATURE,
+    feature,
   ])].sort();
   return {
     ...dataset,

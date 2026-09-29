@@ -578,6 +578,25 @@ button:disabled {
   margin-top: 16px;
 }
 
+.quantitative-relative-time {
+  margin-top: 16px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+}
+
+.quantitative-relative-time summary { cursor: pointer; font-weight: 600; }
+.quantitative-relative-time details details { margin-top: 12px; }
+.quantitative-relative-time__list { display: grid; gap: 12px; padding-inline-start: 20px; }
+.quantitative-relative-time__list li { overflow-wrap: anywhere; }
+.quantitative-relative-time__fields { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 10px; }
+.quantitative-relative-time__fields label { display: grid; gap: 4px; min-width: 120px; }
+.quantitative-relative-time__candidates { margin-top: 16px; padding: 10px; background: var(--social-bg); }
+.quantitative-relative-time__candidates li { margin-bottom: 8px; overflow-wrap: anywhere; }
+.quantitative-relative-time__candidates button { margin-inline-start: 10px; }
+.timeline-time-candidate { display: block; margin-top: 5px; color: var(--text); }
+.timeline-time-candidate__values { display: block; overflow-wrap: anywhere; }
+
 .relative-time-authoring__details {
   min-width: 0;
   margin: 0;

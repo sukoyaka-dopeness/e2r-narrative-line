@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CoordinatePanel } from "../components/CoordinatePanel";
 import { RelativeTimeAuthoringPanel } from "../components/RelativeTimeAuthoringPanel";
+import { QuantitativeRelativeTimePanel } from "../components/QuantitativeRelativeTimePanel";
 import { RelativeTimeDiagnosticNotice } from "../components/RelativeTimeDiagnosticNotice";
 import { ModalDialog } from "../components/ModalDialog";
 import type { Dataset } from "../models/Dataset";
@@ -18,11 +19,14 @@ import {
   getHistory2PositionEditorValues,
   preflightDatasetHistory1To2,
 } from "../services/History2Service.ts";
-import type { EventUpdates } from "../services/EventService.ts";
+import { updateEvent, type EventUpdates } from "../services/EventService.ts";
+import { validateCoreDataset } from "../services/ValidationService.ts";
 import type { RelativeTimeEvidenceState, RelativeTimeOperation } from "../services/RelativeTimeService.ts";
+import type { QuantitativeOperation } from "../services/QuantitativeRelativeTimeService.ts";
 import {
   classifyHistoryCapability,
   isHistoryEditable,
+  readHistoryDeclaration,
 } from "../services/HistoryCapabilityService.ts";
 import { getDetailDiscardCopy, getExistingDetailNavigationCopy } from "../services/DetailDiscardCopyService";
 
@@ -89,6 +93,7 @@ type EventDetailScreenProps = {
     updates: EventUpdates,
   ) => void;
   onRelativeTimeOperation: (operation: RelativeTimeOperation) => void;
+  onQuantitativeOperation: (operation: QuantitativeOperation) => void;
   onPendingWorkChange: (pending: boolean) => void;
   pendingDraft?: EventDetailDraft;
   onDraftChange: (eventId: string, draft: EventDetailDraft) => void;
@@ -117,6 +122,7 @@ export type EventDetailDraft = {
   minute: string;
   second: string;
   approximation: boolean;
+  candidateHistory2?: boolean;
 };
 
 export function EventDetailScreen({
@@ -125,6 +131,7 @@ export function EventDetailScreen({
   focusedRelatedEntityId,
   onUpdateEvent,
   onRelativeTimeOperation,
+  onQuantitativeOperation,
   onPendingWorkChange,
   pendingDraft,
   onDraftChange,
@@ -215,6 +222,7 @@ export function EventDetailScreen({
   );
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
+  const [candidateHistory2, setCandidateHistory2] = useState(pendingDraft?.candidateHistory2 ?? false);
   const [historyUpgradeAction, setHistoryUpgradeAction] = useState<"save" | "add" | null>(null);
   const [historyUpgradeRefusal, setHistoryUpgradeRefusal] = useState(false);
   const [entityPendingRemoval, setEntityPendingRemoval] = useState<Entity | null>(
@@ -264,6 +272,7 @@ export function EventDetailScreen({
           minute,
           second,
           approximation,
+          candidateHistory2,
         });
       } else {
         onClearDraft(event.id);
@@ -291,6 +300,7 @@ export function EventDetailScreen({
     hasPendingEdits,
     historyFieldsEditable,
     approximation,
+    candidateHistory2,
     history2Position?.approximation,
   ]);
 
@@ -315,7 +325,7 @@ export function EventDetailScreen({
       approximation !== (history2Position?.approximation ?? false));
   const getChangedEventUpdates = (): EventUpdates => ({
     ...(historyDateChanged
-      ? history2Editable || approximation
+      ? history2Editable || candidateHistory2 || approximation
         ? { history2Position: { position: editedHistoryDate, approximation } }
         : { historyDate: editedHistoryDate }
       : {}),
@@ -552,6 +562,51 @@ export function EventDetailScreen({
           dataset={dataset}
           eventId={event.id}
           onOperation={onRelativeTimeOperation}
+        />
+      )}
+      {relativeTimeVisible && relativeTimeState !== "diagnostic" && (
+        <QuantitativeRelativeTimePanel
+          dataset={dataset}
+          eventId={event.id}
+          onOperation={onQuantitativeOperation}
+          canUseCandidate={(date) => {
+            if (!historyFieldsEditable) return false;
+            const fields: Array<keyof HistoryDate> = ["year", "month", "day", "hour", "minute", "second"];
+            const knownPrecision = (value: HistoryDate | undefined) =>
+              fields.reduce((level, field, index) => value?.[field] === undefined ? level : index, -1);
+            if (knownPrecision(storedHistoryTime) > knownPrecision(date)) return false;
+            const history = event.extensions?.history;
+            const time = history && "time" in history ? history.time : undefined;
+            if (time?.timeZone !== undefined || time?.offset !== undefined) return false;
+            if (Array.isArray(history?.assertions) && history.assertions.some((assertion) => {
+              if (typeof assertion !== "object" || assertion === null) return false;
+              const position = (assertion as Record<string, unknown>).position;
+              return typeof position === "object" && position !== null &&
+                ("timeZone" in position || "offset" in position);
+            })) return false;
+            try {
+              const declaration = readHistoryDeclaration(dataset);
+              const writesHistory2 = history2Editable ||
+                (declaration.status === "declared" && declaration.version === "2.0.0");
+              const updates: EventUpdates = writesHistory2
+                ? { history2Position: { position: date, approximation: false } }
+                : { historyDate: date };
+              return validateCoreDataset(updateEvent(dataset, event.id, updates)).isValid;
+            } catch {
+              return false;
+            }
+          }}
+          onUseCandidate={(date) => {
+            const declaration = readHistoryDeclaration(dataset);
+            setCandidateHistory2(declaration.status === "declared" && declaration.version === "2.0.0");
+            setYear(date.year === undefined ? "" : String(date.year));
+            setMonth(date.month === undefined ? "" : String(date.month));
+            setDay(date.day === undefined ? "" : String(date.day));
+            setHour(date.hour === undefined ? "" : String(date.hour));
+            setMinute(date.minute === undefined ? "" : String(date.minute));
+            setSecond(date.second === undefined ? "" : String(date.second));
+            if (date.hour !== undefined) setIsTimeOpen(true);
+          }}
         />
       )}
 

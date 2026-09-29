@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Dataset } from "../models/Dataset";
 import type {
   DatasetImportIssue,
@@ -20,6 +20,7 @@ import {
   validateHistoryDate,
 } from "../services/HistoryService";
 import { getHistory2PositionEditorValues } from "../services/History2Service";
+import { formatQuantitativeCandidateDate, getQuantitativeTimeCandidates } from "../services/QuantitativeTimeCandidateService.ts";
 import {
   getPerspectiveTimeline,
   type PerspectiveMoveResult,
@@ -171,6 +172,10 @@ export function TimelineScreen({
     direction: "earlier" | "later";
   } | null>(null);
   const pendingDragFocus = useRef<string | null>(null);
+  const quantitativeCandidatesByEvent = useMemo(() => new Map(
+    relativeTimeState === "off" ? [] : dataset.events.map((event) =>
+      [event.id, getQuantitativeTimeCandidates(dataset, event.id)] as const),
+  ), [dataset, relativeTimeState]);
 
   useLayoutEffect(() => {
     const dragFocus = pendingDragFocus.current;
@@ -674,6 +679,7 @@ export function TimelineScreen({
           const timeDisplay = isApproximate && timelineTime
             ? formatTimelineApproximateValue(timelineTime, ja)
             : timelineTime;
+          const timeCandidates = quantitativeCandidatesByEvent.get(event.id) ?? [];
 
           return (
             <li
@@ -755,6 +761,18 @@ export function TimelineScreen({
                         {identity.shortIdHint}
                       </small>
                     </div>
+                  )}
+
+                  {timeCandidates.length > 0 && (
+                    <small className="timeline-time-candidate">
+                      {ja ? `日時候補 ${timeCandidates.length} 件（未記録・Time Zone / DST 未考慮）` :
+                        `${timeCandidates.length} date candidate${timeCandidates.length === 1 ? "" : "s"} (not recorded; time zone / DST not evaluated)`}
+                      {isSelected && <span className="timeline-time-candidate__values">
+                        {timeCandidates.map((candidate) =>
+                          `${formatQuantitativeCandidateDate(candidate.date)} ← ${dataset.events.find(({ id }) => id === candidate.anchorEventId)?.name || candidate.anchorEventId} [${candidate.relationId}]`,
+                        ).join("; ")}
+                      </span>}
+                    </small>
                   )}
 
                   {isSelected && event.description && (

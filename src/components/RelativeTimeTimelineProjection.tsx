@@ -2,6 +2,7 @@ import type { Dataset } from "../models/Dataset";
 import { useLanguage } from "../i18n/LanguageContext";
 import { resolveEventIdentityPresentations } from "../services/EventIdentityPresentationService";
 import { projectRelativeTimeForTimeline } from "../services/RelativeTimeService.ts";
+import { readQuantitativePayload } from "../services/QuantitativeRelativeTimeService.ts";
 
 type RelativeTimeTimelineProjectionProps = {
   dataset: Dataset;
@@ -19,6 +20,7 @@ export function RelativeTimeTimelineProjection({
   const { language } = useLanguage();
   const ja = language === "ja";
   const projection = projectRelativeTimeForTimeline(dataset);
+  const hasQuantitative = dataset.relations.some((relation) => readQuantitativePayload(relation) !== undefined);
   if (!showWhenEmpty && projection.groups.length === 0 && projection.conflictedEventIds.length === 0) {
     return null;
   }
@@ -57,6 +59,8 @@ export function RelativeTimeTimelineProjection({
         {projection.groups.length === 0 && projection.conflictedEventIds.length === 0 && (
           <p>{diagnostic
             ? (ja ? "一部のRelative Time情報はこの補助表示で解釈できません。Dataset内の情報は保持されています。" : "Some Relative Time information cannot be interpreted in this supplementary view. The Dataset information remains preserved.")
+            : hasQuantitative
+              ? (ja ? "量的なRelative Timeは各Eventの補助情報とEvent Detailで確認できます。この表示に投影できるbefore/afterの記録はありません。" : "Quantitative Relative Time appears with each Event and in Event Detail. There are no before/after records to project here.")
             : (ja ? "表示できるRelative Time記録はまだありません。Event Detailから追加できます。" : "There are no Relative Time records to display yet. Add one from Event Detail.")}</p>
         )}
         {projection.conflictedEventIds.length > 0 && (

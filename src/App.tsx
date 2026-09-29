@@ -49,6 +49,7 @@ import {
   classifyRelativeTimeEvidence,
   type RelativeTimeOperation,
 } from "./services/RelativeTimeService.ts";
+import { applyQuantitativeOperation, type QuantitativeOperation } from "./services/QuantitativeRelativeTimeService.ts";
 import {
   movePerspectiveEvent,
   movePerspectiveEventTo,
@@ -734,6 +735,15 @@ function App() {
     setRelativeTimeState(classifyRelativeTimeEvidence(result.dataset));
     setRelativeTimeManuallyEnabled(false);
   };
+  const handleQuantitativeOperation = (operation: QuantitativeOperation) => {
+    const result = applyQuantitativeOperation(datasetRef.current, operation);
+    if (!result.ok) return;
+    const nextRelativeTimeState = classifyRelativeTimeEvidence(result.dataset);
+    datasetRef.current = result.dataset;
+    setDataset(result.dataset);
+    setRelativeTimeState(nextRelativeTimeState);
+    if (nextRelativeTimeState === "off") setRelativeTimeManuallyEnabled(true);
+  };
   const handleSaveAndOpenEntityPicker = (
     eventId: string,
     updates: EventUpdates,
@@ -1150,6 +1160,7 @@ function App() {
           focusedRelatedEntityId={state.returnEntityId}
           onUpdateEvent={handleUpdateEvent}
           onRelativeTimeOperation={handleRelativeTimeOperation}
+          onQuantitativeOperation={handleQuantitativeOperation}
           relativeTimeState={relativeTimeState}
           relativeTimeVisible={relativeTimeState !== "off" || relativeTimeManuallyEnabled}
           onPendingWorkChange={handleEventPendingWork}
