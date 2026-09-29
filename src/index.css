@@ -7,6 +7,7 @@
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
+  --drop-target-bg: rgba(170, 59, 255, 0.2);
   --accent-border: rgba(170, 59, 255, 0.5);
   --button-hover-bg: #f5e9ff;
   --social-bg: rgba(244, 243, 236, 0.5);
@@ -48,6 +49,7 @@ body,
     --code-bg: #1f2028;
     --accent: #c084fc;
     --accent-bg: rgba(192, 132, 252, 0.15);
+    --drop-target-bg: rgba(192, 132, 252, 0.26);
     --accent-border: rgba(192, 132, 252, 0.5);
     --button-hover-bg: #2c2038;
     --social-bg: rgba(47, 48, 58, 0.5);
@@ -995,13 +997,10 @@ button:disabled {
 .timeline-card--dragging { opacity: 0.55; }
 .timeline-card.timeline-card--drop-before,
 .timeline-card.timeline-card--drop-after {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
+  background: var(--drop-target-bg);
 }
-.timeline-card--drop-before { box-shadow: inset 0 3px var(--accent); }
-.timeline-card--drop-after { box-shadow: inset 0 -3px var(--accent); }
+.timeline-card--drop-before { box-shadow: inset 0 2px var(--accent-border); }
+.timeline-card--drop-after { box-shadow: inset 0 -2px var(--accent-border); }
 .timeline-drag-hint,
 .timeline-drag-feedback {
   margin: 0 0 6px;

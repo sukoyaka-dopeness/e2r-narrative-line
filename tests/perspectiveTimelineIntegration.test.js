@@ -373,10 +373,12 @@ test("drop targets highlight the whole card while retaining a before or after in
   const styles = await readFile(new URL("../src/index.css", import.meta.url), "utf8");
   const targetStyle = styles.match(/\.timeline-card\.timeline-card--drop-before,\s*\.timeline-card\.timeline-card--drop-after\s*\{([^}]*)\}/)?.[1];
   assert.ok(targetStyle);
-  assert.match(targetStyle, /background:\s*var\(--accent-bg\)/);
-  assert.match(targetStyle, /outline:\s*2px solid var\(--accent\)/);
-  assert.match(styles, /\.timeline-card--drop-before\s*\{\s*box-shadow:\s*inset 0 3px var\(--accent\)/);
-  assert.match(styles, /\.timeline-card--drop-after\s*\{\s*box-shadow:\s*inset 0 -3px var\(--accent\)/);
+  assert.match(targetStyle, /background:\s*var\(--drop-target-bg\)/);
+  assert.doesNotMatch(targetStyle, /outline|border-color/);
+  assert.match(styles, /--drop-target-bg:\s*rgba\(170, 59, 255, 0\.2\)/);
+  assert.match(styles, /--drop-target-bg:\s*rgba\(192, 132, 252, 0\.26\)/);
+  assert.match(styles, /\.timeline-card--drop-before\s*\{\s*box-shadow:\s*inset 0 2px var\(--accent-border\)/);
+  assert.match(styles, /\.timeline-card--drop-after\s*\{\s*box-shadow:\s*inset 0 -2px var\(--accent-border\)/);
 });
 
 test("touch scroll wins before the hold; a held card can drag and auto-scroll", async () => {
