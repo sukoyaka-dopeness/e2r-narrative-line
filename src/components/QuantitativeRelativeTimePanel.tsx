@@ -65,7 +65,7 @@ function PayloadEditor({ initial, onSave, disabled = false, ja, sourceName, targ
         {granuleDirection !== "same" && <>
           <label className="quantitative-relative-time__inline-control">
             <span className="visually-hidden">{ja ? "移動する数" : "Number of granule steps"}</span>
-            <input aria-label={ja ? "移動する数" : "Number of granule steps"} type="number" min="1" step="1" value={magnitude} onChange={(event) => setMagnitude(event.target.value)} />
+            <input aria-label={ja ? "移動する数" : "Number of granule steps"} type="number" min="1" step="1" value={magnitude} onInput={(event) => setMagnitude(event.currentTarget.value)} />
           </label>
           <span>{ja ? "つ" : "step(s)"}</span>
         </>}
@@ -73,7 +73,7 @@ function PayloadEditor({ initial, onSave, disabled = false, ja, sourceName, targ
           <span className="visually-hidden">{ja ? "前後の方向" : "Granule direction"}</span>
           <select aria-label={ja ? "前後の方向" : "Granule direction"} value={granuleDirection} onChange={(event) => setGranuleDirection(event.target.value as "before" | "same" | "after")}>
             <option value="before">{ja ? "前" : "before"}</option>
-            <option value="same">{ja ? "同じ単位" : "in the same granule as"}</option>
+            <option value="same">{ja ? "同じ" : "in the same granule as"}</option>
             <option value="after">{ja ? "後" : "after"}</option>
           </select>
         </label>
@@ -146,7 +146,7 @@ export function QuantitativeRelativeTimePanel({ dataset, eventId, onOperation, o
               {deletePending === relation.id
                 ? <><button type="button" className="danger-action" onClick={() => apply({ type: "delete", relationId: relation.id })}>{ja ? "削除を確定" : "Confirm delete"}</button>
                     <button type="button" onClick={() => setDeletePending(null)}>{ja ? "キャンセル" : "Cancel"}</button></>
-                : <button type="button" onClick={() => setDeletePending(relation.id)}>{ja ? "この記録を削除" : "Delete this assertion"}</button>}
+                : <button type="button" className="danger-action" onClick={() => setDeletePending(relation.id)}>{ja ? "この記録を削除" : "Delete this assertion"}</button>}
               </div>
             </details>
           </li>)}

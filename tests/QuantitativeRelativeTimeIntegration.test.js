@@ -36,6 +36,13 @@ function changeSelect(window, select, value) {
   select.dispatchEvent(new window.Event("change", { bubbles: true }));
 }
 
+function changeNumber(window, input, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+  setter.call(input, value);
+  input.dispatchEvent(new window.Event("input", { bubbles: true }));
+  input.dispatchEvent(new window.Event("change", { bubbles: true }));
+}
+
 test("quantitative candidate remains supplementary until normal History save", async () => {
   const environment = createDomTestEnvironment("https://narrativeline.test/");
   environment.window.localStorage.setItem("narrativeline.language", "en");
@@ -121,14 +128,29 @@ test("quantitative candidate remains supplementary until normal History save", a
     calendarEdit.open = true;
     const granuleDirection = calendarEdit.querySelector('select[aria-label="Granule direction"]');
     assert.ok(calendarEdit.textContent.includes("granules, Target is"));
+    assert.equal(button(calendarEdit, "Delete this assertion").classList.contains("danger-action"), true);
+    await act(async () => changeNumber(environment.window,
+      calendarEdit.querySelector('input[aria-label="Number of granule steps"]'), "3"));
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]').value, "3");
+    await act(async () => changeSelect(environment.window, granuleDirection, "same"));
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]'), null);
+    assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
+      .relations[0].extensions[relativeId].displacement, 1);
+    await act(async () => changeSelect(environment.window, granuleDirection, "after"));
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]').value, "3");
     await act(async () => changeSelect(environment.window, granuleDirection, "before"));
     await act(async () => button(calendarEdit, "Record").click());
     assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
-      .relations[0].extensions[relativeId].displacement, -1);
+      .relations[0].extensions[relativeId].displacement, -3);
     await act(async () => changeSelect(environment.window, granuleDirection, "same"));
     await act(async () => button(calendarEdit, "Record").click());
     assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
       .relations[0].extensions[relativeId].displacement, 0);
+    await act(async () => changeSelect(environment.window, granuleDirection, "after"));
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]').value, "3");
+    await act(async () => button(calendarEdit, "Record").click());
+    assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
+      .relations[0].extensions[relativeId].displacement, 3);
     await act(async () => button(calendarEdit, "Delete this assertion").click());
     await act(async () => button(calendarEdit, "Confirm delete").click());
     const empty = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
