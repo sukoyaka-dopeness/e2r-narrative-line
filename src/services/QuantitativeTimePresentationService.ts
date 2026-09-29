@@ -23,23 +23,34 @@ export function quantitativeRelationMovement(
   }
   const steps = currentIsTarget ? payload.displacement : -payload.displacement;
   const [jaGranule, enGranule] = granules[payload.granularity];
-  if (steps === 0) return ja ? `同じ${jaGranule}` : `Same ${enGranule} granule`;
+  if (ja && (payload.granularity === "hour" || payload.granularity === "minute" || payload.granularity === "second")) {
+    const unitPosition = `${jaGranule}単位では`;
+    if (steps === 0) return `${unitPosition}同じ${jaGranule}`;
+    if (Math.abs(steps) === 1) return `${unitPosition}${steps > 0 ? "次" : "前"}の${jaGranule}`;
+    return `${unitPosition}${Math.abs(steps)}つ${steps > 0 ? "後" : "前"}の${jaGranule}`;
+  }
+  if (steps === 0) return ja ? `同じ${jaGranule}` : `the same calendar ${enGranule}`;
   if (Math.abs(steps) === 1) {
-    return ja ? `${steps > 0 ? "次" : "前"}の${jaGranule}` : `${steps > 0 ? "Next" : "Previous"} ${enGranule}`;
+    return ja ? `${steps > 0 ? "次" : "前"}の${jaGranule}` : `the ${steps > 0 ? "next" : "previous"} calendar ${enGranule}`;
   }
   return ja
-    ? `${jaGranule}で見ると${Math.abs(steps)}つ${steps > 0 ? "後" : "前"}`
-    : `${enGranule[0].toUpperCase()}${enGranule.slice(1)} granule, ${Math.abs(steps)} steps ${steps > 0 ? "ahead" : "back"}`;
+    ? `${payload.granularity === "day" ? "日付" : payload.granularity === "hour" ? "時刻" : payload.granularity === "minute" ? "分単位の時刻" : payload.granularity === "second" ? "秒単位の時刻" : jaGranule}から${Math.abs(steps)}つ${steps > 0 ? "後" : "前"}の${jaGranule}`
+    : `${Math.abs(steps)} ${enGranule} steps ${steps > 0 ? "later" : "earlier"} on the calendar`;
 }
 
 export function quantitativeRelationLabel(
   payload: QuantitativePayload, currentIsTarget: boolean, otherName: string, language: Language,
 ): string {
   const movement = quantitativeRelationMovement(payload, currentIsTarget, language);
-  return language === "ja" ? movement.startsWith("同じ") ? `${otherName} と${movement}`
-    : payload.type === "calendar-granule-relation" && Math.abs(payload.displacement) > 1
-      ? `${otherName} より、${movement}` : `${otherName} の${movement}`
-    : payload.type === "elapsed-offset" ? `${movement} ${otherName}` : `${movement} relative to ${otherName}`;
+  if (language === "ja") {
+    if (payload.type === "elapsed-offset") return `${otherName} の${movement}`;
+    return movement.startsWith("同じ") ? `${otherName} と${movement}` : `${otherName} の${movement}`;
+  }
+  if (payload.type === "elapsed-offset") return `${movement} ${otherName}`;
+  if (payload.displacement === 0) return `The same calendar ${payload.granularity} as ${otherName}`;
+  if (Math.abs(payload.displacement) === 1) return `${movement} relative to ${otherName}`;
+  const steps = currentIsTarget ? payload.displacement : -payload.displacement;
+  return `${Math.abs(steps)} ${payload.granularity} steps ${steps > 0 ? "later" : "earlier"} on the calendar than ${otherName}`;
 }
 
 export function quantitativeCandidateBasis(
@@ -48,7 +59,7 @@ export function quantitativeCandidateBasis(
   const movement = quantitativeRelationMovement(payload, currentIsTarget, language);
   return language === "ja"
     ? `${anchorName} の記録日時と「${movement}」から計算`
-    : `Calculated from ${anchorName}'s recorded time and “${movement.toLowerCase()}”.`;
+    : `Calculated from ${anchorName}'s recorded date/time and “${movement}”.`;
 }
 
 export function formatQuantitativeCandidateForDisplay(date: HistoryDate, language: Language): {

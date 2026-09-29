@@ -67,8 +67,14 @@ test("quantitative candidate remains supplementary until normal History save", a
     assert.ok(target.textContent.includes("1 date/time candidate"));
     assert.ok(target.textContent.includes("----/--/--"));
     await act(async () => target.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true })));
-    assert.ok(target.textContent.includes("Month precision candidate"));
-    assert.ok(target.textContent.includes("Not recorded · Time Zone / DST not evaluated"));
+    const timelineCandidateDisclosure = target.querySelector(".timeline-time-candidate__disclosure");
+    assert.ok(timelineCandidateDisclosure.querySelector("summary").textContent.includes("1 date/time candidate"));
+    assert.equal(timelineCandidateDisclosure.open, false);
+    assert.ok(timelineCandidateDisclosure.querySelector(".timeline-time-candidate__details"));
+    await act(async () => timelineCandidateDisclosure.querySelector("summary").click());
+    assert.equal(timelineCandidateDisclosure.open, true);
+    assert.ok(timelineCandidateDisclosure.textContent.includes("Month precision candidate"));
+    assert.ok(timelineCandidateDisclosure.textContent.includes("Not recorded · time zone and daylight saving time not evaluated"));
     assert.ok(!target.textContent.includes("[calendar]"));
     await act(async () => button(environment.document, "Edit").click());
     const initialPanel = environment.document.querySelector(".quantitative-relative-time");
@@ -83,12 +89,12 @@ test("quantitative candidate remains supplementary until normal History save", a
     assert.equal(candidateDisclosure.open, false);
     await act(async () => candidateDisclosure.querySelector("summary").click());
     assert.equal(candidateDisclosure.open, true);
-    assert.ok(initialPanel.querySelector(".quantitative-relative-time__list").textContent.includes("Next month relative to Anchor"));
-    assert.ok(initialPanel.querySelector(".quantitative-relative-time__basis").textContent.includes("Anchor's recorded time"));
-    assert.ok(!initialPanel.querySelector(".quantitative-relative-time__candidates").textContent.includes("calendar"));
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__list").textContent.includes("the next calendar month relative to Anchor"));
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__basis").textContent.includes("Anchor's recorded date/time"));
+    assert.ok(initialPanel.querySelector(".quantitative-relative-time__candidates").textContent.includes("calendar month"));
     const before = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(before.events[1].extensions?.history, undefined);
-    await act(async () => button(environment.document, "Review in History").click());
+    await act(async () => button(environment.document, "Review date/time").click());
     const pending = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(pending.events[1].extensions?.history, undefined);
     await act(async () => button(environment.document, "Save Event").click());
@@ -104,6 +110,7 @@ test("quantitative candidate remains supplementary until normal History save", a
     const choices = create.querySelectorAll("select");
     await act(async () => changeSelect(environment.window, choices[0], "a"));
     await act(async () => changeSelect(environment.window, choices[1], "elapsed-offset"));
+    assert.ok(create.querySelector(".quantitative-relative-time__fields--elapsed"));
     await act(async () => create.querySelector("button").click());
     const added = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(added.relations.length, 2);
@@ -117,27 +124,27 @@ test("quantitative candidate remains supplementary until normal History save", a
     await act(async () => button(edit, "Record").click());
     const updated = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(updated.relations[1].extensions[relativeId].direction, "before");
-    await act(async () => button(edit, "Delete this assertion").click());
+    await act(async () => button(edit, "Delete this time relation").click());
     await act(async () => button(edit, "Confirm delete").click());
     const deleted = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(deleted.relations.length, 1);
     assert.equal(deleted.relations[0].id, "calendar");
     const calendarRow = [...panel.querySelectorAll(".quantitative-relative-time__list li")]
-      .find((item) => item.textContent.includes("Next month"));
+      .find((item) => item.textContent.includes("next calendar month"));
     const calendarEdit = calendarRow.querySelector("details");
     calendarEdit.open = true;
-    const granuleDirection = calendarEdit.querySelector('select[aria-label="Granule direction"]');
-    assert.ok(calendarEdit.textContent.includes("granules, Target is"));
-    assert.equal(button(calendarEdit, "Delete this assertion").classList.contains("danger-action"), true);
+    const granuleDirection = calendarEdit.querySelector('select[aria-label="Before or after"]');
+    assert.ok(calendarEdit.textContent.includes("on the calendar, Target is"));
+    assert.equal(button(calendarEdit, "Delete this time relation").classList.contains("danger-action"), true);
     await act(async () => changeNumber(environment.window,
-      calendarEdit.querySelector('input[aria-label="Number of granule steps"]'), "3"));
-    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]').value, "3");
+      calendarEdit.querySelector('input[aria-label="Number of calendar steps"]'), "3"));
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of calendar steps"]').value, "3");
     await act(async () => changeSelect(environment.window, granuleDirection, "same"));
-    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]'), null);
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of calendar steps"]'), null);
     assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
       .relations[0].extensions[relativeId].displacement, 1);
     await act(async () => changeSelect(environment.window, granuleDirection, "after"));
-    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]').value, "3");
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of calendar steps"]').value, "3");
     await act(async () => changeSelect(environment.window, granuleDirection, "before"));
     await act(async () => button(calendarEdit, "Record").click());
     assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
@@ -147,11 +154,11 @@ test("quantitative candidate remains supplementary until normal History save", a
     assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
       .relations[0].extensions[relativeId].displacement, 0);
     await act(async () => changeSelect(environment.window, granuleDirection, "after"));
-    assert.equal(calendarEdit.querySelector('input[aria-label="Number of granule steps"]').value, "3");
+    assert.equal(calendarEdit.querySelector('input[aria-label="Number of calendar steps"]').value, "3");
     await act(async () => button(calendarEdit, "Record").click());
     assert.equal(JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"))
       .relations[0].extensions[relativeId].displacement, 3);
-    await act(async () => button(calendarEdit, "Delete this assertion").click());
+    await act(async () => button(calendarEdit, "Delete this time relation").click());
     await act(async () => button(calendarEdit, "Confirm delete").click());
     const empty = JSON.parse(environment.window.localStorage.getItem("narrativeline.lastDataset"));
     assert.equal(empty.relations.length, 0);
