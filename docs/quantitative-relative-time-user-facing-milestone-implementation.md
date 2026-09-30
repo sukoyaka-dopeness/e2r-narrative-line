@@ -1,6 +1,6 @@
 # Quantitative Relative Time user-facing milestone — implementation
 
-Status: runtime implementation and automated verification complete; Human Browser Acceptance pending.
+Status: **Human Browser Acceptance PASS / ACCEPTED / CLOSED** (2026-09-30).
 
 This milestone adds Event-to-Event authoring for the exact Relative Time `0.2.0`
 Candidate Features `calendar-granule-relation` and `elapsed-offset`. Event Detail
@@ -67,13 +67,14 @@ History. The candidate service remains direct one-hop with no winner selection.
 
 ## Human Browser Acceptance checkpoint
 
-Human review has accepted the Timeline candidate disclosure hierarchy and
-basic interaction, candidate disclosure versus Event selection, and disclosure
-versus card-wide drag hit areas. Human also reviewed JA/EN at ordinary and
-narrow widths, long and same-name Events including chronology/short-ID hints,
-one and multiple candidates, wording from both Relation endpoints, calendar
-versus elapsed meaning, and month-granule precision. These observations do
-not authorize changes to QRT or Perspective semantics.
+Human review accepted the Timeline candidate disclosure hierarchy and basic
+interaction, candidate disclosure versus Event selection, and disclosure
+versus card-wide drag hit areas. Human reviewed JA/EN at ordinary and narrow
+widths, long and same-name Events including chronology/short-ID hints, one
+and multiple candidates, wording from both Relation endpoints, calendar
+versus elapsed meaning, and month-granule precision. Human also confirmed that
+calendar-granule displacement remains distinct from elapsed duration and that
+month-granule candidates retain their precision.
 
 The refinement at `8c76ecb` compacted the Timeline candidate's internal
 value/basis/warning spacing while retaining separation between candidates,
@@ -84,15 +85,18 @@ too close to the Name field. The bounded follow-up at `55f8d2c` aligned the
 Event Detail Name input with the same control density and separated the Name
 field from the calendar group without changing the calendar label-to-date
 relationship or narrow layout rules. Human Browser Acceptance explicitly
-passed the Name input geometry, Name-to-calendar spacing, and the calendar
+passed the Name input geometry, Name-to-calendar spacing, and calendar
 label/date grouping after this follow-up.
 
-Formal QRT Human Browser Acceptance remains **pending** for one item: explicit
-Human visual confirmation that the final Timeline candidate internal spacing
-reads compactly for one candidate while keeping its warning identifiable and
-multiple candidates distinct. The earlier acceptance of the disclosure
-hierarchy does not substitute for review of this later spacing refinement.
-Do not infer PASS from automated CSS coverage.
+Human's final Timeline visual review explicitly passed the last Candidate
+spacing refinement: for multiple expanded Candidates, each date and basis
+reads as one unit, Candidates remain distinct, and the unrecorded/time-zone/
+daylight-saving warning remains identifiable without the compact spacing
+collapsing the information. Together with the earlier JA/EN, ordinary/narrow,
+long-name, same-name, chronology, short-ID, interaction, direction, and
+precision checks, all Human Browser Acceptance items for this bounded QRT
+milestone are **PASS / ACCEPTED / CLOSED**. This records Human acceptance; it
+does not expand or revise the Relative Time, History, or Perspective contracts.
 
 Reusable NarrativeLine presentation direction from this review: Timeline
 supplementary disclosures sit below the Event's primary content; peer
@@ -104,6 +108,7 @@ control density. Exact CSS values are implementation details, not a portable
 design contract or E2R-wide/Cross-App visual rule. Cross-App Visual Style /
 Flatness remains a separate workstream.
 
-After explicit Human PASS, record QRT closure before the next NarrativeLine
-current-state/documentation/final release-readiness audit. That audit and a
-later Human decision precede any release.
+The next checkpoint is the NarrativeLine current-state/documentation/final
+release-readiness audit. It must assess current release scope and obtain any
+required Human decision before release execution; this QRT closure does not
+authorize a release, deployment, or new showcase sample.
