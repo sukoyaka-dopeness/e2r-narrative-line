@@ -189,7 +189,30 @@ test("renders the low-prominence GitHub Sponsors support link on Home", async ()
   }
 });
 
-test("uses Japanese presentation in the Credits dialog body", async () => {
+test("renders all requested Credits metadata in English and Japanese", async () => {
+  const english = await renderApp({ persistedLocale: "en" });
+  try {
+    await act(async () => english.document.querySelector(".credits-button")?.click());
+    const dialog = english.document.querySelector('[role="alertdialog"]');
+    assert.ok(dialog);
+    for (const value of [
+      "Application: NarrativeLine 0.2.0",
+      "Creator: sukoyaka-dopeness",
+      "First release: 2026-08-06",
+      "Updated: 2026-09-30",
+      "With gratitude to all the AI systems that contributed to this project.",
+      "NarrativeLine repository",
+      "E2R specification repository",
+      "Close",
+    ]) {
+      assert.ok(dialog.textContent.includes(value), `Missing English Credits text: ${value}`);
+    }
+    assert.ok(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-narrative-line"]'));
+    assert.ok(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-spec"]'));
+  } finally {
+    english.cleanup();
+  }
+
   const rendered = await renderApp({ persistedLocale: "ja" });
   try {
     await act(async () => rendered.document.querySelector(".credits-button")?.click());
@@ -197,6 +220,21 @@ test("uses Japanese presentation in the Credits dialog body", async () => {
     assert.ok(dialog);
     assert.equal(dialog.textContent.includes("Created by"), false);
     assert.equal(containsJapanesePresentation(dialog.textContent), true);
+    for (const value of [
+      "アプリケーション: NarrativeLine 0.2.0",
+      "作成者: sukoyaka-dopeness",
+      "初回リリース: 2026-08-06",
+      "更新日: 2026-09-30",
+      "このプロジェクトに貢献したすべてのAIシステムに感謝します。",
+      "NarrativeLineリポジトリ",
+      "E2R仕様リポジトリ",
+      "閉じる",
+    ]) {
+      assert.ok(dialog.textContent.includes(value), `Missing Japanese Credits text: ${value}`);
+    }
+    assert.equal(dialog.textContent.includes("With gratitude to all the AI systems"), false);
+    assert.ok(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-narrative-line"]'));
+    assert.ok(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-spec"]'));
   } finally {
     rendered.cleanup();
   }

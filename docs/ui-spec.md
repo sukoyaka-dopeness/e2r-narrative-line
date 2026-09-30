@@ -82,10 +82,10 @@ The shared frame does not change navigation or editing state. Screen-specific
 titles and actions remain in the screen content. Header padding and the Home
 Footer padding are reduced at viewport widths of 600 px or less.
 
-The Credits modal displays the application version, creator name, AI
-acknowledgement, and links to both the NarrativeLine and E2R specification
-repositories. The previous release date is absent from the `0.2.0` local
-candidate; the actual `0.2.0` date is added only in the publication transaction.
+The Credits modal displays the application name and version, creator, first
+successful public deployment date, latest update date, AI acknowledgement, and
+links to both the NarrativeLine and E2R specification repositories. For the
+`0.2.0` release candidate these dates are `2026-08-06` and `2026-09-30`.
 The modal can be dismissed with `Close`, Escape, or the shared modal dismissal
 behavior.
 

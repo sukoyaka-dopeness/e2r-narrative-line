@@ -78,9 +78,10 @@ export function AppFrame({
           onBackdropDismiss={() => setIsCreditsOpen(false)}
         >
           <h2 id="credits-heading">{ja ? "\u30af\u30ec\u30b8\u30c3\u30c8" : "Credits"}</h2>
-          <p>NarrativeLine 0.2.0</p>
+          <p>{copy.creditsApplicationLabel}: NarrativeLine 0.2.0</p>
           <p>{copy.creditsCreatedByLabel}: sukoyaka-dopeness</p>
-          <p>{copy.creditsReleasedLabel}: 2026-09-30</p>
+          <p>{copy.creditsFirstReleaseLabel}: 2026-08-06</p>
+          <p>{copy.creditsUpdatedLabel}: 2026-09-30</p>
           <p>{copy.creditsGratitude}</p>
           <p>
             <a href="https://github.com/sukoyaka-dopeness/e2r-narrative-line" target="_blank" rel="noreferrer">

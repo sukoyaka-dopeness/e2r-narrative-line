@@ -23,12 +23,13 @@ and responsive refinements. The previous [current-state audit](current-state-rel
 records their authority and closed acceptance. Nothing here broadens the
 Candidate specifications or changes Dataset semantics.
 
-The Credits modal continues to show `NarrativeLine 0.2.0`. Its old
-`Released: 2026-08-06` line was removed because that was the MVP release date,
-not the unpublished 0.2.0 event. The **actual 0.2.0 publication/deploy date**
-must be inserted in the existing Credits date row during the authorized
-release transaction, followed by exact-revision verification. No date is
-invented at the local candidate stage.
+The Credits modal now identifies `Application: NarrativeLine 0.2.0`, its
+creator, `First release: 2026-08-06`, and `Updated: 2026-09-30`, with matching
+Japanese labels. The first date is supported by the first successful GitHub
+Pages deployment (workflow run #1, commit `36541ca`); the second is the
+Human-selected date for this `0.2.0` release. This remains a local candidate:
+no deployment or public write has occurred, and deployment success must be
+verified separately after exact-SHA approval.
 
 ## Showcase and ownership
 
