@@ -130,10 +130,10 @@ export function HomeScreen({
 
         <div style={{ marginTop: "0.75rem" }}>
           <button type="button" onClick={onOpenTimeline} disabled={handoffLoading} style={{ width: "100%" }}>
-           {ja ? "サンプルDatasetを開く" : "Open Sample Dataset"}
+           {ja ? "ベルリンの壁の例を開く" : "Open Berlin Wall example"}
           </button>
           <button type="button" onClick={onOpenShowcase} disabled={handoffLoading} style={{ width: "100%", marginTop: "0.5rem" }}>
-            {ja ? "シダー天文台の例を開く" : "Open Cedar Observatory showcase"}
+            {ja ? "シダー天文台の例を開く" : "Open Cedar Observatory example"}
           </button>
           <a className="sample-info-link" href={SAMPLE_PROVENANCE_URL} target="_blank" rel="noreferrer">
             {copy.sampleInfo}

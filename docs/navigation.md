@@ -25,7 +25,7 @@ The MVP consists of the following views.
 
 ```text
 Home
-  └── Create Dataset / Import E2R JSON / Open Sample Dataset / Open Cedar Observatory showcase → Timeline View
+  └── Create Dataset / Import E2R JSON / Open Berlin Wall example / Open Cedar Observatory example → Timeline View
         ├── Add Event or Edit selected Event → Event Detail
         │     ├── Save and Add Related Entity → Entity Picker
         │     │     ├── Add existing Entity → Event Detail

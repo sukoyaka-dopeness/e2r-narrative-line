@@ -8,7 +8,7 @@ Status: **READY FOR HUMAN REVIEW — NOT ACCEPTED / NOT RELEASED**
 
 The NarrativeLine Vite app uses `/e2r-narrative-line/`; `#locale=en` and
 `#locale=ja` request the corresponding UI language. Home provides separate
-`Open Cedar Observatory showcase` / `シダー天文台の例を開く` actions and opens the
+`Open Cedar Observatory example` / `シダー天文台の例を開く` actions and opens the
 locale-specific [EN](../src/sample/cedar-observatory-showcase.en.e2r.json)
 or [JA](../src/sample/cedar-observatory-showcase.ja.e2r.json) Dataset through
 the existing replacement path. A saved conflicting locale can present the

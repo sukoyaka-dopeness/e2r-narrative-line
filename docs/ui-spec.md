@@ -108,8 +108,8 @@ Opening an existing Dataset is an `Import E2R JSON` Home action. Home accepts a
 selected JSON file, displays an importing state while reading it, and navigates
 to Timeline View only after Core validation succeeds.
 
-Home orders its actions as Create Dataset, Import E2R JSON, Open Sample
-Dataset, then Open Cedar Observatory showcase. The first two are primary
+Home orders its actions as Create Dataset, Import E2R JSON, Open Berlin Wall
+example, then Open Cedar Observatory example. The first two are primary
 actions with equal full button widths. The existing onboarding sample and the
 showcase are separate supplemental actions below them.
 

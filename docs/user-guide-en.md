@@ -20,8 +20,8 @@ to an Event named “Apollo 11 Moon landing.”
 
 ## View a Timeline
 
-From Home, choose **Open Sample Dataset** for the built-in onboarding story,
-**Open Cedar Observatory showcase** for a story with time relationships, or
+From Home, choose **Open Berlin Wall example** for the built-in onboarding story,
+**Open Cedar Observatory example** for a story with time relationships, or
 **Resume Editing** to return to the Dataset you were editing. The Timeline is
 the main workspace for selecting Events and opening their details.
 
@@ -122,7 +122,7 @@ are not evaluated, so treat these values as candidates for Human review.
 
 From Home, choose **New Dataset** to start from an empty Dataset, or choose **Open E2R Dataset** to import an E2R JSON file. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset.
 
-Home also provides **Open Sample Dataset**, **Open Cedar Observatory showcase**,
+Home also provides **Open Berlin Wall example**, **Open Cedar Observatory example**,
 and **Sample info**. The first keeps the Berlin Wall onboarding sample. The
 second opens a separate fictional open-night story. Its recorded dates appear
 on the Timeline; the invitations and first sky tour have unrecorded date/time
@@ -173,7 +173,7 @@ Handoff runs at startup only. Changing the extra information at the end of
 the URL later does not switch the active Dataset or start another remote
 download.
 
-If the Handoff link is invalid, or if Dataset acquisition, JSON parsing, or Dataset validation fails, NarrativeLine stays on Home and reports the failure. It does not silently open a sample or another Dataset. You can explicitly choose **Continue Editing**, **New Dataset**, **Open E2R Dataset**, or **Open Sample Dataset**.
+If the Handoff link is invalid, or if Dataset acquisition, JSON parsing, or Dataset validation fails, NarrativeLine stays on Home and reports the failure. It does not silently open a sample or another Dataset. You can explicitly choose **Continue Editing**, **New Dataset**, **Open E2R Dataset**, or **Open Berlin Wall example**.
 
 Opening a Dataset from a Handoff link uses the same replacement protection as other Dataset-opening actions. If current work could be lost, NarrativeLine asks for confirmation before replacing it.
 

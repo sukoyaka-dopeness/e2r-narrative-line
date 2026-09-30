@@ -88,8 +88,8 @@ test("Home opens the separate showcase through the existing Dataset replacement 
     ]);
     await act(async () => root.render(React.createElement(LanguageProvider, null, React.createElement(App))));
     const buttons = [...environment.document.querySelectorAll("button")];
-    assert.ok(buttons.some(({ textContent }) => textContent.trim() === "Open Sample Dataset"));
-    const showcaseButton = buttons.find(({ textContent }) => textContent.trim() === "Open Cedar Observatory showcase");
+    assert.ok(buttons.some(({ textContent }) => textContent.trim() === "Open Berlin Wall example"));
+    const showcaseButton = buttons.find(({ textContent }) => textContent.trim() === "Open Cedar Observatory example");
     assert.ok(showcaseButton);
     await act(async () => showcaseButton.click());
     assert.equal(environment.document.querySelectorAll(".timeline-card").length, 12);
@@ -97,6 +97,30 @@ test("Home opens the separate showcase through the existing Dataset replacement 
       "Cedar Observatory: An Open Night");
     assert.ok(environment.document.body.textContent.includes("date/time candidate"));
     assert.ok(environment.document.querySelector(".relative-time-timeline"));
+  } finally {
+    await server.close();
+    await act(async () => root.unmount());
+    environment.cleanup();
+  }
+});
+
+test("Home names both built-in samples in Japanese", async () => {
+  const environment = createDomTestEnvironment("https://narrativeline.test/");
+  environment.window.localStorage.setItem("narrativeline.language", "ja");
+  environment.window.scrollTo = () => {};
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
+  try {
+    const [{ default: App }, { LanguageProvider }] = await Promise.all([
+      server.ssrLoadModule("/src/App.tsx"),
+      server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+    ]);
+    await act(async () => root.render(React.createElement(LanguageProvider, null, React.createElement(App))));
+    const labels = [...environment.document.querySelectorAll("button")].map(({ textContent }) => textContent.trim());
+    assert.ok(labels.includes("ベルリンの壁の例を開く"));
+    assert.ok(labels.includes("シダー天文台の例を開く"));
   } finally {
     await server.close();
     await act(async () => root.unmount());
