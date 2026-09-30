@@ -16,7 +16,7 @@ import {
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
 
 const samplePath = (locale) =>
-  new URL(`../../e2r-spec/docs/sample-drafts/relative-time-0.2.0-lantern-market.${locale}.e2r.json`, import.meta.url);
+  new URL(locale === "en" ? "./fixtures/relative-time-multi-band.json" : "./fixtures/relative-time-sample-ja.json", import.meta.url);
 const perspectiveId = "draft.github.sukoyaka-dopeness.perspective";
 const relativeTimeId = "draft.github.sukoyaka-dopeness.relative-time";
 const specificationId = "draft.github.sukoyaka-dopeness.specification";
@@ -35,7 +35,7 @@ test("replacement-safety acceptance Dataset imports without extension diagnostic
   assert.equal(result.dataset.events.length, 1);
 });
 
-test("English and Japanese Lantern Market drafts are supported, meaningful, and round-trip unchanged", async () => {
+test("English and Japanese application-owned Relative Time fixtures are supported and round-trip unchanged", async () => {
   const english = await readJson(samplePath("en"));
   const japanese = await readJson(samplePath("ja"));
   const englishImport = importDatasetJson(JSON.stringify(english));
@@ -61,12 +61,12 @@ test("English and Japanese Lantern Market drafts are supported, meaningful, and 
     assert.equal(projection.conflictedEventIds.length, 0);
     assert.equal(projection.groups.length, 1);
     assert.deepEqual(projection.groups[0].eventIdsByDisplayBand, [
-      ["power-outage"],
-      ["lanterns-lit", "circuit-isolated"],
-      ["market-reopens"],
+      ["session-start"],
+      ["north-room-arrival", "south-room-arrival"],
+      ["session-end"],
     ]);
-    assert.deepEqual(projection.groups[0].incomparablePairs, [["lanterns-lit", "circuit-isolated"]]);
-    assert.equal(getEditableRelativeTimeAssertions(result.dataset, "lanterns-lit").length, 2);
+    assert.deepEqual(projection.groups[0].incomparablePairs, [["north-room-arrival", "south-room-arrival"]]);
+    assert.equal(getEditableRelativeTimeAssertions(result.dataset, "north-room-arrival").length, 2);
 
     const exported = exportDatasetJson(result.dataset);
     assert.equal(exported.isValid, true);
@@ -125,7 +125,7 @@ test("NarrativeLine renders the sample's Relative Time bands, incomparable pair,
         }),
         React.createElement(RelativeTimeAuthoringPanel, {
           dataset: imported.dataset,
-          eventId: "lanterns-lit",
+          eventId: "north-room-arrival",
           onOperation() {},
         }),
       ),
@@ -136,26 +136,26 @@ test("NarrativeLine renders the sample's Relative Time bands, incomparable pair,
     disclosure.open = true;
     const bands = [...environment.document.querySelectorAll(".relative-time-display-band")];
     assert.deepEqual(bands.map((band) => [...band.querySelectorAll("li")].map((item) => item.textContent)), [
-      ["The market loses power"],
-      ["Stallholders light the lanterns", "Ren isolates the damaged circuit"],
-      ["The market reopens in lantern light"],
+      ["Session opens"],
+      ["Visitors gather in the north room", "Visitors gather in the south room"],
+      ["Session closes"],
     ]);
     assert.equal(environment.document.querySelectorAll(".relative-time-recorded-assertions > li").length, 4);
     const unordered = [...environment.document.querySelectorAll(".relative-time-recorded-relations details")]
-      .find((details) => details.textContent.includes("Stallholders light the lanterns"));
+      .find((details) => details.textContent.includes("Visitors gather in the north room"));
     assert.ok(unordered);
-    assert.match(unordered.textContent, /Ren isolates the damaged circuit/);
+    assert.match(unordered.textContent, /Visitors gather in the south room/);
 
     const recorded = environment.document.querySelector(".relative-time-authoring__details--recorded");
     assert.ok(recorded);
     recorded.open = true;
-    assert.match(recorded.textContent, /The market loses power/);
-    assert.match(recorded.textContent, /The market reopens in lantern light/);
-    const lanternButton = [...environment.document.querySelectorAll(".relative-time-display-band .relative-time-timeline__event")]
-      .find((button) => button.textContent === "Stallholders light the lanterns");
-    assert.ok(lanternButton);
-    act(() => lanternButton.click());
-    assert.deepEqual(editedEventIds, ["lanterns-lit"]);
+    assert.match(recorded.textContent, /Session opens/);
+    assert.match(recorded.textContent, /Session closes/);
+    const gatheringButton = [...environment.document.querySelectorAll(".relative-time-display-band .relative-time-timeline__event")]
+      .find((button) => button.textContent === "Visitors gather in the north room");
+    assert.ok(gatheringButton);
+    act(() => gatheringButton.click());
+    assert.deepEqual(editedEventIds, ["north-room-arrival"]);
     assert.deepEqual(imported.dataset, originalDataset);
   } finally {
     act(() => root.unmount());

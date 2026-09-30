@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "entities": [],
+  "events": [
+    { "id": "anchor", "name": "Anchor" },
+    { "id": "calendar-target", "name": "Calendar target" },
+    { "id": "elapsed-target", "name": "Elapsed target" }
+  ],
+  "relations": [
+    {
+      "id": "calendar-relation",
+      "sourceId": "anchor",
+      "targetId": "calendar-target",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "calendar-granule-relation",
+          "granularity": "month",
+          "displacement": 1,
+          "calendar": "gregorian"
+        }
+      }
+    },
+    {
+      "id": "elapsed-relation",
+      "sourceId": "anchor",
+      "targetId": "elapsed-target",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "elapsed-offset",
+          "direction": "after",
+          "value": 90,
+          "unit": "minute"
+        }
+      }
+    }
+  ],
+  "extensions": {
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        {
+          "extension": "draft.github.sukoyaka-dopeness.relative-time",
+          "version": "0.2.0",
+          "features": ["calendar-granule-relation", "elapsed-offset"]
+        }
+      ]
+    }
+  }
+}

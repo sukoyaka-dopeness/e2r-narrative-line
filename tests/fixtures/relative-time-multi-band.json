@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "entities": [],
+  "events": [
+    { "id": "session-start", "name": "Session opens" },
+    { "id": "north-room-arrival", "name": "Visitors gather in the north room" },
+    { "id": "south-room-arrival", "name": "Visitors gather in the south room" },
+    { "id": "session-end", "name": "Session closes" }
+  ],
+  "relations": [
+    {
+      "id": "start-before-north-arrival",
+      "sourceId": "session-start",
+      "targetId": "north-room-arrival",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "after"
+        }
+      }
+    },
+    {
+      "id": "start-before-south-arrival",
+      "sourceId": "session-start",
+      "targetId": "south-room-arrival",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "after"
+        }
+      }
+    },
+    {
+      "id": "north-arrival-before-end",
+      "sourceId": "north-room-arrival",
+      "targetId": "session-end",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "after"
+        }
+      }
+    },
+    {
+      "id": "south-arrival-before-end",
+      "sourceId": "south-room-arrival",
+      "targetId": "session-end",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "after"
+        }
+      }
+    }
+  ],
+  "extensions": {
+    "metadata": {
+      "datasetId": "nl-relative-time-sample-en",
+      "title": "Community Gathering"
+    },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.relative-time",
+          "version": "0.2.0",
+          "features": ["relative-position"]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "version": "1.0",
+  "entities": [],
+  "events": [
+    { "id": "reference" },
+    { "id": "target-before" },
+    { "id": "target-after" },
+    { "id": "target-same" },
+    { "id": "target-within" },
+    { "id": "target-same-month" },
+    { "id": "target-next-month" },
+    { "id": "target-previous-month" },
+    { "id": "target-n-months" },
+    { "id": "target-after-minutes" },
+    { "id": "target-before-hours" }
+  ],
+  "relations": [
+    {
+      "id": "relative-before",
+      "sourceId": "reference",
+      "targetId": "target-before",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "before"
+        }
+      }
+    },
+    {
+      "id": "relative-after",
+      "sourceId": "reference",
+      "targetId": "target-after",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "after"
+        }
+      }
+    },
+    {
+      "id": "relative-same-instant",
+      "sourceId": "reference",
+      "targetId": "target-same",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "relative-position",
+          "relation": "same-instant",
+          "futureRelativeField": "preserve-me"
+        }
+      }
+    },
+    {
+      "id": "relative-within",
+      "sourceId": "reference",
+      "targetId": "target-within",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "containment",
+          "relation": "within"
+        }
+      }
+    },
+    {
+      "id": "relative-same-month",
+      "sourceId": "reference",
+      "targetId": "target-same-month",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "calendar-granule-relation",
+          "granularity": "month",
+          "displacement": 0
+        }
+      }
+    },
+    {
+      "id": "relative-next-month",
+      "sourceId": "reference",
+      "targetId": "target-next-month",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "calendar-granule-relation",
+          "granularity": "month",
+          "displacement": 1,
+          "calendar": "gregorian"
+        }
+      }
+    },
+    {
+      "id": "relative-previous-month",
+      "sourceId": "reference",
+      "targetId": "target-previous-month",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "calendar-granule-relation",
+          "granularity": "month",
+          "displacement": -1
+        }
+      }
+    },
+    {
+      "id": "relative-n-months",
+      "sourceId": "reference",
+      "targetId": "target-n-months",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "calendar-granule-relation",
+          "granularity": "month",
+          "displacement": 7
+        }
+      }
+    },
+    {
+      "id": "relative-after-minutes",
+      "sourceId": "reference",
+      "targetId": "target-after-minutes",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "elapsed-offset",
+          "direction": "after",
+          "value": 90,
+          "unit": "minute"
+        }
+      }
+    },
+    {
+      "id": "relative-before-hours",
+      "sourceId": "reference",
+      "targetId": "target-before-hours",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.relative-time": {
+          "type": "elapsed-offset",
+          "direction": "before",
+          "value": 3,
+          "unit": "hour"
+        }
+      }
+    }
+  ],
+  "extensions": {
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        {
+          "extension": "draft.github.sukoyaka-dopeness.relative-time",
+          "version": "0.1.0",
+          "features": [
+            "calendar-granule-relation",
+            "containment",
+            "elapsed-offset",
+            "relative-position"
+          ]
+        }
+      ]
+    }
+  }
+}

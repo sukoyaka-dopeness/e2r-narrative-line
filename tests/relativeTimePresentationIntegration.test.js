@@ -56,8 +56,8 @@ function relativePositionRelation(id, sourceId, targetId, relation) {
   };
 }
 
-async function readSpecExample(path) {
-  return readFile(new URL(`../../e2r-spec/${path}`, import.meta.url), "utf8");
+async function readAcceptanceFixture(path) {
+  return readFile(new URL(`./fixtures/${path}`, import.meta.url), "utf8");
 }
 
 async function renderAuthoring(language, initialDataset = datasetWithUndatedEvents(), eventId = "event-a") {
@@ -632,9 +632,7 @@ test("Timeline projection exposes pairwise order and cycle fallback without rewr
 });
 
 test("multi-band acceptance fixture renders separate unordered bands and recorded pairs", async () => {
-  const dataset = JSON.parse(await readSpecExample(
-    "examples/relative-time-0.2-draft/timeline-projection-multi-band-acceptance.json",
-  ));
+  const dataset = JSON.parse(await readAcceptanceFixture("relative-time-multi-band.json"));
   const imported = importDatasetJson(JSON.stringify(dataset));
   assert.equal(imported.isValid, true);
   assert.ok(imported.dataset);
@@ -642,12 +640,12 @@ test("multi-band acceptance fixture renders separate unordered bands and recorde
   assert.deepEqual(projection.conflictedEventIds, []);
   assert.equal(projection.groups.length, 1);
   assert.deepEqual(projection.groups[0].eventIdsByDisplayBand, [
-    ["opening-signal"],
-    ["east-hall-gathering", "west-hall-gathering"],
-    ["closing-signal"],
+    ["session-start"],
+    ["north-room-arrival", "south-room-arrival"],
+    ["session-end"],
   ]);
   assert.equal(projection.groups[0].assertions.length, 4);
-  assert.deepEqual(projection.groups[0].incomparablePairs, [["east-hall-gathering", "west-hall-gathering"]]);
+  assert.deepEqual(projection.groups[0].incomparablePairs, [["north-room-arrival", "south-room-arrival"]]);
 
   const datasetForRendering = imported.dataset;
   const original = structuredClone(datasetForRendering);
@@ -676,14 +674,14 @@ test("multi-band acceptance fixture renders separate unordered bands and recorde
     assert.equal(bands.length, 3);
     assert.ok(bands.every((band) => band.parentElement?.classList.contains("relative-time-projection-group")));
     assert.deepEqual(bands.map((band) => [...band.querySelectorAll("li")].map((item) => item.textContent)), [
-      ["Opening Signal"],
-      ["East Hall Gathering", "West Hall Gathering"],
-      ["Closing Signal"],
+      ["Session opens"],
+      ["Visitors gather in the north room", "Visitors gather in the south room"],
+      ["Session closes"],
     ]);
     assert.equal(environment.document.querySelectorAll(".relative-time-recorded-assertions > li").length, 4);
     const incomparable = environment.document.querySelector(".relative-time-recorded-relations__group details");
     assert.ok(incomparable);
-    assert.match(incomparable.textContent, /East Hall Gathering.*West Hall Gathering/);
+    assert.match(incomparable.textContent, /Visitors gather in the north room.*Visitors gather in the south room/);
     assert.deepEqual(datasetForRendering, original);
 
     const styles = await readFile(new URL("../src/index.css", import.meta.url), "utf8");
