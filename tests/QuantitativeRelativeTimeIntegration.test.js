@@ -88,6 +88,10 @@ test("quantitative candidate remains supplementary until normal History save", a
     assert.equal(timelineCandidateDisclosure.open, true);
     assert.ok(anchorCard.classList.contains("timeline-card--selected"));
     assert.ok(!target.classList.contains("timeline-card--selected"));
+    await act(async () => timelineCandidateDisclosure.click());
+    assert.ok(target.classList.contains("timeline-card--selected"));
+    await act(async () => anchorCard.click());
+    assert.ok(anchorCard.classList.contains("timeline-card--selected"));
     assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), beforeDisclosure);
     await act(async () => timelineCandidateDisclosure.querySelector("summary").click());
     assert.equal(timelineCandidateDisclosure.open, false);

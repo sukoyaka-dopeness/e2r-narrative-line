@@ -432,7 +432,12 @@ test("ordering safety and Placed or Unplaced meaning are available in a collapse
     assert.ok(help);
     assert.equal(help.open, false);
     assert.equal(help.querySelector("summary")?.textContent, "About display order");
+    const otherCard = rendered.container.querySelectorAll(".timeline-card")[0];
+    await act(async () => otherCard.click());
     await act(async () => help.querySelector("summary")?.click());
+    assert.ok(otherCard.classList.contains("timeline-card--selected"));
+    await act(async () => help.click());
+    assert.ok(target.classList.contains("timeline-card--selected"));
     assert.match(help.textContent ?? "", /Changes display order only/);
     assert.match(help.textContent ?? "", /Unplaced · derived display means no position is saved/);
   } finally {
@@ -460,6 +465,11 @@ test("Perspective mismatch details are available beside each affected Event and 
     assert.ok(localIndicators.every((indicator) => indicator.textContent?.includes("Review display order")));
     assert.ok(localIndicators.every((indicator) => !indicator.querySelector("summary span")));
 
+    await act(async () => localIndicators[0].closest(".timeline-card")?.click());
+    await act(async () => localIndicators[1].querySelector("summary")?.click());
+    assert.ok(localIndicators[0].closest(".timeline-card")?.classList.contains("timeline-card--selected"));
+    await act(async () => localIndicators[1].click());
+    assert.ok(localIndicators[1].closest(".timeline-card")?.classList.contains("timeline-card--selected"));
     await act(async () => localIndicators[0].querySelector("summary")?.click());
     assert.equal(localIndicators[0].open, true);
     assert.match(localIndicators[0].textContent ?? "", /History chronology and display order/);

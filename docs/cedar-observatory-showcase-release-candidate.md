@@ -8,8 +8,10 @@ Status: NarrativeLine `0.2.0` application-owned sample candidate; sample-data po
 The new [English](../src/sample/cedar-observatory-showcase.en.e2r.json) and
 [Japanese](../src/sample/cedar-observatory-showcase.ja.e2r.json) files are a
 fictional neighborhood observatory's open-night story. They are separate from
-the existing Berlin Wall onboarding sample and from E2R-SPEC canonical samples
-and Hub Gallery entries. Home offers a second supplemental action; it opens
+the existing Berlin Wall onboarding sample and from E2R-SPEC canonical samples.
+Hub now has a Cedar entry in its sample Gallery,
+with NarrativeLine as the only Handoff target; this does not confer canonical
+cross-app status. Home offers a second supplemental action; it opens
 either locale through the existing Dataset replacement path. Switching the
 application language chooses the corresponding sample **when opening it**; it
 does not translate an already active Dataset or silently replace its content.
@@ -54,9 +56,12 @@ MIT license does not automatically license Dataset content. No external story,
 text, or asset dependency has been identified in the current files. The
 [E2R-SPEC provenance record](../../e2r-spec/docs/public-samples/public-sample-provenance.md)
 lists this pair separately as an **unreleased candidate**, without adding it
-to the five-family Gallery ledger. No Dataset-level `metadata.license` field,
-Hub entry, LiaisonScape sample mirror, or canonical cross-app authority is
-created here.
+to the five-family canonical Gallery ledger. No Dataset-level `metadata.license`
+field, LiaisonScape sample mirror, or canonical cross-app authority is created.
+Hub's Cedar entry links to this NarrativeLine-owned EN/JA source pair through
+the existing HTTPS Handoff contract after publication; Hub does not own a
+separate content copy. Human Browser Acceptance and public-write approval
+remain pending.
 
 ## Local evidence and release gates
 

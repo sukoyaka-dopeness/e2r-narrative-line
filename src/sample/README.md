@@ -10,7 +10,9 @@ material, if any is later identified, is excluded and retains its own terms.
 
 This content notice is separate from NarrativeLine's MIT software license. It
 does not change the existing Berlin Wall sample's rights record, make Cedar a
-canonical cross-app Dataset or Hub Gallery sample, or authorize publication.
+canonical cross-app Dataset, or authorize publication. Hub lists the
+NarrativeLine-owned candidate as a Gallery entry without taking ownership of
+its Dataset content.
 Creation and EN/JA provenance, current content evidence, and the remaining
 Human Browser Acceptance boundary are recorded in
 [the candidate record](../../docs/cedar-observatory-showcase-release-candidate.md)

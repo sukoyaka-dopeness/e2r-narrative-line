@@ -45,5 +45,8 @@ a permanent application contract.
 
 Report **PASS** or the screen, locale, viewport, Event, and observed defect.
 This packet does not decide Human Browser Acceptance. Cedar remains an
-application-owned candidate, not a canonical cross-app or Gallery sample.
+application-owned candidate. Hub now lists it in the sample Gallery but does
+not make it an E2R-SPEC canonical cross-app sample. The Human judged the
+12-Event sample's visual appearance acceptable; Timeline disclosure-row
+selection and Hub Handoff still require separate browser review.
 No public write or release transaction is part of this preparation.

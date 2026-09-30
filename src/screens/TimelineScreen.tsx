@@ -767,10 +767,10 @@ export function TimelineScreen({
 
                   {timeCandidates.length > 0 && (
                     <div className="timeline-time-candidate">
-                      <details className="timeline-time-candidate__disclosure" onClick={(clickEvent) => clickEvent.stopPropagation()}>
-                        <summary>{ja ? `日時候補 ${timeCandidates.length}件（未記録）` :
+                      <details className="timeline-time-candidate__disclosure">
+                        <summary onClick={(clickEvent) => clickEvent.stopPropagation()}>{ja ? `日時候補 ${timeCandidates.length}件（未記録）` :
                           `${timeCandidates.length} date/time candidate${timeCandidates.length === 1 ? "" : "s"} (not recorded)`}</summary>
-                        <div className="timeline-time-candidate__details">
+                        <div className="timeline-time-candidate__details" onClick={(clickEvent) => clickEvent.stopPropagation()}>
                         <ul className="timeline-time-candidate__values">
                         {timeCandidates.map((candidate) => {
                           const date = formatQuantitativeCandidateForDisplay(candidate.date, language);
@@ -800,8 +800,8 @@ export function TimelineScreen({
               </div>
               {eventDiagnostics.length > 0 && (
                 <details className="timeline-card__order-diagnostic">
-                  <summary>{copy.timelineReviewDisplayOrder}</summary>
-                  <ul>
+                  <summary onClick={(clickEvent) => clickEvent.stopPropagation()}>{copy.timelineReviewDisplayOrder}</summary>
+                  <ul onClick={(clickEvent) => clickEvent.stopPropagation()}>
                     {eventDiagnostics.map((diagnostic, index) => (
                       <li key={`${diagnostic.kind}-${diagnostic.eventIds.join("-")}-${index}`}>
                         {formatPerspectiveDiagnostic(diagnostic)}
@@ -826,9 +826,9 @@ export function TimelineScreen({
               {perspectiveTimeline.canAuthor && displayOrderEditingEnabled && (
                 <div className="timeline-order-actions">
                   <details className="timeline-order-actions__help">
-                    <summary>{copy.timelineOrderHelp}</summary>
-                    <p>{copy.timelineOrderSafety}</p>
-                    <p>
+                    <summary onClick={(clickEvent) => clickEvent.stopPropagation()}>{copy.timelineOrderHelp}</summary>
+                    <p onClick={(clickEvent) => clickEvent.stopPropagation()}>{copy.timelineOrderSafety}</p>
+                    <p onClick={(clickEvent) => clickEvent.stopPropagation()}>
                       {perspectiveTimeline.placedIds.has(event.id)
                         ? copy.timelinePlacedDescription
                         : copy.timelineUnplacedDescription}
