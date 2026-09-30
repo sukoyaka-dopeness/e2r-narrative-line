@@ -9,8 +9,8 @@ The new [English](../src/sample/cedar-observatory-showcase.en.e2r.json) and
 [Japanese](../src/sample/cedar-observatory-showcase.ja.e2r.json) files are a
 fictional neighborhood observatory's open-night story. They are separate from
 the existing Berlin Wall onboarding sample and from E2R-SPEC canonical samples.
-Hub now has a Cedar entry in its sample Gallery,
-with NarrativeLine as the only Handoff target; this does not confer canonical
+Hub now has a Cedar entry after the existing five samples in its Gallery,
+with NarrativeLine and LiaisonScape Handoff targets; this does not confer canonical
 cross-app status. Home offers a second supplemental action; it opens
 either locale through the existing Dataset replacement path. Switching the
 application language chooses the corresponding sample **when opening it**; it
@@ -58,10 +58,12 @@ text, or asset dependency has been identified in the current files. The
 lists this pair separately as an **unreleased candidate**, without adding it
 to the five-family canonical Gallery ledger. No Dataset-level `metadata.license`
 field, LiaisonScape sample mirror, or canonical cross-app authority is created.
-Hub's Cedar entry links to this NarrativeLine-owned EN/JA source pair through
-the existing HTTPS Handoff contract after publication; Hub does not own a
-separate content copy. Human Browser Acceptance and public-write approval
-remain pending.
+Hub's Cedar entry links both consumers to this NarrativeLine-owned EN/JA
+source pair through the existing HTTPS Handoff contract after publication;
+Hub does not own a separate content copy. LiaisonScape can load the Dataset as
+an Entity graph, but its Validator 0.6.0 retains the known Relative Time 0.2.0
+specification-version warning. Human Browser Acceptance and public-write
+approval remain pending.
 
 ## Local evidence and release gates
 

@@ -48,5 +48,7 @@ This packet does not decide Human Browser Acceptance. Cedar remains an
 application-owned candidate. Hub now lists it in the sample Gallery but does
 not make it an E2R-SPEC canonical cross-app sample. The Human judged the
 12-Event sample's visual appearance acceptable; Timeline disclosure-row
-selection and Hub Handoff still require separate browser review.
+selection and drag boundaries have also been judged OK by the Human. The Hub
+now places Cedar sixth, with NarrativeLine and LiaisonScape actions; its final
+card presentation and live Handoff still require separate browser review.
 No public write or release transaction is part of this preparation.
