@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "entities": [
+    { "id": "cedar-observatory", "name": "シダー天文台", "description": "公開観望会を準備する架空の地域天文台。" },
+    { "id": "cedar-sky-club", "name": "シダー星空クラブ", "description": "公開観望会を企画するボランティアの会。" },
+    { "id": "mira-vale", "name": "ミラ・ヴェイル", "description": "クラブのまとめ役。" },
+    { "id": "ren-sato", "name": "レン・サトウ", "description": "天文台の技術担当。" },
+    { "id": "bluebird-telescope", "name": "ブルーバード望遠鏡", "description": "来場者向けの星空案内に使う望遠鏡。" },
+    { "id": "neighbors", "name": "地域の来場者", "description": "公開観望会に招かれた人々。" }
+  ],
+  "events": [
+    {
+      "id": "plan-approved",
+      "name": "クラブが公開観望会を決める",
+      "description": "ミラとクラブが、近所の人々をシダー天文台へ招くことを決める。",
+      "extensions": { "history": { "time": { "year": 2026, "month": 5, "day": 14 } } }
+    },
+    {
+      "id": "invitations-sent",
+      "name": "招待状を送る",
+      "description": "クラブは翌暦月に招待状を送る予定を立てる。正確な日はまだ記録されていない。"
+    },
+    {
+      "id": "dome-ready",
+      "name": "ドームを準備する",
+      "description": "ボランティアが機材点検より前にドームを整える。日付はまだ分からない。"
+    },
+    {
+      "id": "telescope-checked",
+      "name": "望遠鏡を点検する",
+      "description": "レンがドームの準備後、来場者を迎える前にブルーバードを点検する。日付はまだ分からない。"
+    },
+    {
+      "id": "doors-open",
+      "name": "天文台が来場者を迎える",
+      "description": "地域の公開観望会が始まる。",
+      "extensions": { "history": { "time": { "year": 2026, "month": 6, "day": 20, "hour": 18, "minute": 0 } } }
+    },
+    {
+      "id": "sky-tour",
+      "name": "最初の星空案内が始まる",
+      "description": "開場から経過時間で2時間後に始める予定。時刻はまだ日時の記録として保存されていない。"
+    },
+    {
+      "id": "open-night-ends",
+      "name": "公開観望会を終える",
+      "description": "夜のプログラムの後、ボランティアが天文台を閉める。",
+      "extensions": { "history": { "time": { "year": 2026, "month": 6, "day": 20, "hour": 22, "minute": 0 } } }
+    }
+  ],
+  "relations": [
+    { "id": "club-uses-observatory", "sourceId": "cedar-sky-club", "targetId": "cedar-observatory", "name": "利用する" },
+    { "id": "mira-coordinates-club", "sourceId": "mira-vale", "targetId": "cedar-sky-club", "name": "まとめ役を務める" },
+    { "id": "ren-maintains-observatory", "sourceId": "ren-sato", "targetId": "cedar-observatory", "name": "保守する" },
+    { "id": "ren-checks-telescope", "sourceId": "ren-sato", "targetId": "bluebird-telescope", "name": "点検する" },
+    { "id": "club-invites-neighbors", "sourceId": "cedar-sky-club", "targetId": "neighbors", "name": "招待する" },
+    { "id": "observatory-houses-telescope", "sourceId": "cedar-observatory", "targetId": "bluebird-telescope", "name": "設置している" },
+    { "id": "approved-by-club", "sourceId": "plan-approved", "targetId": "cedar-sky-club" },
+    { "id": "approved-by-mira", "sourceId": "plan-approved", "targetId": "mira-vale" },
+    { "id": "invitations-by-club", "sourceId": "invitations-sent", "targetId": "cedar-sky-club" },
+    { "id": "dome-at-observatory", "sourceId": "dome-ready", "targetId": "cedar-observatory" },
+    { "id": "check-by-ren", "sourceId": "telescope-checked", "targetId": "ren-sato" },
+    { "id": "check-of-bluebird", "sourceId": "telescope-checked", "targetId": "bluebird-telescope" },
+    { "id": "opening-at-observatory", "sourceId": "doors-open", "targetId": "cedar-observatory" },
+    { "id": "opening-for-neighbors", "sourceId": "doors-open", "targetId": "neighbors" },
+    { "id": "tour-with-bluebird", "sourceId": "sky-tour", "targetId": "bluebird-telescope" },
+    { "id": "tour-for-neighbors", "sourceId": "sky-tour", "targetId": "neighbors" },
+    { "id": "closing-by-club", "sourceId": "open-night-ends", "targetId": "cedar-sky-club" },
+    {
+      "id": "invitations-next-month",
+      "sourceId": "plan-approved",
+      "targetId": "invitations-sent",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "month", "displacement": 1 } }
+    },
+    {
+      "id": "dome-before-check",
+      "sourceId": "dome-ready",
+      "targetId": "telescope-checked",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "relative-position", "relation": "before" } }
+    },
+    {
+      "id": "check-before-opening",
+      "sourceId": "telescope-checked",
+      "targetId": "doors-open",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "relative-position", "relation": "before" } }
+    },
+    {
+      "id": "tour-two-hours-after-opening",
+      "sourceId": "doors-open",
+      "targetId": "sky-tour",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "elapsed-offset", "direction": "after", "value": 2, "unit": "hour" } }
+    }
+  ],
+  "extensions": {
+    "metadata": { "datasetId": "cedar-observatory-showcase-ja", "title": "シダー天文台の公開観望会" },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        { "extension": "history", "version": "1.0.0" },
+        { "extension": "draft.github.sukoyaka-dopeness.relative-time", "version": "0.2.0", "features": ["relative-position", "calendar-granule-relation", "elapsed-offset"] }
+      ]
+    }
+  }
+}

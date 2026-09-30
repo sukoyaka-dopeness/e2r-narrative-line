@@ -82,10 +82,12 @@ The shared frame does not change navigation or editing state. Screen-specific
 titles and actions remain in the screen content. Header padding and the Home
 Footer padding are reduced at viewport widths of 600 px or less.
 
-The Credits modal displays the public application version, creator name,
-release date, AI acknowledgement, and links to both the NarrativeLine and E2R
-specification repositories. It can be dismissed with `Close`, Escape, or the
-shared modal dismissal behavior.
+The Credits modal displays the application version, creator name, AI
+acknowledgement, and links to both the NarrativeLine and E2R specification
+repositories. The previous release date is absent from the `0.2.0` local
+candidate; the actual `0.2.0` date is added only in the publication transaction.
+The modal can be dismissed with `Close`, Escape, or the shared modal dismissal
+behavior.
 
 ---
 
@@ -94,6 +96,7 @@ shared modal dismissal behavior.
 Users can begin by:
 
 - Opening the onboarding dataset.
+- Opening the separate Cedar Observatory showcase dataset.
 - Creating a new empty dataset.
 - Opening an existing dataset.
 
@@ -105,9 +108,10 @@ Opening an existing Dataset is an `Import E2R JSON` Home action. Home accepts a
 selected JSON file, displays an importing state while reading it, and navigates
 to Timeline View only after Core validation succeeds.
 
-Home orders its actions as Create Dataset, Import E2R JSON, then Open Sample
-Dataset. The first two are primary actions with equal full button widths. Open
-Sample Dataset is separated below them as an onboarding action.
+Home orders its actions as Create Dataset, Import E2R JSON, Open Sample
+Dataset, then Open Cedar Observatory showcase. The first two are primary
+actions with equal full button widths. The existing onboarding sample and the
+showcase are separate supplemental actions below them.
 
 Because the shared Header carries the product name, the Home screen uses `Get
 Started` as its screen heading.

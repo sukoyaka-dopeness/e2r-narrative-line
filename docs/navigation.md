@@ -25,7 +25,7 @@ The MVP consists of the following views.
 
 ```text
 Home
-  └── Create Dataset / Import E2R JSON / Open Sample Dataset → Timeline View
+  └── Create Dataset / Import E2R JSON / Open Sample Dataset / Open Cedar Observatory showcase → Timeline View
         ├── Add Event or Edit selected Event → Event Detail
         │     ├── Save and Add Related Entity → Entity Picker
         │     │     ├── Add existing Entity → Event Detail
@@ -47,10 +47,12 @@ Users can:
 - Create a new dataset.
 - Open an existing dataset.
 - Open the onboarding sample dataset.
+- Open the separate Cedar Observatory showcase dataset.
 
 Create Dataset and Import E2R JSON are the primary Home actions and have equal
-button widths. Open Sample Dataset follows below them as a supplemental
-onboarding action.
+button widths. The existing onboarding sample and the separate showcase follow
+below them as supplemental actions. Both use the normal Dataset replacement
+path when another Dataset is active.
 
 Opening or creating a dataset navigates to Timeline View.
 

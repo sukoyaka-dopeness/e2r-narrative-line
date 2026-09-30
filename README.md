@@ -81,6 +81,14 @@ The current application also provides:
   keyboard moves and drag-and-drop while explicit editing is active; and
 - the bounded Coordinate 0.1.0 interoperability workflow described below.
 
+Home also offers a separate, fictional Cedar Observatory showcase in English
+and Japanese. It pairs recorded dates with qualitative Relative Time and direct
+calendar-month / elapsed-hour date candidates. The existing Berlin Wall
+onboarding sample remains available; the showcase is application-owned and is
+not a canonical cross-app or Hub Gallery sample. See the
+[showcase release-candidate record](docs/cedar-observatory-showcase-release-candidate.md)
+for its content and publication boundary.
+
 Relative Time 0.2.0 and Perspective 0.1.0 remain Candidate specifications;
 application support does not promote either specification to Stable. See the
 [English](docs/user-guide-en.md) and [Japanese](docs/user-guide-ja.md) user

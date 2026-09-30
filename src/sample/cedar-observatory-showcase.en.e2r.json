@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "entities": [
+    { "id": "cedar-observatory", "name": "Cedar Observatory", "description": "A fictional neighborhood observatory preparing an open night." },
+    { "id": "cedar-sky-club", "name": "Cedar Sky Club", "description": "The volunteer group organizing the open night." },
+    { "id": "mira-vale", "name": "Mira Vale", "description": "The club coordinator." },
+    { "id": "ren-sato", "name": "Ren Sato", "description": "The observatory technician." },
+    { "id": "bluebird-telescope", "name": "Bluebird Telescope", "description": "The instrument prepared for the visitors' sky tour." },
+    { "id": "neighbors", "name": "Neighborhood visitors", "description": "The people invited to the open night." }
+  ],
+  "events": [
+    {
+      "id": "plan-approved",
+      "name": "The club approves an open night",
+      "description": "Mira and the club agree to invite their neighbors to Cedar Observatory.",
+      "extensions": { "history": { "time": { "year": 2026, "month": 5, "day": 14 } } }
+    },
+    {
+      "id": "invitations-sent",
+      "name": "Invitations are sent",
+      "description": "The club plans to send invitations in the next calendar month. The exact day has not been recorded."
+    },
+    {
+      "id": "dome-ready",
+      "name": "The dome is prepared",
+      "description": "Volunteers ready the observatory dome before the equipment check. Its date is still unknown."
+    },
+    {
+      "id": "telescope-checked",
+      "name": "The telescope is checked",
+      "description": "Ren checks Bluebird after the dome is prepared and before visitors arrive. Its date is still unknown."
+    },
+    {
+      "id": "doors-open",
+      "name": "The observatory opens to visitors",
+      "description": "The doors open for the neighborhood open night.",
+      "extensions": { "history": { "time": { "year": 2026, "month": 6, "day": 20, "hour": 18, "minute": 0 } } }
+    },
+    {
+      "id": "sky-tour",
+      "name": "The first sky tour begins",
+      "description": "The tour is planned for two elapsed hours after the doors open. Its time has not been recorded as History."
+    },
+    {
+      "id": "open-night-ends",
+      "name": "The open night ends",
+      "description": "The volunteers close the observatory after the evening program.",
+      "extensions": { "history": { "time": { "year": 2026, "month": 6, "day": 20, "hour": 22, "minute": 0 } } }
+    }
+  ],
+  "relations": [
+    { "id": "club-uses-observatory", "sourceId": "cedar-sky-club", "targetId": "cedar-observatory", "name": "uses" },
+    { "id": "mira-coordinates-club", "sourceId": "mira-vale", "targetId": "cedar-sky-club", "name": "coordinates" },
+    { "id": "ren-maintains-observatory", "sourceId": "ren-sato", "targetId": "cedar-observatory", "name": "maintains" },
+    { "id": "ren-checks-telescope", "sourceId": "ren-sato", "targetId": "bluebird-telescope", "name": "checks" },
+    { "id": "club-invites-neighbors", "sourceId": "cedar-sky-club", "targetId": "neighbors", "name": "invites" },
+    { "id": "observatory-houses-telescope", "sourceId": "cedar-observatory", "targetId": "bluebird-telescope", "name": "houses" },
+    { "id": "approved-by-club", "sourceId": "plan-approved", "targetId": "cedar-sky-club" },
+    { "id": "approved-by-mira", "sourceId": "plan-approved", "targetId": "mira-vale" },
+    { "id": "invitations-by-club", "sourceId": "invitations-sent", "targetId": "cedar-sky-club" },
+    { "id": "dome-at-observatory", "sourceId": "dome-ready", "targetId": "cedar-observatory" },
+    { "id": "check-by-ren", "sourceId": "telescope-checked", "targetId": "ren-sato" },
+    { "id": "check-of-bluebird", "sourceId": "telescope-checked", "targetId": "bluebird-telescope" },
+    { "id": "opening-at-observatory", "sourceId": "doors-open", "targetId": "cedar-observatory" },
+    { "id": "opening-for-neighbors", "sourceId": "doors-open", "targetId": "neighbors" },
+    { "id": "tour-with-bluebird", "sourceId": "sky-tour", "targetId": "bluebird-telescope" },
+    { "id": "tour-for-neighbors", "sourceId": "sky-tour", "targetId": "neighbors" },
+    { "id": "closing-by-club", "sourceId": "open-night-ends", "targetId": "cedar-sky-club" },
+    {
+      "id": "invitations-next-month",
+      "sourceId": "plan-approved",
+      "targetId": "invitations-sent",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "calendar-granule-relation", "granularity": "month", "displacement": 1 } }
+    },
+    {
+      "id": "dome-before-check",
+      "sourceId": "dome-ready",
+      "targetId": "telescope-checked",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "relative-position", "relation": "before" } }
+    },
+    {
+      "id": "check-before-opening",
+      "sourceId": "telescope-checked",
+      "targetId": "doors-open",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "relative-position", "relation": "before" } }
+    },
+    {
+      "id": "tour-two-hours-after-opening",
+      "sourceId": "doors-open",
+      "targetId": "sky-tour",
+      "extensions": { "draft.github.sukoyaka-dopeness.relative-time": { "type": "elapsed-offset", "direction": "after", "value": 2, "unit": "hour" } }
+    }
+  ],
+  "extensions": {
+    "metadata": { "datasetId": "cedar-observatory-showcase-en", "title": "Cedar Observatory: An Open Night" },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        { "extension": "history", "version": "1.0.0" },
+        { "extension": "draft.github.sukoyaka-dopeness.relative-time", "version": "0.2.0", "features": ["relative-position", "calendar-granule-relation", "elapsed-offset"] }
+      ]
+    }
+  }
+}

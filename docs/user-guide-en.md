@@ -20,7 +20,10 @@ to an Event named “Apollo 11 Moon landing.”
 
 ## View a Timeline
 
-From Home, choose **Open Sample Dataset** to explore the built-in sample, or choose **Resume Editing** to return to the Dataset you were editing. The Timeline is the main workspace for selecting Events and opening their details.
+From Home, choose **Open Sample Dataset** for the built-in onboarding story,
+**Open Cedar Observatory showcase** for a story with time relationships, or
+**Resume Editing** to return to the Dataset you were editing. The Timeline is
+the main workspace for selecting Events and opening their details.
 
 The Timeline toolbar stays available while you work. Choose **Add Event** to
 create a new Event. When the page is long, **↑ Top** and **↓ Bottom** provide
@@ -119,11 +122,18 @@ are not evaluated, so treat these values as candidates for Human review.
 
 From Home, choose **New Dataset** to start from an empty Dataset, or choose **Open E2R Dataset** to import an E2R JSON file. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset.
 
-Home also provides **Open Sample Dataset** and **Sample info**. The former opens
-the built-in sample for the current application; the latter opens the central
-E2R specification provenance record. The public Gallery has five ordinary
-sample families. E2R Self-Description is a separate non-normative dogfood and
-technical entry, not a sixth Gallery sample.
+Home also provides **Open Sample Dataset**, **Open Cedar Observatory showcase**,
+and **Sample info**. The first keeps the Berlin Wall onboarding sample. The
+second opens a separate fictional open-night story. Its recorded dates appear
+on the Timeline; the invitations and first sky tour have unrecorded date/time
+candidates from a calendar-month relation and an elapsed two-hour relation.
+The qualitative before/after relations connect the dome preparation and
+equipment check. A candidate is not saved as History until you choose it in
+the date/time editor and save there. **Sample info** opens the central E2R
+specification provenance record, including the showcase's release-candidate
+rights boundary. The showcase is not a Hub Gallery or canonical cross-app
+sample; the Gallery retains five ordinary families, with E2R Self-Description
+as a separate technical entry.
 
 ## Save or share a Dataset
 

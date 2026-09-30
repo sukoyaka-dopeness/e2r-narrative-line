@@ -11,6 +11,7 @@ const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
 
 type Props = {
   onOpenTimeline: () => void;
+  onOpenShowcase: () => void;
   onCreateDataset?: () => void;
   onImportDataset: (source: string) => DatasetImportResult;
   onResumeDataset?: () => void;
@@ -31,6 +32,7 @@ function formatImportIssue(issue: DatasetImportIssue): string {
 
 export function HomeScreen({
   onOpenTimeline,
+  onOpenShowcase,
   onCreateDataset,
   onImportDataset,
   onResumeDataset,
@@ -129,6 +131,9 @@ export function HomeScreen({
         <div style={{ marginTop: "0.75rem" }}>
           <button type="button" onClick={onOpenTimeline} disabled={handoffLoading} style={{ width: "100%" }}>
            {ja ? "サンプルDatasetを開く" : "Open Sample Dataset"}
+          </button>
+          <button type="button" onClick={onOpenShowcase} disabled={handoffLoading} style={{ width: "100%", marginTop: "0.5rem" }}>
+            {ja ? "シダー天文台の例を開く" : "Open Cedar Observatory showcase"}
           </button>
           <a className="sample-info-link" href={SAMPLE_PROVENANCE_URL} target="_blank" rel="noreferrer">
             {copy.sampleInfo}

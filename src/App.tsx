@@ -20,7 +20,7 @@ import {
   reconcileRestoredNavigationState,
   replaceInitialHistoryEntry,
 } from "./services/NavigationService";
-import { sampleDataset, sampleDatasetEn } from "./sample/sampleDataset";
+import { sampleDataset, sampleDatasetEn, showcaseDataset, showcaseDatasetEn } from "./sample/sampleDataset";
 import type { AppState } from "./state/AppState";
 import type { Dataset } from "./models/Dataset";
 import {
@@ -150,6 +150,7 @@ function App() {
     parseDatasetHandoffFragment(window.location.hash),
   );
   const sample = language === "ja" ? sampleDataset : sampleDatasetEn;
+  const showcase = language === "ja" ? showcaseDataset : showcaseDatasetEn;
   const storedDataset = (() => {
     try {
       const source = window.localStorage.getItem("narrativeline.lastDataset");
@@ -1097,6 +1098,7 @@ function App() {
       <AppFrame showFooter onHome={handleNavigateHome} onLanguageChange={handleManualLanguageChange}>
         <HomeScreen
           onOpenTimeline={() => handleOpenDataset(sample, [], "sample")}
+          onOpenShowcase={() => handleOpenDataset(showcase, [], "sample")}
           onResumeDataset={handleResumeDataset}
           hasResumeDataset={storedDataset !== undefined}
           onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
