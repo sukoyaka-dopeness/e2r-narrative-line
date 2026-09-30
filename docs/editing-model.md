@@ -319,9 +319,12 @@ Future versions may introduce:
 
 - Undo / Redo
 - Batch editing
-- Relative Time editing
 - Entity-to-Entity Relation editing
 - Automatic merge support
 - Conflict resolution
 - Incremental validation
 - Extension plug-in support
+
+Bounded Relative Time editing and its Recorded-versus-Candidate boundary are
+implemented; see the [user guide](user-guide-en.md#record-relative-time) and
+the [QRT implementation/acceptance record](quantitative-relative-time-user-facing-milestone-implementation.md).

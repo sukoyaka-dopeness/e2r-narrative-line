@@ -41,6 +41,10 @@ The first milestone is a Minimum Viable Product (MVP) focused on the essential t
 
 ## MVP Scope
 
+The original MVP was accepted on 2026-08-06. The included and excluded items
+below describe that milestone; they are not an inventory of every capability
+in the current application.
+
 The MVP includes:
 
 - Create a new dataset.
@@ -62,6 +66,25 @@ The MVP intentionally excludes:
 - Timeline search.
 - Multiple timeline views.
 - Collaboration features.
+
+## Current post-MVP capabilities
+
+The current application also provides:
+
+- bounded History 2.0.0 position/circa support and a confirmed Dataset-wide
+  History 1 to History 2 upgrade;
+- qualitative Relative Time and bounded quantitative
+  `calendar-granule-relation` / `elapsed-offset` authoring and direct date
+  candidates under Relative Time 0.2.0 Candidate;
+- supported Relative Time progressive disclosure and diagnostic visibility;
+- Human-authored, non-temporal Perspective 0.1.0 display ordering, including
+  keyboard moves and drag-and-drop while explicit editing is active; and
+- the bounded Coordinate 0.1.0 interoperability workflow described below.
+
+Relative Time 0.2.0 and Perspective 0.1.0 remain Candidate specifications;
+application support does not promote either specification to Stable. See the
+[English](docs/user-guide-en.md) and [Japanese](docs/user-guide-ja.md) user
+guides for current workflows and boundaries.
 
 Post-MVP interoperability work additionally reads Coordinate prototype
 `0.1.0`. Entity and Event Detail display Dataset-defined logical Coordinates;

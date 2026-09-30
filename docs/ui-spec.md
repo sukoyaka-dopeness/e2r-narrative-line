@@ -449,7 +449,6 @@ Future versions may introduce:
 - Timeline filtering
 - Timeline search
 - Undo / Redo
-- Relative Time editing
 - Multiple timeline views
 - Split view
 - Entity inspector

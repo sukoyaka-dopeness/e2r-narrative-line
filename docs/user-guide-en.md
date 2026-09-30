@@ -90,6 +90,31 @@ From Event Detail, choose **Save and Add Related Entity**.
 
 Entities may share the same name; NarrativeLine does not merge them automatically. The required Relation is created automatically. Editing or removing an association does not delete the Entity. Entity deletion is a separate action in Entity Detail.
 
+## Record Relative Time
+
+Relative Time tools are available in Event Detail. If the active Dataset has
+no recognized Relative Time information, choose **More** → **Show Relative
+Time tools** to reveal them for the current session. Supported recorded data
+is shown when its Dataset is opened. Unsupported or incomplete Relative Time
+information is shown as a diagnostic; it does not make the authoring controls
+available for unsafe edits.
+
+In Event Detail, **Add a new time relation (optional)** records a before/after
+relationship between Events. **Add quantitative time relation** records
+either a position by calendar unit or an elapsed amount. A calendar position
+such as the next month is not an elapsed number of days. Each recorded
+relationship remains separate.
+
+When a supported direct relation and a recorded date/time provide a usable
+result, NarrativeLine may show one or more unrecorded date/time candidates.
+Each candidate keeps its own relation as its basis; NarrativeLine does not
+choose a winning candidate or follow chains of relations. A candidate does
+not replace a recorded Timeline date. Choosing **Review date/time** fills the
+date/time editor only. Use the ordinary **Save Event** action to record it;
+discarding the edit leaves the recorded date unchanged. The relation that
+provided the candidate remains recorded. Time zone and daylight-saving time
+are not evaluated, so treat these values as candidates for Human review.
+
 ## Use your own Dataset
 
 From Home, choose **New Dataset** to start from an empty Dataset, or choose **Open E2R Dataset** to import an E2R JSON file. Valid files open in the Timeline. Syntax and Core validation errors stop the import. Unknown Extensions produce warnings but do not prevent opening the Dataset.
@@ -177,14 +202,12 @@ scroll the page to reach the workspace content and toolbar actions.
 
 The following are ideas being considered for future NarrativeLine improvements. They are not promises about a current release or a fixed release schedule:
 
-- organize the before-and-after relationships of Events whose dates are unknown;
 - search the Timeline by Event name or description;
 - filter the Timeline by conditions such as whether an Event has a date, making relevant Events easier to find;
-- record more detailed times where useful;
+- support additional time precision beyond the current bounded History editing;
 - make existing connections easier to review and edit; and
 - support safer experimentation with editing features such as Undo and Redo.
 
-One possible improvement is to let users organize Events whose exact dates are
-unknown. Even when the date is not known, it may be clear that one Event
-happened before another, or that B happened after A. NarrativeLine could let
-users record those relationships and reflect them in the Timeline.
+Relative Time already lets users record supported before-and-after
+relationships and use them in the Timeline. Broader search, filtering, and
+editing improvements remain possible future work.

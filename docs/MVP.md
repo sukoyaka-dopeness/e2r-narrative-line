@@ -1,5 +1,9 @@
 # NarrativeLine MVP
 
+This document records the original MVP scope accepted on 2026-08-06. Its
+out-of-scope and future-version sections are scoped to that milestone. Current
+post-MVP capabilities are summarized under E2R Support below.
+
 ## Purpose
 
 NarrativeLine is the first reference application built on top of E2R.
@@ -227,10 +231,16 @@ NarrativeLine currently supports:
 
 - E2R Core
 - History Extension date and local-time representation with bounded precision
+- bounded Relative Time `0.1.0` qualitative relations and selected
+  `0.2.0` Candidate authoring/candidate presentation features
+- Perspective `0.1.0` Candidate Human-authored display ordering
 
 Time Zone, UTC offset, and Instant-related operations remain deferred.
 
-Other Extensions remain untouched unless explicitly supported by future versions.
+Other Extension data is preserved where supported by the import/edit/export
+path. NarrativeLine does not provide a general Extension editor. The Relative
+Time and Perspective versions above remain Candidates; app support does not
+change their specification maturity.
 
 ## Coordinate interoperability support
 
@@ -278,15 +288,15 @@ Additional views may be introduced in later versions.
 
 # Future Versions
 
-Future releases may introduce:
+The following ideas remain future work; Relative Time authoring and Perspective
+ordering are post-MVP capabilities already implemented as described above.
 
-- Relative Time
 - Timeline filtering
 - Timeline search
 - Timeline lanes
 - Multiple timeline views
 - Calendar support
-- Approximate time
+- Additional approximate-time workflows beyond the bounded History 2 profile
 - Era support
 - Timeline navigation improvements
 - Entity-to-Entity Relation editing
