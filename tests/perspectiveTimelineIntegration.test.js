@@ -613,7 +613,7 @@ test("transient move feedback follows locale changes without changing its Event 
   }
 });
 
-test("production App file input imports Core and Lantern Market Datasets without warning information", async () => {
+test("production App file input imports Core and application-owned Relative Time datasets without warning information", async () => {
   const rendered = await renderApp(fixture());
   try {
     const continueEditing = [...rendered.container.querySelectorAll(".home-actions button")]
@@ -623,8 +623,8 @@ test("production App file input imports Core and Lantern Market Datasets without
 
     const sources = [
       await readFile(new URL("./fixtures/dataset-replacement-safety-warning-free.e2r.json", import.meta.url), "utf8"),
-      await readFile(new URL("../../e2r-spec/docs/sample-drafts/relative-time-0.2.0-lantern-market.en.e2r.json", import.meta.url), "utf8"),
-      await readFile(new URL("../../e2r-spec/docs/sample-drafts/relative-time-0.2.0-lantern-market.ja.e2r.json", import.meta.url), "utf8"),
+      await readFile(new URL("./fixtures/relative-time-multi-band.json", import.meta.url), "utf8"),
+      await readFile(new URL("./fixtures/relative-time-sample-ja.json", import.meta.url), "utf8"),
     ];
     for (const source of sources) {
       const input = rendered.container.querySelector('input[type="file"]');
