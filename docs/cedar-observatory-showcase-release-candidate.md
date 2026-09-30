@@ -1,7 +1,7 @@
 # Cedar Observatory showcase — local release candidate
 
 Date: 2026-09-30
-Status: NarrativeLine `0.2.0` application-owned sample candidate; publication and content rights review pending
+Status: NarrativeLine `0.2.0` application-owned sample candidate; sample-data policy selected, Human Browser Acceptance and publication pending
 
 ## Role and content
 
@@ -41,11 +41,15 @@ fictional story, names, descriptions, data structure, and EN/JA versions were
 created with Codex for this checkpoint under Human direction. No factual
 event chronology, third-party prose, images, or external assets were used.
 This is an authorship/provenance statement about the local candidate, not a
-license grant or a claim of completed Human content review.
+claim of completed Human content review.
 
-The NarrativeLine software's MIT license does not automatically license these
-Dataset files. Their redistribution/CC0 treatment and EN/JA content approval
-need an explicit Human project-rights decision before publication. The
+The Human selected the **same E2R sample-data licensing/provenance policy**
+used for other eligible project-created E2R samples. The scoped
+[sample content notice](../src/sample/README.md) applies the CC0 1.0 bucket to
+eligible project-created content of this pair only where the project can grant
+rights; third-party/imported material is excluded. The NarrativeLine software's
+MIT license does not automatically license Dataset content. No external story,
+text, or asset dependency has been identified in the current files. The
 [E2R-SPEC provenance record](../../e2r-spec/docs/public-samples/public-sample-provenance.md)
 lists this pair separately as an **unreleased candidate**, without adding it
 to the five-family Gallery ledger. No Dataset-level `metadata.license` field,
@@ -72,8 +76,9 @@ described as full Relative Time interoperability. No LiaisonScape dependency
 or runtime change is included in this NarrativeLine candidate.
 
 Before public deployment, Human review is needed for (1) story/content and
-EN/JA wording, (2) project authority to redistribute both files and the
-intended content license, and (3) visible Timeline/Home presentation. A
+EN/JA wording and (2) visible Timeline/Home presentation. If that review
+finds unrecorded external material or a new rights issue, return to Human
+stewardship before inclusion. A
 LiaisonScape graph check can support readability, but does not promote this
 sample to canonical cross-app status. The public-write approval remains a
 separate release transaction.

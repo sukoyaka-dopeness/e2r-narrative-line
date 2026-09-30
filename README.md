@@ -88,6 +88,8 @@ onboarding sample remains available; the showcase is application-owned and is
 not a canonical cross-app or Hub Gallery sample. See the
 [showcase release-candidate record](docs/cedar-observatory-showcase-release-candidate.md)
 for its content and publication boundary.
+The [sample content notice](src/sample/README.md) applies the selected E2R
+sample-data policy to the Cedar pair separately from the MIT software license.
 
 Relative Time 0.2.0 and Perspective 0.1.0 remain Candidate specifications;
 application support does not promote either specification to Stable. See the

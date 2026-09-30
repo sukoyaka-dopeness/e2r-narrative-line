@@ -36,9 +36,15 @@ The [Cedar Observatory candidate](cedar-observatory-showcase-release-candidate.m
 is a new fictional, NarrativeLine-owned EN/JA Dataset pair. Home offers it as a
 second supplemental action and preserves the Berlin Wall onboarding action.
 It is not the QRT test fixture, a change to canonical E2R-SPEC sample content,
-or a Hub Gallery entry. Human content, translation, and redistribution/license
-approval remain gates before public deployment. The separate E2R-SPEC
-provenance note does not grant rights or change Gallery authority.
+or a Hub Gallery entry. Human selected the existing E2R sample-data policy for
+eligible project-created Cedar content; the scoped
+[sample notice](../src/sample/README.md) separates its CC0 1.0 bucket from the
+MIT software license. Human story, EN/JA wording, and browser acceptance remain
+gates before public deployment. The E2R-SPEC provenance note does not change
+Gallery authority or relicense any third-party content.
+The [Human Browser Acceptance preparation](cedar-observatory-human-browser-acceptance-preparation.md)
+gives the local Home, Timeline, and LiaisonScape review points without treating
+automated evidence as Human acceptance.
 LiaisonScape can load its Entity graph, but the older Validator 0.6.0 emits
 the expected unsupported Relative Time 0.2.0 declaration warning. This
 candidate makes no claim of warning-free cross-app recognition and does not
@@ -61,9 +67,10 @@ completion rather than assumed in this document.
 
 The release transaction still needs:
 
-1. Human approval of the sample's story/JA–EN content and Dataset-content
-   redistribution/license treatment, plus browser review of its Home/Timeline
-   presentation; publication may not infer this approval from automated tests.
+1. Human approval of the sample's story/JA–EN content and browser review of
+   its Home/Timeline presentation. The sample-data policy is selected; any
+   newly identified external material or rights issue returns to Human
+   stewardship. Publication may not infer visual acceptance from tests.
 2. Credits date synchronized to the real publication/deploy event, with the
    final edit included in the exact revision reviewed for release.
 3. Network-capable advisory result and final tests/build on that exact
