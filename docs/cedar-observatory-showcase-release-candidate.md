@@ -14,9 +14,11 @@ either locale through the existing Dataset replacement path. Switching the
 application language chooses the corresponding sample **when opening it**; it
 does not translate an already active Dataset or silently replace its content.
 
-Seven Events and six Entities form a small Timeline and a useful relationship
-graph. Three Events have Recorded History. Dome preparation and equipment
-checking are undated but connected by qualitative before/after relations.
+Twelve Events and six Entities form a small Timeline and a useful relationship
+graph. Eight Events have Recorded History: the open-night decision, volunteer
+roles, route planning and safety check, the on-day briefing and welcome-desk
+preparation, opening, and closing. Dome preparation and equipment checking
+remain undated but connected by qualitative before/after relations.
 Sending invitations has a direct **next calendar month** relation to a dated
 planning Event; the first sky tour has a direct **two elapsed hours after**
 relation to a dated opening Event. The resulting June 2026 month and 20:00
@@ -67,7 +69,7 @@ readability in a real browser. The final verification record is in
 [the release preparation result](release-preparation-0.2.0-result.md).
 
 LiaisonScape's current `loadDataset` accepts the EN file and its Entity graph
-contains six nodes and six Entity-to-Entity edges. It reports 15 Event-related
+contains six nodes and six Entity-to-Entity edges. It reports 22 Event-related
 edges outside that Entity graph. Its pinned Validator **0.6.0** reports one
 `specification_version_unsupported` warning for the Relative Time `0.2.0`
 declaration, while NarrativeLine's Validator **0.7.0** accepts the same file

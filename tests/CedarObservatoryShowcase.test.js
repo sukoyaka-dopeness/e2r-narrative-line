@@ -15,8 +15,13 @@ const source = (locale) => readFileSync(
 
 const summarize = (dataset) => ({
   entities: dataset.entities.map(({ id }) => id),
-  events: dataset.events.map(({ id }) => id),
-  relations: dataset.relations.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+  events: dataset.events.map(({ id, extensions }) => ({ id, time: extensions?.history?.time })),
+  relations: dataset.relations.map(({ id, sourceId, targetId, extensions }) => ({
+    id,
+    sourceId,
+    targetId,
+    relativeTime: extensions?.["draft.github.sukoyaka-dopeness.relative-time"],
+  })),
 });
 
 test("showcase EN/JA have the same graph and import/export without diagnostics", () => {
@@ -34,7 +39,11 @@ test("showcase EN/JA have the same graph and import/export without diagnostics",
   });
   assert.deepEqual(summarize(datasets[0]), summarize(datasets[1]));
   assert.equal(datasets[0].entities.length, 6);
-  assert.equal(datasets[0].events.length, 7);
+  assert.equal(datasets[0].events.length, 12);
+  assert.equal(datasets[0].relations.length, 28);
+  assert.equal(datasets[0].events.filter(({ extensions }) => extensions?.history?.time).length, 8);
+  assert.deepEqual(datasets[0].events.filter(({ extensions }) => !extensions?.history?.time).map(({ id }) => id),
+    ["invitations-sent", "dome-ready", "telescope-checked", "sky-tour"]);
   assert.equal(datasets[0].relations.filter(({ sourceId, targetId }) =>
     datasets[0].entities.some(({ id }) => id === sourceId) &&
     datasets[0].entities.some(({ id }) => id === targetId)).length, 6);
@@ -83,7 +92,7 @@ test("Home opens the separate showcase through the existing Dataset replacement 
     const showcaseButton = buttons.find(({ textContent }) => textContent.trim() === "Open Cedar Observatory showcase");
     assert.ok(showcaseButton);
     await act(async () => showcaseButton.click());
-    assert.equal(environment.document.querySelectorAll(".timeline-card").length, 7);
+    assert.equal(environment.document.querySelectorAll(".timeline-card").length, 12);
     assert.equal(environment.document.querySelector('input[aria-label="Dataset title"]')?.value,
       "Cedar Observatory: An Open Night");
     assert.ok(environment.document.body.textContent.includes("date/time candidate"));

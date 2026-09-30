@@ -26,10 +26,13 @@ a permanent application contract.
 
 1. Open both locale URLs; from each Home screen open Cedar. Check story,
    names, descriptions, Home hierarchy, ordinary and narrow width.
-2. In Timeline, check Recorded May 14 planning, June 20 opening/closing;
-   undated dome preparation and telescope check with qualitative before/after;
-   invitations' **June 2026 month** Candidate from next calendar month; and
-   sky tour's **June 20 20:00** Candidate from two elapsed hours after opening.
+2. In the twelve-Event Timeline, check the Recorded sequence from May 14
+   decision through May 21 volunteer roles, June 4 route plan, June 12 safety
+   walk, June 20 afternoon briefing and welcome desk, opening, and closing.
+   Check undated dome preparation and telescope check with qualitative
+   before/after; invitations' **June 2026 month** Candidate from next calendar
+   month; and sky tour's **June 20 20:00** Candidate from two elapsed hours
+   after opening.
    Expand Candidate disclosures and compare them with Recorded History. Open
    relevant Event Details to inspect the recorded Relation and candidate basis.
 3. In LiaisonScape, open either exact Cedar JSON file using **Open E2R
