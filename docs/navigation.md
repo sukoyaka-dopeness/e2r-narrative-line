@@ -135,8 +135,11 @@ Entity's recorded Spaces. The exact shared `linkscape-graph` Space exposes an
 explicit numeric editor for already-recorded `x` and `y`; all other Spaces and
 missing values remain read-only. The selected Space and draft values are
 temporary UI state.
-Deleting an Entity removes its connected Relations and returns to Timeline;
-connected Events remain.
+If an Entity has incident Relations, choosing Delete Entity opens a blocker
+resolution flow instead of deleting it. The flow lists the Relations so the
+user can resolve them individually; after all blockers are gone, a separate
+confirmation deletes the Entity and returns to Timeline. Entity deletion does
+not cascade-delete Relations, and connected Events remain.
 
 ---
 

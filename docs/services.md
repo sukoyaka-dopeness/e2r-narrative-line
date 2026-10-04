@@ -228,6 +228,13 @@ Returns:
 
 ### deleteEntity()
 
+Removes only the Entity with the requested ID. It does not remove or rewrite
+Relations or Events. This low-level helper does not check for incident
+Relations; the normal Entity Detail workflow checks and resolves those first,
+so callers must satisfy that precondition. Calling it directly for an Entity
+with incident Relations can leave unresolved Relation endpoints, which fail
+Dataset validation and prevent export.
+
 Returns:
 
 - an updated Dataset

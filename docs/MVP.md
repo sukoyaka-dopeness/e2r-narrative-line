@@ -355,6 +355,14 @@ The current MVP focuses on validating the core editing workflow of E2R datasets.
   and Entity Detail
 - In-memory dataset editing
 
+The Entity-deletion bullet above records the original MVP scope accepted on
+2026-08-06. It is a historical milestone statement, not the current
+post-MVP workflow. Commit `57b58037e7837af81d8273b4656df11bc102551d`
+(`fix: resolve Entity deletion blockers explicitly`, 2026-08-27) replaced
+cascade cleanup with explicit blocker resolution: current Entity deletion is
+available only after the user resolves all incident Relations individually.
+The Relation objects are not removed as a side effect of Entity deletion.
+
 ### Deferred
 
 The following features are not yet implemented in the current MVP build. Some

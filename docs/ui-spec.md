@@ -359,10 +359,14 @@ prevents long text from expanding or overflowing the card.
 `Back` and `Save Entity` form the primary action group. `Delete Entity` is
 placed in a separate Danger Zone below that group.
 
-Selecting `Delete Entity` in Entity Detail opens a confirmation. Confirming
-deletion permanently removes the Entity and every Relation connected to it, then
-returns to Timeline View. Connected Events remain in the Dataset. Canceling the
-confirmation leaves the Dataset unchanged.
+Selecting `Delete Entity` in Entity Detail first checks for incident Relations.
+If any remain, NarrativeLine shows them as blockers and does not offer Entity
+deletion yet. The user can inspect and resolve each Relation individually,
+including using the available relationship-oriented handoff where applicable.
+Only after no incident Relations remain does the ordinary deletion
+confirmation appear. Confirming it removes the Entity and returns to Timeline;
+it does not cascade-delete Relations. Connected Events remain in the Dataset.
+Canceling either dialog leaves the relevant objects unchanged.
 
 ---
 

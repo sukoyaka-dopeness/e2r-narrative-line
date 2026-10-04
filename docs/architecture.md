@@ -131,7 +131,22 @@ Responsibilities:
 * Display and edit Entity information
 * Display Related Events
 * Navigate to Event Detail
-* Delete Entity with connected Relation cleanup
+* Resolve incident Relations explicitly before Entity deletion
+
+Entity deletion is guarded by the current Dataset's incident Relations. Entity
+Detail presents each blocker for individual resolution and permits deletion
+only after none remain. The lower-level `deleteEntity()` service removes only
+the Entity and relies on this caller precondition; the normal UI enforces it.
+The service does not cascade-delete Relations.
+
+This resolution UI reflects NarrativeLine's timeline-editing responsibility:
+Relations are visible and actionable at the deletion point, with a
+relationship-oriented handoff available where appropriate. LiaisonScape's
+Relation-first authoring surface directs the user to its Relation workflow to
+resolve the same kind of deletion blocker. This is an application-level
+comparison, not an E2R-wide normative rule. See LiaisonScape's
+`entity-relation-deletion-mvp-decision.md` for its current implementation
+decision.
 
 ---
 

@@ -575,19 +575,23 @@ currentScreen = Timeline
 
 ---
 
-# Entity Detail Delete Confirmation
+# Entity Deletion Resolution and Confirmation
 
-The current implementation keeps this confirmation as local Entity Detail UI
-state. It does not use `currentDialog` or DialogService.
+Entity Detail checks for incident Relations before opening the final deletion
+confirmation. If Relations remain, a local resolution dialog lists each
+blocker. The user resolves them individually; Entity deletion remains
+unavailable until none remain. The final confirmation is local Entity Detail
+UI state and does not use `currentDialog` or DialogService.
 
-## Open
+## Open and resolve blockers
 
 ```text
 User selects Delete Entity
-    ↓
-isDeleteConfirmationOpen = true
-    ↓
-Dataset remains unchanged
+    ↓ incident Relations remain
+Entity Detail opens the blocker-resolution dialog
+    ↓ user inspects/removes Relations individually or keeps the Entity
+When no incident Relations remain, Entity Detail offers deletion confirmation
+    ↓ Dataset remains unchanged until confirmation
 ```
 
 ## Confirm
@@ -604,6 +608,10 @@ selectedEntity = null
 NavigationService.timeline()
 ```
 
+`EntityService.deleteEntity()` removes only the Entity and does not cascade
+Relations. The normal UI calls it only after resolving all incident Relations;
+the service helper itself does not enforce that precondition.
+
 ---
 
 ## Cancel
@@ -611,7 +619,7 @@ NavigationService.timeline()
 ```text
 User selects Keep Entity
     ↓
-isDeleteConfirmationOpen = false
+the blocker dialog or deletion confirmation closes
     ↓
 Dataset remains unchanged
 ```
