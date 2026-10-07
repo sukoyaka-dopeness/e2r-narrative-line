@@ -497,6 +497,7 @@ test("dismisses the production Credits dialog when the backdrop is directly targ
     assert.ok(rendered.document.querySelector('[role="alertdialog"]'));
     const backdrop = rendered.document.querySelector(".modal-backdrop");
     assert.ok(backdrop);
+    assert.ok(backdrop.classList.contains("modal-backdrop--dismissible"));
 
     await act(async () => {
       backdrop.dispatchEvent(new rendered.window.MouseEvent("click", { bubbles: true, cancelable: true }));

@@ -96,7 +96,7 @@ export function ModalDialog({
 
   return (
     <div
-      className="modal-backdrop"
+      className={onBackdropDismiss ? "modal-backdrop modal-backdrop--dismissible" : "modal-backdrop"}
       onClick={(event) => {
         if (event.target === event.currentTarget) onBackdropDismiss?.();
       }}

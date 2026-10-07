@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import React, { useState } from "react";
 import { act } from "react";
@@ -57,6 +58,7 @@ test("exercises guarded Back dialog presentation, cancellation, discard, focus, 
     act(() => rendered.opener.click());
     const dialog = rendered.dialog();
     assert.ok(dialog);
+    assert.ok(rendered.environment.document.querySelector(".modal-backdrop")?.classList.contains("modal-backdrop--dismissible"));
     const actions = dialog.querySelector(".detail-back-confirmation-actions");
     assert.ok(actions);
     assert.equal(dialog.querySelector("h2")?.textContent, "Discard unsaved Event changes?");
@@ -114,4 +116,14 @@ test("exercises guarded Back dialog presentation, cancellation, discard, focus, 
   } finally {
     await japanese.cleanup();
   }
+});
+
+test("enables backdrop hover feedback only when backdrop dismissal is available", async () => {
+  const component = await readFile(new URL("../src/components/ModalDialog.tsx", import.meta.url), "utf8");
+  const css = await readFile(new URL("../src/index.css", import.meta.url), "utf8");
+
+  assert.match(component, /className=\{onBackdropDismiss \? "modal-backdrop modal-backdrop--dismissible" : "modal-backdrop"\}/);
+  assert.match(css, /\.modal-backdrop\s*\{[^}]*background-color: rgba\(8, 6, 13, 0\.28\);/s);
+  assert.match(css, /\.modal-backdrop--dismissible:hover:not\(:has\(\.modal-dialog:hover\)\)\s*\{\s*background-color: rgba\(8, 6, 13, 0\.34\);/);
+  assert.doesNotMatch(css, /\.modal-backdrop:hover\s*\{/);
 });
