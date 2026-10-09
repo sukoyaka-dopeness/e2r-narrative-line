@@ -4,6 +4,7 @@ import React from "react";
 import { act } from "react";
 import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
+import { waitForPersistedDataset } from "./helpers/wait-for-persisted-dataset.js";
 import { readNarrativeLineNavigationIndex } from "../src/services/NavigationService.ts";
 
 const dataset = JSON.stringify({
@@ -500,6 +501,7 @@ async function restoreLegacyDraftFixture(rendered) {
   act(() => add.click());
   const draftEventId = rendered.window.history.state.narrativeLineView.draftEventId;
   assert.ok(draftEventId);
+  await waitForPersistedDataset(rendered.window, (dataset) => dataset.events.some((event) => event.id === draftEventId));
   assert.equal(rendered.window.history.state.narrativeLineView.currentScreen, "eventDetail");
   assert.equal(rendered.window.history.state.narrativeLineView.selectedEvent, draftEventId);
   assert.equal(typeof readNarrativeLineNavigationIndex(rendered.window.history.state), "number");

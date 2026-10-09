@@ -4,6 +4,7 @@ import React from "react";
 import { act } from "react";
 import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
+import { waitForPersistedDataset } from "./helpers/wait-for-persisted-dataset.js";
 
 const candidateDataset = JSON.stringify({
   version: "1.0",
@@ -259,7 +260,7 @@ test("new Dataset initializes H2 circa without Dataset-wide migration confirmati
 
     assert.equal(rendered.document.querySelector('[role="alertdialog"]'), null);
     assert.ok(rendered.document.querySelector(".timeline-screen"));
-    const persisted = JSON.parse(rendered.window.localStorage.getItem("narrativeline.lastDataset"));
+    const persisted = await waitForPersistedDataset(rendered.window, (candidate) => candidate.events?.[0]?.extensions?.history?.assertions?.[0]?.position?.year === 1989);
     assert.deepEqual(persisted.events[0].extensions.history.assertions[0].position, {
       year: 1989,
       approximation: "circa",

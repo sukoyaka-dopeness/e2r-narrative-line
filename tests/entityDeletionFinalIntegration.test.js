@@ -3,6 +3,7 @@ import test from "node:test";
 import React, { act } from "react";
 import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.js";
+import { waitForPersistedDataset } from "./helpers/wait-for-persisted-dataset.js";
 
 const dataset = JSON.stringify({
   version: "1.0",
@@ -93,7 +94,7 @@ test("final Entity confirmation removes the target after all incident Relations 
     assert.ok(finalConfirmation?.textContent?.includes("This permanently removes the Entity"));
     act(() => finalConfirmation.querySelector(".modal-actions .danger-action").click());
 
-    const saved = JSON.parse(rendered.environment.window.localStorage.getItem("narrativeline.lastDataset"));
+    const saved = await waitForPersistedDataset(rendered.environment.window, (dataset) => !dataset.entities.some(({ id }) => id === "entity-nl-final"));
     assert.equal(saved.entities.some(({ id }) => id === "entity-nl-final"), false);
     assert.equal(saved.entities.some(({ id }) => id === "entity-unrelated"), true);
     assert.equal(saved.events.some(({ id }) => id === "event-hidden"), true);
