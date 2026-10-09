@@ -392,6 +392,17 @@ button:disabled {
   background: var(--bg);
 }
 
+.workspace-more-trigger:hover:not(:disabled) {
+  border-color: var(--border);
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.workspace-more-trigger:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .workspace-more-panel {
   position: absolute;
   top: calc(100% + 8px);
