@@ -27,7 +27,15 @@ class FakeLockManager {
   async query() { return { held: [...this.held.values()] }; }
 }
 
-function fakeWindow() { return { addEventListener() {} }; }
+function fakeWindow() { return { addEventListener() {}, removeEventListener() {} }; }
+
+class DelayedLockManager {
+  request(name, optionsOrCallback, maybeCallback) {
+    const callback = typeof optionsOrCallback === "function" ? optionsOrCallback : maybeCallback;
+    return Promise.resolve().then(() => callback({ name }));
+  }
+  async query() { return { held: [] }; }
+}
 
 test("only active work in a live NarrativeLine tab blocks a replacement", () => {
   const storage = new MemoryStorage();
@@ -82,5 +90,38 @@ test("missing Web Locks fails closed without changing the saved Dataset", async 
   assert.equal(write.ok, false);
   assert.equal(replacement.ok, false);
   assert.equal(storage.getItem("narrativeline.lastDataset"), '{"revision":"current"}');
+  service.dispose();
+});
+
+test("disposing before asynchronous tab registration completes does not republish a stale marker", async () => {
+  const storage = new MemoryStorage();
+  const service = createCrossTabWorkspaceService(storage, new DelayedLockManager(), fakeWindow(), "disposed-before-register");
+  service.dispose();
+  await Promise.resolve();
+  assert.equal(storage.getItem("e2r:narrativeline:workspace-tab:disposed-before-register"), null);
+  const result = await service.replace('{"id":"incoming"}');
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, "This tab could not register its workspace safely.");
+  assert.equal(storage.getItem("narrativeline.lastDataset"), null);
+});
+
+test("a BFCache pageshow re-registers a suspended service without retaining stale state", async () => {
+  const storage = new MemoryStorage();
+  const listeners = new Map();
+  const target = {
+    addEventListener(name, listener) { listeners.set(name, listener); },
+    removeEventListener(name) { listeners.delete(name); },
+  };
+  const service = createCrossTabWorkspaceService(storage, new FakeLockManager(), target, "restored");
+  await Promise.resolve();
+  listeners.get("pagehide")();
+  const suspended = await service.replace('{"id":"should-not-write"}');
+  assert.equal(suspended.ok, false);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  listeners.get("pageshow")({ persisted: true });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  const resumed = await service.replace('{"id":"incoming"}');
+  assert.equal(resumed.ok, true);
+  assert.equal(storage.getItem("narrativeline.lastDataset"), '{"id":"incoming"}');
   service.dispose();
 });

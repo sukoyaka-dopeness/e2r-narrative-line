@@ -28,7 +28,7 @@ export function activeNarrativeLineTabs(
 export function createCrossTabWorkspaceService(
   storage: Storage,
   lockManager: LockManager | undefined,
-  target: Pick<Window, "addEventListener">,
+  target: Pick<Window, "addEventListener" | "removeEventListener">,
   tabId = crypto.randomUUID(),
 ) {
   const statusKey = `${TAB_PREFIX}${tabId}`;
@@ -37,46 +37,63 @@ export function createCrossTabWorkspaceService(
   let coordinationError = "";
   let releaseTabLock: (() => void) | undefined;
   let tabLockHeld = false;
+  let disposed = false;
+  let generation = 0;
+  let resolveReady: ((ready: boolean) => void) | undefined;
+  let ready: Promise<boolean> = Promise.resolve(false);
   try { expectedRaw = storage.getItem(STORAGE_KEY); }
   catch { expectedRaw = null; coordinationError = "Browser workspace state could not be read safely."; }
-  let resolveReady!: (ready: boolean) => void;
-  let ready: Promise<boolean>;
 
   const publish = () => {
+    if (disposed) return;
     try { storage.setItem(statusKey, JSON.stringify({ tabId, active })); }
     catch { coordinationError = "Browser workspace status could not be shared safely."; }
   };
   const setActive = (value: boolean) => { active = value; publish(); };
 
   const acquireTabLock = () => {
+    disposed = false;
+    const requestGeneration = ++generation;
     if (!lockManager) {
       coordinationError = "This browser cannot safely coordinate workspace changes across tabs.";
       ready = Promise.resolve(false);
       return;
     }
-    ready = new Promise<boolean>((resolve) => { resolveReady = resolve; });
+    let resolveCurrentReady!: (acquired: boolean) => void;
+    ready = new Promise<boolean>((resolve) => { resolveCurrentReady = resolve; });
+    resolveReady = resolveCurrentReady;
     const hold = new Promise<void>((resolve) => { releaseTabLock = resolve; });
     void lockManager.request(`${TAB_PREFIX}${tabId}`, async (lock) => {
-      if (!lock) { resolveReady(false); return; }
+      if (!lock || disposed || requestGeneration !== generation) {
+        resolveCurrentReady(false);
+        return;
+      }
       tabLockHeld = true;
       publish();
-      resolveReady(true);
+      resolveCurrentReady(true);
       await hold;
-      tabLockHeld = false;
+      if (requestGeneration === generation) tabLockHeld = false;
     }).catch((error: unknown) => {
+      if (disposed || requestGeneration !== generation) return;
       coordinationError = error instanceof Error ? error.message : "Browser tab coordination failed.";
-      resolveReady(false);
+      resolveCurrentReady(false);
     });
   };
   acquireTabLock();
 
   async function transact(serialized: string, replacement: boolean): Promise<WorkspaceWriteResult> {
+    const requestGeneration = generation;
+    const isCurrent = () => !disposed && requestGeneration === generation;
     if (!lockManager || coordinationError) return { ok: false, reason: coordinationError || "Cross-tab safety could not be verified." };
-    if (!(await ready) || !tabLockHeld) return { ok: false, reason: "This tab could not register its workspace safely." };
+    if (!isCurrent() || !(await ready) || !isCurrent() || !tabLockHeld) {
+      return { ok: false, reason: "This tab could not register its workspace safely." };
+    }
     try {
       return await lockManager.request(WRITE_LOCK, { mode: "exclusive" }, async (lock) => {
+        if (!isCurrent()) return { ok: false as const, reason: "This tab could not register its workspace safely." };
         if (!lock) return { ok: false as const, reason: "Another tab is changing this Dataset. Retry after it finishes." };
         const heldSnapshot = await lockManager.query();
+        if (!isCurrent()) return { ok: false as const, reason: "This tab could not register its workspace safely." };
         const held = new Set((heldSnapshot.held ?? []).map((item) => item.name).filter((name): name is string => Boolean(name)));
         const tabs = activeNarrativeLineTabs(storage, held, tabId);
         for (const key of tabs.staleKeys) {
@@ -106,18 +123,31 @@ export function createCrossTabWorkspaceService(
     }
   }
 
-  const dispose = () => {
+  const suspend = () => {
+    if (disposed) return;
+    disposed = true;
+    generation += 1;
+    resolveReady?.(false);
     try { storage.removeItem(statusKey); } catch { /* page is exiting */ }
     releaseTabLock?.();
+    releaseTabLock = undefined;
     tabLockHeld = false;
   };
-  target.addEventListener("pagehide", dispose as EventListener);
-  target.addEventListener("pageshow", ((event: PageTransitionEvent) => {
+  const resume = (event: PageTransitionEvent) => {
     if (event.persisted) {
       coordinationError = "";
       acquireTabLock();
     }
-  }) as EventListener);
+  };
+  const handlePageHide = () => suspend();
+  const handlePageShow = (event: Event) => resume(event as PageTransitionEvent);
+  target.addEventListener("pagehide", handlePageHide);
+  target.addEventListener("pageshow", handlePageShow);
+  const dispose = () => {
+    target.removeEventListener("pagehide", handlePageHide);
+    target.removeEventListener("pageshow", handlePageShow);
+    suspend();
+  };
 
   return {
     setActive,
@@ -128,6 +158,27 @@ export function createCrossTabWorkspaceService(
 }
 
 export function crossTabWriteFailure(locale: "en" | "ja", reason: string): string {
-  if (locale === "ja") return "別のNarrativeLineタブに未適用の作業があるか、保存状態を安全に確認できません。現在のDatasetは置き換えていません。別のタブで作業を保存または取り消してから再試行してください。";
-  return `Another NarrativeLine tab has unapplied work, or its saved state could not be checked safely. The current Dataset was not replaced. ${reason}`;
+  if (reason.startsWith("Another NarrativeLine tab has unapplied Dataset changes")) {
+    return locale === "ja"
+      ? "別のNarrativeLineタブに未保存の変更または開いたままの編集があります。現在のDatasetは置き換えていません。別タブの作業を保存または取り消してから、この候補を再試行してください。"
+      : "Another NarrativeLine tab has unapplied Dataset changes or an open edit. The current Dataset was not replaced. Save or cancel that work in the other tab, then retry this candidate.";
+  }
+  if (reason.startsWith("Another NarrativeLine tab changed the saved Dataset")) {
+    return locale === "ja"
+      ? "別のNarrativeLineタブが新しいDatasetを保存しました。この古いタブからの書き戻しは行っていません。必要な作業を書き出し、最新状態を読み直してから続けてください。"
+      : `Another NarrativeLine tab changed the saved Dataset. This older tab did not overwrite it. Export any work you need, then reload before continuing. Details: ${reason}`;
+  }
+  if (reason === "This tab could not register its workspace safely.") {
+    return locale === "ja"
+      ? "このタブのWorkspace登録を安全に確認できませんでした。Datasetは置き換えていません。ブラウザーの協調処理が利用できる状態で再試行するか、この候補を取り消してください。"
+      : "This tab could not register its workspace safely. No Dataset was replaced. Retry when browser coordination is available, or cancel this candidate.";
+  }
+  if (reason.startsWith("Another tab is changing this Dataset")) {
+    return locale === "ja"
+      ? "別のタブがDatasetを変更中です。Datasetは置き換えていません。処理の終了後にこの候補を再試行するか、取り消してください。"
+      : `Another tab is changing this Dataset. No Dataset was replaced. Retry this candidate when it finishes, or cancel it. Details: ${reason}`;
+  }
+  return locale === "ja"
+    ? `Workspaceの安全性を確認できなかったため、Datasetは置き換えていません。原因が解消した後に再試行するか、この候補を取り消してください。詳細: ${reason}`
+    : `Workspace safety could not be verified. No Dataset was replaced. Retry after access is restored, or cancel this candidate. Details: ${reason}`;
 }

@@ -186,14 +186,8 @@ function App() {
   );
   const acceptedDatasetBaselineRef = useRef(acceptedDatasetBaseline);
   const crossTabWorkspaceRef = useRef<ReturnType<typeof createCrossTabWorkspaceService> | null>(null);
-  if (!crossTabWorkspaceRef.current) {
-    crossTabWorkspaceRef.current = createCrossTabWorkspaceService(
-      window.localStorage,
-      window.navigator.locks,
-      window,
-    );
-  }
   const [crossTabError, setCrossTabError] = useState<string | null>(null);
+  const [crossTabConflict, setCrossTabConflict] = useState(false);
   const crossTabMountedRef = useRef(true);
   const [sourceDatasetUrl, setSourceDatasetUrl] = useState<string | undefined>();
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
@@ -251,9 +245,18 @@ function App() {
 
   useEffect(() => {
     crossTabMountedRef.current = true;
+    const workspace = createCrossTabWorkspaceService(
+      window.localStorage,
+      window.navigator.locks,
+      window,
+    );
+    crossTabWorkspaceRef.current = workspace;
     return () => {
       crossTabMountedRef.current = false;
-      crossTabWorkspaceRef.current?.dispose();
+      workspace.dispose();
+      if (crossTabWorkspaceRef.current === workspace) {
+        crossTabWorkspaceRef.current = null;
+      }
     };
   }, []);
 
@@ -556,15 +559,22 @@ function App() {
   }, [state]);
 
   useEffect(() => {
-    if (handoffLoading) return;
+    if (handoffLoading || datasetCandidate) return;
     const serialized = JSON.stringify(dataset);
     if (serialized !== JSON.stringify(datasetRef.current)) return;
-    void crossTabWorkspaceRef.current?.save(serialized).then((result) => {
-      if (!crossTabMountedRef.current) return;
-      if (!result.ok) setCrossTabError(crossTabWriteFailure(language, result.reason));
-      else setCrossTabError(null);
+    const workspace = crossTabWorkspaceRef.current;
+    if (!workspace) return;
+    void workspace.save(serialized).then((result) => {
+      if (!crossTabMountedRef.current || crossTabWorkspaceRef.current !== workspace) return;
+      if (!result.ok) {
+        setCrossTabConflict(result.conflict === true);
+        setCrossTabError(crossTabWriteFailure(language, result.reason));
+      } else {
+        setCrossTabConflict(false);
+        setCrossTabError(null);
+      }
     });
-  }, [dataset, handoffLoading, language]);
+  }, [dataset, datasetCandidate, handoffLoading, language]);
 
   useEffect(() => {
     const previousScrollRestoration = window.history.scrollRestoration;
@@ -585,9 +595,11 @@ function App() {
     const serialized = JSON.stringify(acceptedDataset);
     const write = await crossTabWorkspaceRef.current?.replace(serialized);
     if (!write?.ok) {
+      setCrossTabConflict(write?.conflict === true);
       setCrossTabError(crossTabWriteFailure(language, write?.reason ?? "Cross-tab safety could not be verified."));
       return;
     }
+    setCrossTabConflict(false);
     setCrossTabError(null);
     acceptedDatasetBaselineRef.current = serializeDatasetBaseline(acceptedDataset);
     pendingSourcesRef.current = {};
@@ -631,13 +643,13 @@ function App() {
     nextDataset: Dataset,
     warnings: DatasetImportWarning[] = [],
     source: DatasetCandidateSource = "local",
-  ) => {
+  ): Promise<void> | undefined => {
     const candidate = stageDatasetCandidate(nextDataset, source);
     setDatasetCandidate(candidate);
     setImportWarnings(warnings);
     setReplacementError(false);
     if (!datasetModified && !pendingUserWork) {
-      void acceptStagedDataset(candidate, warnings);
+      return acceptStagedDataset(candidate, warnings);
     }
 
     if (datasetModified || pendingUserWork) return;
@@ -651,6 +663,7 @@ function App() {
   const handleCancelReplacement = () => {
     setDatasetCandidate(clearDatasetCandidate());
     setReplacementError(false);
+    setCrossTabConflict(false);
     setCrossTabError(null);
   };
 
@@ -725,7 +738,7 @@ function App() {
           (issue): issue is DatasetImportWarning =>
             "severity" in issue && issue.severity === "warning",
         );
-        handleOpenDataset(result.dataset, warnings, "handoff");
+        await handleOpenDataset(result.dataset, warnings, "handoff");
       } catch {
         setHandoffFailure("Could not open the Dataset from the handoff link.");
       } finally {
@@ -1129,7 +1142,7 @@ function App() {
 
   const renderDatasetReplacementFeedback = () => (
     <>
-      {datasetCandidate && (datasetModified || pendingUserWork || crossTabError) && (
+      {datasetCandidate && (datasetModified || pendingUserWork) && (
         <DatasetReplacementDialog
           datasetModified={datasetModified}
           pendingUserWork={pendingUserWork}
@@ -1140,8 +1153,23 @@ function App() {
           onExportDataset={handleExportPendingReplacement}
         />
       )}
+      {datasetCandidate && !datasetModified && !pendingUserWork && crossTabError && (
+        <section className="replacement-safety-retry" aria-label={language === "ja" ? "Dataset置き換えの安全確認" : "Dataset replacement safety"}>
+          <p role="alert">{crossTabError}</p>
+          <div className="modal-actions">
+            {crossTabConflict && datasetCandidate.source === "handoff"
+              ? <button type="button" onClick={() => window.location.reload()}>{copy.reloadToRetryHandoff}</button>
+              : !crossTabConflict && <button type="button" onClick={() => void acceptStagedDataset()}>
+                {copy.retryDatasetReplacement}
+              </button>}
+            <button type="button" className="replacement-cancel" onClick={handleCancelReplacement}>
+              {copy.cancelDatasetReplacement}
+            </button>
+          </div>
+        </section>
+      )}
       {replacementError && <p role="alert">{copy.replacementExportFailure}</p>}
-      {crossTabError && <p role="alert">{crossTabError}</p>}
+      {crossTabError && (!datasetCandidate || datasetModified || pendingUserWork) && <p role="alert">{crossTabError}</p>}
     </>
   );
 
