@@ -72,3 +72,15 @@ test("an older tab cannot overwrite the serialized Dataset revision", async () =
   first.dispose();
   second.dispose();
 });
+
+test("missing Web Locks fails closed without changing the saved Dataset", async () => {
+  const storage = new MemoryStorage();
+  storage.setItem("narrativeline.lastDataset", '{"revision":"current"}');
+  const service = createCrossTabWorkspaceService(storage, undefined, fakeWindow(), "unsupported");
+  const write = await service.save('{"revision":"stale"}');
+  const replacement = await service.replace('{"revision":"incoming"}');
+  assert.equal(write.ok, false);
+  assert.equal(replacement.ok, false);
+  assert.equal(storage.getItem("narrativeline.lastDataset"), '{"revision":"current"}');
+  service.dispose();
+});
