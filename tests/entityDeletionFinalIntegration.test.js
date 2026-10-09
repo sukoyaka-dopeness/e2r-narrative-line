@@ -48,7 +48,13 @@ async function renderApp() {
   return {
     environment,
     document: environment.document,
-    cleanup() { act(() => root.unmount()); environment.cleanup(); },
+    async cleanup() {
+      await act(async () => {
+        root.unmount();
+        await Promise.resolve();
+      });
+      await environment.cleanup();
+    },
   };
 }
 
@@ -94,13 +100,16 @@ test("final Entity confirmation removes the target after all incident Relations 
     assert.ok(finalConfirmation?.textContent?.includes("This permanently removes the Entity"));
     act(() => finalConfirmation.querySelector(".modal-actions .danger-action").click());
 
-    const saved = await waitForPersistedDataset(rendered.environment.window, (dataset) => !dataset.entities.some(({ id }) => id === "entity-nl-final"));
+    let saved;
+    await act(async () => {
+      saved = await waitForPersistedDataset(rendered.environment.window, (dataset) => !dataset.entities.some(({ id }) => id === "entity-nl-final"));
+    });
     assert.equal(saved.entities.some(({ id }) => id === "entity-nl-final"), false);
     assert.equal(saved.entities.some(({ id }) => id === "entity-unrelated"), true);
     assert.equal(saved.events.some(({ id }) => id === "event-hidden"), true);
     assert.equal(saved.relations.some(({ id }) => id === "relation-nl-final"), false);
     assert.equal(saved.relations.some(({ id }) => id === "relation-nav-nl-final"), false);
   } finally {
-    rendered.cleanup();
+    await rendered.cleanup();
   }
 });

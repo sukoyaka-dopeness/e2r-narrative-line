@@ -47,6 +47,7 @@ type TimelineScreenProps = {
   onExportDataset: () => DatasetExportResult;
   importWarnings?: DatasetImportWarning[];
   onUpdateDatasetTitle: (title: string) => void;
+  onDatasetTitleDraftPendingChange?: (pending: boolean) => void;
   relativeTimeState: RelativeTimeEvidenceState;
   relativeTimeManuallyEnabled: boolean;
   onEnableRelativeTime: () => void;
@@ -137,6 +138,7 @@ export function TimelineScreen({
   onExportDataset,
   importWarnings = [],
   onUpdateDatasetTitle,
+  onDatasetTitleDraftPendingChange,
   relativeTimeState,
   relativeTimeManuallyEnabled,
   onEnableRelativeTime,
@@ -160,6 +162,12 @@ export function TimelineScreen({
   const [titleDraft, setTitleDraft] = useState(
     dataset.extensions?.metadata?.title ?? "",
   );
+  const datasetTitle = dataset.extensions?.metadata?.title ?? "";
+  const [previousDatasetTitle, setPreviousDatasetTitle] = useState(datasetTitle);
+  if (previousDatasetTitle !== datasetTitle) {
+    setPreviousDatasetTitle(datasetTitle);
+    setTitleDraft(datasetTitle);
+  }
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [showBackToBottom, setShowBackToBottom] = useState(true);
   const [moveFeedback, setMoveFeedback] = useState<{
@@ -425,14 +433,21 @@ export function TimelineScreen({
             id="dataset-title-input"
             type="text"
             value={titleDraft}
-            onChange={(event) => setTitleDraft(event.target.value)}
+            onInput={(event) => {
+              const nextTitle = event.currentTarget.value;
+              setTitleDraft(nextTitle);
+              onDatasetTitleDraftPendingChange?.(nextTitle !== datasetTitle);
+            }}
             placeholder={ja ? "タイトルを入力してください" : "Enter dataset title"}
             aria-label={copy.datasetTitleLabel}
           />
           <button
             type="button"
-            onClick={() => onUpdateDatasetTitle(titleDraft)}
-            disabled={titleDraft === (dataset.extensions?.metadata?.title ?? "")}
+            onClick={() => {
+              onUpdateDatasetTitle(titleDraft);
+              onDatasetTitleDraftPendingChange?.(false);
+            }}
+            disabled={titleDraft === datasetTitle}
           >
             {ja ? "タイトルを適用" : "Apply title"}
           </button>

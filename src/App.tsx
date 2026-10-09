@@ -71,7 +71,7 @@ import {
   type DatasetCandidate,
   type DatasetCandidateSource,
 } from "./services/DatasetCandidateService";
-import { createCrossTabWorkspaceService, crossTabWriteFailure } from "./services/CrossTabWorkspaceService";
+import { createCrossTabWorkspaceService, crossTabWriteFailure, type PeerWorkspaceStatus } from "./services/CrossTabWorkspaceService";
 import { useLanguage } from "./i18n/LanguageContext";
 import { getPresentationMessages } from "./i18n/messages";
 import {
@@ -186,8 +186,11 @@ function App() {
   );
   const acceptedDatasetBaselineRef = useRef(acceptedDatasetBaseline);
   const crossTabWorkspaceRef = useRef<ReturnType<typeof createCrossTabWorkspaceService> | null>(null);
+  const [peerWorkspaceStatus, setPeerWorkspaceStatus] = useState<PeerWorkspaceStatus | null>(null);
+  const refreshPeerStatusRef = useRef<(() => void) | null>(null);
   const [crossTabError, setCrossTabError] = useState<string | null>(null);
   const [crossTabConflict, setCrossTabConflict] = useState(false);
+  const [replacementBlockedByPeer, setReplacementBlockedByPeer] = useState(false);
   const crossTabMountedRef = useRef(true);
   const [sourceDatasetUrl, setSourceDatasetUrl] = useState<string | undefined>();
   const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
@@ -251,14 +254,53 @@ function App() {
       window,
     );
     crossTabWorkspaceRef.current = workspace;
+    let peerStatusRetry: number | undefined;
+    let peerStatusRequest = 0;
+    const refreshPeerStatus = () => {
+      const request = ++peerStatusRequest;
+      if (peerStatusRetry !== undefined) {
+        window.clearTimeout(peerStatusRetry);
+        peerStatusRetry = undefined;
+      }
+      void workspace.peerWorkStatus().then((status) => {
+        if (request === peerStatusRequest && crossTabMountedRef.current && crossTabWorkspaceRef.current === workspace) {
+          setPeerWorkspaceStatus((current) => {
+            if (current === null && status.kind === "clear") return current;
+            if (current?.kind === status.kind && (current.kind !== "work" || (status.kind === "work" && current.count === status.count))) return current;
+            return status;
+          });
+          if (
+            status.kind === "unknown" &&
+            currentAppStateRef.current.currentScreen === "home" &&
+            document.visibilityState === "visible"
+          ) {
+            peerStatusRetry = window.setTimeout(refreshPeerStatus, 1500);
+          }
+        }
+      });
+    };
+    const unsubscribe = workspace.subscribe(refreshPeerStatus);
+    window.addEventListener("focus", refreshPeerStatus);
+    window.addEventListener("pageshow", refreshPeerStatus);
+    refreshPeerStatusRef.current = refreshPeerStatus;
     return () => {
       crossTabMountedRef.current = false;
+      peerStatusRequest += 1;
+      if (peerStatusRetry !== undefined) window.clearTimeout(peerStatusRetry);
+      unsubscribe();
+      window.removeEventListener("focus", refreshPeerStatus);
+      window.removeEventListener("pageshow", refreshPeerStatus);
+      if (refreshPeerStatusRef.current === refreshPeerStatus) refreshPeerStatusRef.current = null;
       workspace.dispose();
       if (crossTabWorkspaceRef.current === workspace) {
         crossTabWorkspaceRef.current = null;
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (state.currentScreen === "home") refreshPeerStatusRef.current?.();
+  }, [state.currentScreen]);
 
   const localizedHandoffFailure = handoffFailure && language === "ja"
     ? handoffFailure === "The Dataset handoff link is invalid."
@@ -568,9 +610,14 @@ function App() {
       if (!crossTabMountedRef.current || crossTabWorkspaceRef.current !== workspace) return;
       if (!result.ok) {
         setCrossTabConflict(result.conflict === true);
+        setReplacementBlockedByPeer(result.blockedByPeer === true);
+        if (result.blockedByPeer) {
+          setPeerWorkspaceStatus((current) => current?.kind === "work" ? current : { kind: "work", count: 1 });
+        }
         setCrossTabError(crossTabWriteFailure(language, result.reason));
       } else {
         setCrossTabConflict(false);
+        setReplacementBlockedByPeer(false);
         setCrossTabError(null);
       }
     });
@@ -596,10 +643,15 @@ function App() {
     const write = await crossTabWorkspaceRef.current?.replace(serialized);
     if (!write?.ok) {
       setCrossTabConflict(write?.conflict === true);
+      setReplacementBlockedByPeer(write?.blockedByPeer === true);
+      if (write?.blockedByPeer) {
+        setPeerWorkspaceStatus((current) => current?.kind === "work" ? current : { kind: "work", count: 1 });
+      }
       setCrossTabError(crossTabWriteFailure(language, write?.reason ?? "Cross-tab safety could not be verified."));
       return;
     }
     setCrossTabConflict(false);
+    setReplacementBlockedByPeer(false);
     setCrossTabError(null);
     acceptedDatasetBaselineRef.current = serializeDatasetBaseline(acceptedDataset);
     pendingSourcesRef.current = {};
@@ -648,6 +700,9 @@ function App() {
     setDatasetCandidate(candidate);
     setImportWarnings(warnings);
     setReplacementError(false);
+    setCrossTabConflict(false);
+    setReplacementBlockedByPeer(false);
+    setCrossTabError(null);
     if (!datasetModified && !pendingUserWork) {
       return acceptStagedDataset(candidate, warnings);
     }
@@ -664,7 +719,9 @@ function App() {
     setDatasetCandidate(clearDatasetCandidate());
     setReplacementError(false);
     setCrossTabConflict(false);
+    setReplacementBlockedByPeer(false);
     setCrossTabError(null);
+    if (currentAppStateRef.current.currentScreen === "home") refreshPeerStatusRef.current?.();
   };
 
   const handleExportAndContinue = () => {
@@ -783,6 +840,10 @@ function App() {
   const handleUpdateDatasetTitle = (title: string) => {
     setDataset((currentDataset) => updateDatasetTitle(currentDataset, title));
   };
+  const handleDatasetTitleDraftPendingChange = useCallback(
+    (pending: boolean) => setPendingSource("datasetTitleDraft", pending),
+    [setPendingSource],
+  );
 
   const handleUpdateEvent = (
     eventId: string,
@@ -1140,9 +1201,32 @@ function App() {
     return result;
   };
 
-  const renderDatasetReplacementFeedback = () => (
+  const renderDatasetReplacementRetryFeedback = () => (
+    datasetCandidate && !datasetModified && !pendingUserWork && crossTabError ? (
+      <section className="replacement-safety-retry" aria-label={language === "ja" ? "Dataset置き換えの安全確認" : "Dataset replacement safety"}>
+        <p role="alert">{crossTabError}</p>
+        <div className="modal-actions">
+          {crossTabConflict && datasetCandidate.source === "handoff"
+            ? <button type="button" onClick={() => window.location.reload()}>{copy.reloadToRetryHandoff}</button>
+            : !crossTabConflict && <button type="button" onClick={() => void acceptStagedDataset()}>
+              {copy.retryDatasetReplacement}
+            </button>}
+          <button type="button" className="replacement-cancel" onClick={handleCancelReplacement}>
+            {copy.cancelDatasetReplacement}
+          </button>
+        </div>
+      </section>
+    ) : null
+  );
+
+  const renderDatasetReplacementFeedback = ({
+    includeDialog = true,
+    includeRetryFeedback = true,
+    includeOtherErrors = true,
+    suppressPeerBlockError = false,
+  } = {}) => (
     <>
-      {datasetCandidate && (datasetModified || pendingUserWork) && (
+      {includeDialog && datasetCandidate && (datasetModified || pendingUserWork) && (
         <DatasetReplacementDialog
           datasetModified={datasetModified}
           pendingUserWork={pendingUserWork}
@@ -1153,23 +1237,9 @@ function App() {
           onExportDataset={handleExportPendingReplacement}
         />
       )}
-      {datasetCandidate && !datasetModified && !pendingUserWork && crossTabError && (
-        <section className="replacement-safety-retry" aria-label={language === "ja" ? "Dataset置き換えの安全確認" : "Dataset replacement safety"}>
-          <p role="alert">{crossTabError}</p>
-          <div className="modal-actions">
-            {crossTabConflict && datasetCandidate.source === "handoff"
-              ? <button type="button" onClick={() => window.location.reload()}>{copy.reloadToRetryHandoff}</button>
-              : !crossTabConflict && <button type="button" onClick={() => void acceptStagedDataset()}>
-                {copy.retryDatasetReplacement}
-              </button>}
-            <button type="button" className="replacement-cancel" onClick={handleCancelReplacement}>
-              {copy.cancelDatasetReplacement}
-            </button>
-          </div>
-        </section>
-      )}
-      {replacementError && <p role="alert">{copy.replacementExportFailure}</p>}
-      {crossTabError && (!datasetCandidate || datasetModified || pendingUserWork) && <p role="alert">{crossTabError}</p>}
+      {includeRetryFeedback && renderDatasetReplacementRetryFeedback()}
+      {includeOtherErrors && replacementError && <p role="alert">{copy.replacementExportFailure}</p>}
+      {includeOtherErrors && crossTabError && !(suppressPeerBlockError && replacementBlockedByPeer) && (!datasetCandidate || datasetModified || pendingUserWork) && <p role="alert">{crossTabError}</p>}
     </>
   );
 
@@ -1185,6 +1255,9 @@ function App() {
           onImportDataset={handleImportDataset}
           handoffLoading={handoffLoading}
           handoffFailure={localizedHandoffFailure}
+          peerWorkspaceStatus={peerWorkspaceStatus}
+          suppressPeerWorkNotice={Boolean(datasetCandidate && replacementBlockedByPeer)}
+          replacementFeedback={renderDatasetReplacementFeedback({ includeDialog: false, suppressPeerBlockError: true })}
         />
         {localeConflict && (
           <LocaleConflictDialog
@@ -1194,7 +1267,7 @@ function App() {
             onUseRequestedLanguage={resolveRequestedLocaleConflict}
           />
         )}
-        {renderDatasetReplacementFeedback()}
+        {renderDatasetReplacementFeedback({ includeRetryFeedback: false, includeOtherErrors: false })}
       </AppFrame>
     );
   }
@@ -1325,6 +1398,7 @@ function App() {
         datasetModified={datasetModified}
         importWarnings={importWarnings}
         onUpdateDatasetTitle={handleUpdateDatasetTitle}
+        onDatasetTitleDraftPendingChange={handleDatasetTitleDraftPendingChange}
         relativeTimeState={relativeTimeState}
         relativeTimeManuallyEnabled={relativeTimeManuallyEnabled}
         onEnableRelativeTime={() => setRelativeTimeManuallyEnabled(true)}

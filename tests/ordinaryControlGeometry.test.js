@@ -13,6 +13,12 @@ test("related-card actions belong to the ordinary compact control family", () =>
   );
 });
 
+test("AppFrame content stacks its screen and safety feedback instead of shrinking them into columns", () => {
+  const styles = readFileSync("src/index.css", "utf8");
+
+  assert.match(styles, /\.app-content\s*\{[^}]*display: flex;[^}]*flex-direction: column;[^}]*min-width: 0;/s);
+});
+
 test("destructive Detail actions keep their hierarchy while sharing compact geometry", () => {
   const styles = readFileSync("src/index.css", "utf8");
 

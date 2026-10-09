@@ -37,3 +37,24 @@ The cross-tab browser run used two NarrativeLine pages sharing one disposable lo
 Automated verification for this follow-up: `npm.cmd run build` passed; `npm.cmd run lint` passed; the targeted Cross-Tab service and StrictMode integration tests passed (8/8). The full suite reported 358/359, with the file-level `entityDeletionFinalIntegration.test.js` worker failing; that test passed when run by itself. A serial full-suite attempt did not finish within the available run window. This unrelated test-suite instability remains unresolved and is not counted as a pass.
 
 Public release remains NO-GO. Human Browser Acceptance is pending for the single-tab replacement and recovery behavior, same-origin multi-app deployment, and the remaining failure/lifecycle paths.
+
+## Follow-up: Dataset title draft protection and conflict layout
+
+Human Browser Review then found two further failures in Edge InPrivate with two NarrativeLine tabs. Tab A's Dataset title input was changed but not applied. Tab B accepted a Sample Dataset without a peer-work warning. When A later applied its title, the stale-write guard correctly refused the write, but its warning appeared beside the Timeline in a severely narrowed layout.
+
+Source inspection identified two independent causes:
+
+- `TimelineScreen` kept the title input in local `titleDraft` state but did not report that draft through the app's pending-work registry. Since the accepted Dataset itself was still unchanged, tab A's shared marker remained inactive and tab B did not see the open title work.
+- `.app-content` is a row flex container. `AppFrame` places its child screen and the cross-tab feedback as siblings; each is styled to `width: 100%`. When a stale-write alert was added beside the Timeline, the flex row shrank both siblings, producing the narrow columns seen by Human.
+
+The title editor now marks a dedicated pending-work source whenever its current text differs from the Dataset title. The state is published immediately through the same ref-backed tab marker used by Event and Entity forms. Reverting the text to the stored title or applying the title clears that pending source; typing alone does not write or modify the saved Dataset. The editor also resets its draft when the Dataset title changes. `.app-content` now stacks screen and feedback vertically, so a safety alert cannot compress the Timeline.
+
+Codex used an isolated Edge profile with two NarrativeLine tabs on one disposable localhost origin. With an unapplied Japanese title in tab A, the tab marker became active while `narrativeline.lastDataset` remained byte-for-byte unchanged. Tab B's Cedar sample replacement was refused and explained the peer work. Reverting A's title cleared the pending marker; retrying in B accepted Cedar. A's subsequent title apply was rejected as a stale write, and the saved Dataset remained Cedar.
+
+With the stale-write alert visible, measured widths at an 800px browser viewport were: root 741px, content and Timeline 739px, alert 739px. At a 390px viewport, content, Timeline, and alert were each 388px; the title input was 242px, toolbar 356px, and document scroll width 390px. No horizontal overflow or collapsed text column was observed in this Codex browser run.
+
+Regression coverage now verifies that an unapplied title marks the tab active without changing the saved Dataset, clearing the draft deactivates the marker, and AppFrame stacks screen/feedback. Existing Event/Entity pending-work coverage remains in the suite. The focused pending-work, service, navigation-guard, and layout tests passed (33/33); build and lint passed. Full-suite results and any unrelated known failure are recorded in the checkpoint report. This remains Codex evidence, not Human Browser Acceptance. Human should repeat the two-tab title-draft block, safe retry, stale-write protection, and layout checks in the supported Edge InPrivate environment. Same-origin GitHub Pages multi-app behavior and other browsers remain unverified. Public release remains NO-GO.
+
+The adopted E2R-SPEC safety design and the existing `ai-knowledge/decisions/cross-context-workspace-safety.md` and `ai-knowledge/playbooks/workspace-safety-review-and-acceptance.md` were applied as-is. This is an implementation correction within the accepted contract; no new safety decision was added.
+
+The full repository suite was rerun after these changes and passed 360/360. The earlier 358/359 file-level failure in `entityDeletionFinalIntegration.test.js` did not recur; the prior isolated rerun of that file had also passed. There is no known current full-suite failure from this checkpoint.

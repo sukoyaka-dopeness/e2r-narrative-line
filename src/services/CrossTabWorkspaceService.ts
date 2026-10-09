@@ -2,6 +2,36 @@ const STORAGE_KEY = "narrativeline.lastDataset";
 const TAB_PREFIX = "e2r:narrativeline:workspace-tab:";
 const WRITE_LOCK = "e2r:narrativeline:workspace-write";
 
+export type PeerWorkspaceStatus =
+  | { kind: "clear" }
+  | { kind: "work"; count: number }
+  | { kind: "unknown" };
+
+export function inspectNarrativeLinePeerWork(
+  storage: Storage,
+  heldLockNames: Set<string>,
+  ownTabId: string,
+): PeerWorkspaceStatus {
+  try {
+    const peerLocks = [...heldLockNames].filter((name) =>
+      name.startsWith(TAB_PREFIX) && name !== `${TAB_PREFIX}${ownTabId}`,
+    );
+    let count = 0;
+    for (const lockName of peerLocks) {
+      let record: { tabId?: string; active?: boolean } | null;
+      try { record = JSON.parse(storage.getItem(lockName) ?? "null"); }
+      catch { return { kind: "unknown" }; }
+      if (!record || record.tabId !== lockName.slice(TAB_PREFIX.length) || typeof record.active !== "boolean") {
+        return { kind: "unknown" };
+      }
+      if (record.active) count += 1;
+    }
+    return count ? { kind: "work", count } : { kind: "clear" };
+  } catch {
+    return { kind: "unknown" };
+  }
+}
+
 export type WorkspaceWriteResult =
   | { ok: true; raw: string }
   | { ok: false; reason: string; conflict?: boolean; blockedByPeer?: boolean };
@@ -41,6 +71,7 @@ export function createCrossTabWorkspaceService(
   let generation = 0;
   let resolveReady: ((ready: boolean) => void) | undefined;
   let ready: Promise<boolean> = Promise.resolve(false);
+  const listeners = new Set<() => void>();
   try { expectedRaw = storage.getItem(STORAGE_KEY); }
   catch { expectedRaw = null; coordinationError = "Browser workspace state could not be read safely."; }
 
@@ -141,16 +172,41 @@ export function createCrossTabWorkspaceService(
   };
   const handlePageHide = () => suspend();
   const handlePageShow = (event: Event) => resume(event as PageTransitionEvent);
+  const handleStorage = (event: Event) => {
+    const key = (event as StorageEvent).key;
+    if (key !== null && !key?.startsWith(TAB_PREFIX)) return;
+    for (const listener of listeners) listener();
+  };
   target.addEventListener("pagehide", handlePageHide);
   target.addEventListener("pageshow", handlePageShow);
+  target.addEventListener("storage", handleStorage);
   const dispose = () => {
     target.removeEventListener("pagehide", handlePageHide);
     target.removeEventListener("pageshow", handlePageShow);
+    target.removeEventListener("storage", handleStorage);
+    listeners.clear();
     suspend();
   };
 
   return {
     setActive,
+    async peerWorkStatus(): Promise<PeerWorkspaceStatus> {
+      if (!lockManager || coordinationError) return { kind: "unknown" };
+      try {
+        const registered = await ready;
+        if (!registered || disposed || !tabLockHeld || coordinationError) return { kind: "unknown" };
+        const snapshot = await lockManager.query();
+        if (coordinationError) return { kind: "unknown" };
+        const held = new Set((snapshot.held ?? []).map((item) => item.name).filter((name): name is string => Boolean(name)));
+        return inspectNarrativeLinePeerWork(storage, held, tabId);
+      } catch {
+        return { kind: "unknown" };
+      }
+    },
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
     save: (serialized: string) => transact(serialized, false),
     replace: (serialized: string) => transact(serialized, true),
     dispose,

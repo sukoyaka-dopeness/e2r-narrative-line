@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { activeNarrativeLineTabs, createCrossTabWorkspaceService } from "../src/services/CrossTabWorkspaceService.ts";
+import { activeNarrativeLineTabs, createCrossTabWorkspaceService, inspectNarrativeLinePeerWork } from "../src/services/CrossTabWorkspaceService.ts";
 
 class MemoryStorage {
   values = new Map();
@@ -37,6 +37,26 @@ class DelayedLockManager {
   async query() { return { held: [] }; }
 }
 
+class RegistrationDelayedLockManager {
+  held = new Map();
+  request(name, optionsOrCallback, maybeCallback) {
+    const callback = typeof optionsOrCallback === "function" ? optionsOrCallback : maybeCallback;
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const lock = { name };
+        this.held.set(name, lock);
+        Promise.resolve(callback(lock)).then(resolve, reject);
+      }, 0);
+    });
+  }
+  async query() {
+    if (![...this.held.keys()].some((name) => name.startsWith("e2r:narrativeline:workspace-tab:"))) {
+      throw new Error("workspace registration is still pending");
+    }
+    return { held: [...this.held.values()] };
+  }
+}
+
 test("only active work in a live NarrativeLine tab blocks a replacement", () => {
   const storage = new MemoryStorage();
   storage.setItem("e2r:narrativeline:workspace-tab:live", JSON.stringify({ tabId: "live", active: true }));
@@ -44,6 +64,59 @@ test("only active work in a live NarrativeLine tab blocks a replacement", () => 
   const result = activeNarrativeLineTabs(storage, new Set(["e2r:narrativeline:workspace-tab:live"]), "self");
   assert.deepEqual(result.active, ["live"]);
   assert.deepEqual(result.staleKeys, ["e2r:narrativeline:workspace-tab:closed"]);
+});
+
+test("Home peer status distinguishes active, clean, unrelated, and unverifiable locks", () => {
+  const storage = new MemoryStorage();
+  storage.setItem("e2r:narrativeline:workspace-tab:busy", JSON.stringify({ tabId: "busy", active: true }));
+  storage.setItem("e2r:narrativeline:workspace-tab:idle", JSON.stringify({ tabId: "idle", active: false }));
+  const held = new Set([
+    "e2r:narrativeline:workspace-tab:busy",
+    "e2r:narrativeline:workspace-tab:idle",
+    "e2r:parameter-plotter:workspace-tab:other-app",
+  ]);
+  assert.deepEqual(inspectNarrativeLinePeerWork(storage, held, "self"), { kind: "work", count: 1 });
+  assert.deepEqual(inspectNarrativeLinePeerWork(storage, new Set(["e2r:narrativeline:workspace-tab:idle"]), "self"), { kind: "clear" });
+  assert.deepEqual(inspectNarrativeLinePeerWork(storage, new Set(["e2r:narrativeline:workspace-tab:missing"]), "self"), { kind: "unknown" });
+});
+
+test("Home peer status listeners refresh only for same-app storage coordination changes", async () => {
+  const listeners = new Map();
+  const target = {
+    addEventListener(name, listener) { listeners.set(name, listener); },
+    removeEventListener(name) { listeners.delete(name); },
+  };
+  const service = createCrossTabWorkspaceService(new MemoryStorage(), new FakeLockManager(), target, "self");
+  let notifications = 0;
+  const unsubscribe = service.subscribe(() => { notifications += 1; });
+  listeners.get("storage")({ key: "e2r:parameter-plotter:workspace-tab:sibling" });
+  assert.equal(notifications, 0);
+  listeners.get("storage")({ key: "e2r:narrativeline:workspace-tab:peer" });
+  assert.equal(notifications, 1);
+  unsubscribe();
+  service.dispose();
+});
+
+test("initial Home status waits for this tab to register before querying peers", async () => {
+  const service = createCrossTabWorkspaceService(
+    new MemoryStorage(),
+    new RegistrationDelayedLockManager(),
+    fakeWindow(),
+    "registering-self",
+  );
+
+  assert.deepEqual(await service.peerWorkStatus(), { kind: "clear" });
+  service.dispose();
+});
+
+test("a peer query failure after registration remains an uncertainty warning", async () => {
+  const lockManager = new FakeLockManager();
+  const service = createCrossTabWorkspaceService(new MemoryStorage(), lockManager, fakeWindow(), "self");
+  await Promise.resolve();
+  lockManager.query = async () => { throw new Error("coordination query failed"); };
+
+  assert.deepEqual(await service.peerWorkStatus(), { kind: "unknown" });
+  service.dispose();
 });
 
 test("replacement is blocked by another tab's pending work and succeeds after it clears", async () => {

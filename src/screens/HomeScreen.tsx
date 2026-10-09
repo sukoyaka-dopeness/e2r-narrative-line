@@ -1,10 +1,11 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import type {
   DatasetImportIssue,
   DatasetImportResult,
 } from "../services/DatasetService";
 import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
+import type { PeerWorkspaceStatus } from "../services/CrossTabWorkspaceService";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
@@ -18,6 +19,9 @@ type Props = {
   hasResumeDataset?: boolean;
   handoffLoading?: boolean;
   handoffFailure?: string | null;
+  peerWorkspaceStatus?: PeerWorkspaceStatus | null;
+  suppressPeerWorkNotice?: boolean;
+  replacementFeedback?: ReactNode;
 };
 
 function formatImportIssue(issue: DatasetImportIssue): string {
@@ -39,6 +43,9 @@ export function HomeScreen({
   hasResumeDataset = false,
   handoffLoading = false,
   handoffFailure = null,
+  peerWorkspaceStatus = null,
+  suppressPeerWorkNotice = false,
+  replacementFeedback,
 }: Props) {
   const { language } = useLanguage();
   const ja = language === "ja";
@@ -47,6 +54,15 @@ export function HomeScreen({
   const [isImporting, setIsImporting] = useState(false);
   const [importIssues, setImportIssues] = useState<DatasetImportIssue[]>([]);
   const [fileReadError, setFileReadError] = useState(false);
+  const peerWorkNotice = peerWorkspaceStatus?.kind === "work"
+    ? (ja
+      ? "別のNarrativeLineタブに未保存の作業があります。Datasetの置換はその作業を失うおそれがあるため、現在は安全に行えません。元のタブで編集を適用または取り消してください。Datasetを変更した場合は、必要に応じてExportしてから再試行してください。"
+      : "Another NarrativeLine tab has unsaved work. Replacing a Dataset could lose that work, so it cannot be done safely yet. Apply or cancel the work in its original tab. If that changed the Dataset, export it if needed before retrying.")
+    : peerWorkspaceStatus?.kind === "unknown"
+      ? (ja
+        ? "他のNarrativeLineタブの作業状態を安全に確認できませんでした。未保存作業があるとは断定できませんが、Datasetの置換前には安全確認が引き続き行われます。確認できる状態に戻してから再試行してください。"
+        : "The work state of other NarrativeLine tabs could not be checked safely. This does not confirm that unsaved work exists; the replacement safety check will still run before any Dataset is replaced. Restore coordination and retry.")
+      : null;
 
   const handleImportFile = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -76,25 +92,15 @@ export function HomeScreen({
   };
 
   return (
-    <main
-      className="home-screen"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "1.5rem",
-        width: "100%",
-        maxWidth: "22rem",
-        margin: "0 auto",
-        padding: "1rem",
-      }}
-    >
-      <h1>{ja ? "はじめる" : "Get Started"}</h1>
+    <main className="home-screen">
+      <div className="home-screen-content">
+<h1>{ja ? "はじめる" : "Get Started"}</h1>
       <p className="home-description">{ja ? "できごとを並べて年表を作ります。" : "Create and edit E2R timelines centered on Events."}</p>
 
+      {peerWorkNotice && !suppressPeerWorkNotice && <section className={`cross-tab-work-warning${peerWorkspaceStatus?.kind === "unknown" ? " is-uncertain" : ""}`} role="status" aria-live="polite">{peerWorkNotice}</section>}
       {handoffLoading && <p role="status">{copy.handoffLoading}</p>}
       {handoffFailure && <p role="alert">{handoffFailure}</p>}
+      {replacementFeedback}
 
       <input
         ref={fileInputRef}
@@ -170,6 +176,7 @@ export function HomeScreen({
           </ul>
         </section>
       )}
+      </div>
     </main>
   );
 }
