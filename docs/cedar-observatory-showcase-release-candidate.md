@@ -3,14 +3,16 @@
 Date: 2026-09-30
 Status: NarrativeLine `0.2.0` application-owned sample candidate; sample-data policy selected, Human Browser Acceptance and publication pending
 
-## Content adoption update — 2026-10-09
+## Content adoption and subsequent revision — 2026-10-09
 
-Human adopted the Cedar Dimension Assessment content and the NarrativeLine
-owner EN/JA Dataset pair now contains five Dimensions and 16 Assessments per
-locale at Candidate `0.2.0`. The prior date/status above records the earlier
-release-candidate checkpoint; this content adoption does not itself establish
-Browser Acceptance, change the recorded application release status, or
-authorize publication. See the [E2R-SPEC implementation result](../../e2r-spec/docs/public-samples/lighthouse-cedar-dimension-assessment-implementation-result-2026-10-09.md)
+Human first adopted five Cedar Dimensions and 16 Assessments per locale. A
+subsequent Human decision removed `cedar.technical-role-expertise` and Ren
+Sato's Assessment on that Dimension. The current NarrativeLine owner EN/JA
+Dataset pair contains four Dimensions and 15 Assessments per locale at
+Candidate `0.2.0`; the earlier adoption remains historical evidence. This
+content revision does not itself establish Browser Acceptance, change the
+recorded application release status, or authorize publication. See the
+[E2R-SPEC implementation result](../../e2r-spec/docs/public-samples/lighthouse-cedar-dimension-assessment-implementation-result-2026-10-09.md)
 for the owner-source and provenance disposition.
 
 ## Role and content

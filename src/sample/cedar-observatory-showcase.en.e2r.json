@@ -176,16 +176,6 @@
           "description": "Across the whole story, assesses the stated responsibility for organizing the open night and coordinating people or tasks. Its intended scope is Cedar Sky Club and Mira, where that responsibility is described. 0 is an explicit lowest rating, not missing; 5 is central coordination responsibility."
         },
         {
-          "id": "cedar.technical-role-expertise",
-          "name": "Technical Expertise Shown in Role",
-          "min": 0,
-          "max": 5,
-          "integerOnly": true,
-          "lowLabel": "No technical expertise shown",
-          "highLabel": "Technical expertise clearly demonstrated in the stated role",
-          "description": "Across the whole story, assesses how clearly a person's technical expertise is portrayed in the person's stated role. It does not assess whether equipment passed a check. The proposed scope is Ren, identified as the observatory technician and described checking the telescope. 0 means no technical expertise is shown in this Dataset, not lack of real-world ability or missing data; 5 means clearly demonstrated expertise."
-        },
-        {
           "id": "cedar.visitor-route-safety",
           "name": "Visitor-Route Planning and Safety Contribution",
           "min": 0,
@@ -251,11 +241,6 @@
           "entityId": "ren-sato",
           "dimensionId": "cedar.observing-program-contribution",
           "value": 4
-        },
-        {
-          "entityId": "ren-sato",
-          "dimensionId": "cedar.technical-role-expertise",
-          "value": 3
         },
         {
           "entityId": "ren-sato",

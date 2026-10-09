@@ -16,13 +16,19 @@ its Dataset content.
 
 ## Dimension Assessment content
 
-On 2026-10-09 Human adopted five Dimension definitions and 16 qualitative
-Assessments for each Cedar locale. These values are AI-authored fictional
-interpretations adopted as Dataset content; they are not calculated from Core
-records or external factual evaluations. The pair uses Dimension Assessment
-Candidate `0.2.0`; its EN/JA Dataset IDs remain distinct while Dimension IDs,
-scales, and Assessment values correspond. This content decision does not
-change authorship, localization, licensing, ownership, or publication status.
+Human adopted the original five Dimension definitions and 16 qualitative
+Assessments for each Cedar locale on 2026-10-09. A subsequent Human decision
+on the same date removed `cedar.technical-role-expertise` and Ren Sato's one
+Assessment on that Dimension, leaving four Dimensions and 15 Assessments per
+locale. The prior adoption is retained in the review history; this later
+decision does not add scores to other Entities.
+
+The remaining values are AI-authored fictional interpretations adopted as
+Dataset content; they are not calculated from Core records or external factual
+evaluations. The pair uses Dimension Assessment Candidate `0.2.0`; its EN/JA
+Dataset IDs remain distinct while Dimension IDs, scales, and Assessment values
+correspond. This content decision does not change authorship, localization,
+licensing, ownership, or publication status.
 
 Creation and EN/JA provenance, current content evidence, and the remaining
 Human Browser Acceptance boundary are recorded in

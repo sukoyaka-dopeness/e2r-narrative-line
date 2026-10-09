@@ -49,6 +49,22 @@ test("showcase EN/JA retain the opaque Dimension Assessment through import/expor
   assert.equal(datasets[0].entities.length, 6);
   assert.equal(datasets[0].events.length, 12);
   assert.equal(datasets[0].relations.length, 28);
+  const assessments = datasets.map((dataset) => ({
+    dataset,
+    payload: dataset.extensions["draft.github.sukoyaka-dopeness.dimension-assessment"],
+  }));
+  for (const { dataset, payload } of assessments) {
+    assert.equal(payload.specVersion, "0.2.0");
+    assert.equal(payload.dimensions.length, 4);
+    assert.equal(payload.assessments.length, 15);
+    assert.equal(payload.dimensions.some(({ id }) => id === "cedar.technical-role-expertise"), false);
+    assert.equal(payload.assessments.some(({ dimensionId }) => dimensionId === "cedar.technical-role-expertise"), false);
+    assert.equal(dataset.extensions["draft.github.sukoyaka-dopeness.specification"].uses
+      .find(({ extension }) => extension === "draft.github.sukoyaka-dopeness.dimension-assessment").version, "0.2.0");
+  }
+  assert.deepEqual(assessments[0].payload.dimensions.map(({ id, min, max, integerOnly }) => ({ id, min, max, integerOnly })),
+    assessments[1].payload.dimensions.map(({ id, min, max, integerOnly }) => ({ id, min, max, integerOnly })));
+  assert.deepEqual(assessments[0].payload.assessments, assessments[1].payload.assessments);
   assert.equal(datasets[0].events.filter(({ extensions }) => extensions?.history?.time).length, 8);
   assert.deepEqual(datasets[0].events.filter(({ extensions }) => !extensions?.history?.time).map(({ id }) => id),
     ["invitations-sent", "dome-ready", "telescope-checked", "sky-tour"]);
