@@ -135,7 +135,148 @@
       "uses": [
         { "extension": "metadata", "version": "1.0.0" },
         { "extension": "history", "version": "1.0.0" },
-        { "extension": "draft.github.sukoyaka-dopeness.relative-time", "version": "0.2.0", "features": ["relative-position", "calendar-granule-relation", "elapsed-offset"] }
+        { "extension": "draft.github.sukoyaka-dopeness.relative-time", "version": "0.2.0", "features": ["relative-position", "calendar-granule-relation", "elapsed-offset"] },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.dimension-assessment",
+          "version": "0.2.0"
+        }
+      ]
+    },
+    "draft.github.sukoyaka-dopeness.dimension-assessment": {
+      "specVersion": "0.2.0",
+      "dimensions": [
+        {
+          "id": "cedar.open-night-role",
+          "name": "Open-Night Role",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described role",
+          "highLabel": "Central described role",
+          "description": "Across the whole planned open-night story, assesses how central an Entity's stated role is in planning, preparing, hosting, or being invited to the event. For invited visitors, it rates only their explicitly described role as intended audience; it does not imply attendance or experience. 0 is an explicit lowest rating, not missing; 5 is central."
+        },
+        {
+          "id": "cedar.observing-program-contribution",
+          "name": "Contribution to the Observing Program",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described contribution",
+          "highLabel": "Central contribution",
+          "description": "Across the whole story, assesses the stated contribution to making the planned visitor observing program possible. It applies where the Dataset describes such a contribution by the venue, organizers, people, or equipment; an invitation alone is insufficient. 0 is an explicit lowest rating, not an unassessed cell; 5 is central to the described program."
+        },
+        {
+          "id": "cedar.coordination",
+          "name": "Coordination Responsibility",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described coordination responsibility",
+          "highLabel": "Central coordination responsibility",
+          "description": "Across the whole story, assesses the stated responsibility for organizing the open night and coordinating people or tasks. Its intended scope is Cedar Sky Club and Mira, where that responsibility is described. 0 is an explicit lowest rating, not missing; 5 is central coordination responsibility."
+        },
+        {
+          "id": "cedar.technical-role-expertise",
+          "name": "Technical Expertise Shown in Role",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No technical expertise shown",
+          "highLabel": "Technical expertise clearly demonstrated in the stated role",
+          "description": "Across the whole story, assesses how clearly a person's technical expertise is portrayed in the person's stated role. It does not assess whether equipment passed a check. The proposed scope is Ren, identified as the observatory technician and described checking the telescope. 0 means no technical expertise is shown in this Dataset, not lack of real-world ability or missing data; 5 means clearly demonstrated expertise."
+        },
+        {
+          "id": "cedar.visitor-route-safety",
+          "name": "Visitor-Route Planning and Safety Contribution",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described route contribution",
+          "highLabel": "Central route-planning or safety contribution",
+          "description": "Across the whole story, assesses the stated contribution to planning or checking routes and movement through the observatory. The Club is described drafting the visitor route and Ren walking paths and exits and revising the plan. The scale does not claim that the Club performs a safety inspection. 0 is an explicit lowest rating, not missing; 5 is a central described contribution."
+        }
+      ],
+      "assessments": [
+        {
+          "entityId": "cedar-observatory",
+          "dimensionId": "cedar.open-night-role",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-observatory",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.open-night-role",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 4
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.coordination",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.visitor-route-safety",
+          "value": 3
+        },
+        {
+          "entityId": "mira-vale",
+          "dimensionId": "cedar.open-night-role",
+          "value": 4
+        },
+        {
+          "entityId": "mira-vale",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 3
+        },
+        {
+          "entityId": "mira-vale",
+          "dimensionId": "cedar.coordination",
+          "value": 4
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.open-night-role",
+          "value": 4
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 4
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.technical-role-expertise",
+          "value": 3
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.visitor-route-safety",
+          "value": 5
+        },
+        {
+          "entityId": "bluebird-telescope",
+          "dimensionId": "cedar.open-night-role",
+          "value": 4
+        },
+        {
+          "entityId": "bluebird-telescope",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 5
+        },
+        {
+          "entityId": "neighbors",
+          "dimensionId": "cedar.open-night-role",
+          "value": 2
+        }
       ]
     }
   }

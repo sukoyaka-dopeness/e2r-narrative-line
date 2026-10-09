@@ -24,16 +24,24 @@ const summarize = (dataset) => ({
   })),
 });
 
-test("showcase EN/JA have the same graph and import/export without diagnostics", () => {
+const assertExpectedDimensionAssessmentWarnings = (issues) => {
+  assert.deepEqual(issues.map(({ code, severity }) => ({ code, severity })).sort((a, b) => a.code.localeCompare(b.code)), [
+    { code: "specification_unavailable", severity: "warning" },
+    { code: "unknown_extension", severity: "warning" },
+  ]);
+};
+
+test("showcase EN/JA retain the opaque Dimension Assessment through import/export", () => {
   const datasets = ["en", "ja"].map((locale) => {
     const imported = importDatasetJson(source(locale));
     assert.equal(imported.isValid, true, JSON.stringify(imported.issues));
-    assert.deepEqual(imported.issues, []);
+    assertExpectedDimensionAssessmentWarnings(imported.issues);
     const exported = exportDatasetJson(imported.dataset);
     assert.equal(exported.isValid, true, JSON.stringify(exported.issues));
+    assert.deepEqual(exported.issues, []);
     const reopened = importDatasetJson(exported.json);
     assert.equal(reopened.isValid, true, JSON.stringify(reopened.issues));
-    assert.deepEqual(reopened.issues, []);
+    assertExpectedDimensionAssessmentWarnings(reopened.issues);
     assert.deepEqual(reopened.dataset, imported.dataset);
     return imported.dataset;
   });
@@ -65,7 +73,8 @@ test("showcase keeps recorded History separate from direct calendar and elapsed 
     assert.equal(dataset.events.find(({ id }) => id === "sky-tour").extensions, undefined);
     assert.equal(dataset.relations.filter(({ extensions }) =>
       extensions?.["draft.github.sukoyaka-dopeness.relative-time"]?.type === "relative-position").length, 2);
-    assert.deepEqual(dataset.extensions["draft.github.sukoyaka-dopeness.specification"].uses.at(-1).features,
+    assert.deepEqual(dataset.extensions["draft.github.sukoyaka-dopeness.specification"].uses
+      .find(({ extension }) => extension === "draft.github.sukoyaka-dopeness.relative-time").features,
       ["relative-position", "calendar-granule-relation", "elapsed-offset"]);
   }
 });

@@ -135,7 +135,148 @@
       "uses": [
         { "extension": "metadata", "version": "1.0.0" },
         { "extension": "history", "version": "1.0.0" },
-        { "extension": "draft.github.sukoyaka-dopeness.relative-time", "version": "0.2.0", "features": ["relative-position", "calendar-granule-relation", "elapsed-offset"] }
+        { "extension": "draft.github.sukoyaka-dopeness.relative-time", "version": "0.2.0", "features": ["relative-position", "calendar-granule-relation", "elapsed-offset"] },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.dimension-assessment",
+          "version": "0.2.0"
+        }
+      ]
+    },
+    "draft.github.sukoyaka-dopeness.dimension-assessment": {
+      "specVersion": "0.2.0",
+      "dimensions": [
+        {
+          "id": "cedar.open-night-role",
+          "name": "公開観望会での役割",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "記述された役割なし",
+          "highLabel": "物語の中心となる役割",
+          "description": "計画された公開観望会の物語全体を通じて、企画、準備、開催、または招待された立場において、Entityに記述された役割がどの程度中心的かを評価します。招待された来場者については、想定された参加者として明記された役割のみを評価し、実際の出席や体験を意味しません。0は明示的な最低評価であり、未評価ではありません。5は中心的な役割です。"
+        },
+        {
+          "id": "cedar.observing-program-contribution",
+          "name": "観望プログラムへの貢献",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "記述された貢献なし",
+          "highLabel": "中心的な貢献",
+          "description": "物語全体を通じて、計画された来場者向け観望プログラムを実現するために記述された貢献を評価します。天文台、運営者、人、設備について、その貢献がDatasetに記されている場合に適用します。招待されたことだけでは適用根拠になりません。0は明示的な最低評価であり、未評価セルではありません。5は記述されたプログラムにおける中心的な貢献です。"
+        },
+        {
+          "id": "cedar.coordination",
+          "name": "運営調整の責任",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "調整責任の記述なし",
+          "highLabel": "中心的な調整責任",
+          "description": "物語全体を通じて、公開観望会を運営し、人や作業を調整する責任がどの程度記述されているかを評価します。適用対象は、その責任が記述されているシダー星空クラブとミラです。0は明示的な最低評価であり、未評価ではありません。5は中心的な調整責任を表します。"
+        },
+        {
+          "id": "cedar.technical-role-expertise",
+          "name": "役割における技術的専門性の描写",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "技術的専門性の描写なし",
+          "highLabel": "役割における技術的専門性が明確に示される",
+          "description": "物語全体を通じて、人物が本人に記述された役割で技術的な専門性をどの程度明確に示しているかを評価します。機材点検に合格したかどうかは評価しません。適用対象は、天文台の技術担当として望遠鏡を点検するレンの案です。0はこのDatasetで技術的専門性が描かれていないという明示的な評価であり、現実の能力がないことや未評価を意味しません。5は専門性が明確に示される状態です。"
+        },
+        {
+          "id": "cedar.visitor-route-safety",
+          "name": "来場者経路の計画と安全への貢献",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "経路に関する貢献の記述なし",
+          "highLabel": "経路計画または安全への中心的な貢献",
+          "description": "物語全体を通じて、天文台内の経路や人の移動を計画・確認することへの記述上の貢献を評価します。クラブは来場者経路をまとめ、レンは通路と出入口を歩いて確認して計画を見直したと記されています。この尺度は、クラブが安全点検を行ったと主張するものではありません。0は明示的な最低評価であり、未評価ではありません。5は中心的な貢献です。"
+        }
+      ],
+      "assessments": [
+        {
+          "entityId": "cedar-observatory",
+          "dimensionId": "cedar.open-night-role",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-observatory",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.open-night-role",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 4
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.coordination",
+          "value": 5
+        },
+        {
+          "entityId": "cedar-sky-club",
+          "dimensionId": "cedar.visitor-route-safety",
+          "value": 3
+        },
+        {
+          "entityId": "mira-vale",
+          "dimensionId": "cedar.open-night-role",
+          "value": 4
+        },
+        {
+          "entityId": "mira-vale",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 3
+        },
+        {
+          "entityId": "mira-vale",
+          "dimensionId": "cedar.coordination",
+          "value": 4
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.open-night-role",
+          "value": 4
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 4
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.technical-role-expertise",
+          "value": 3
+        },
+        {
+          "entityId": "ren-sato",
+          "dimensionId": "cedar.visitor-route-safety",
+          "value": 5
+        },
+        {
+          "entityId": "bluebird-telescope",
+          "dimensionId": "cedar.open-night-role",
+          "value": 4
+        },
+        {
+          "entityId": "bluebird-telescope",
+          "dimensionId": "cedar.observing-program-contribution",
+          "value": 5
+        },
+        {
+          "entityId": "neighbors",
+          "dimensionId": "cedar.open-night-role",
+          "value": 2
+        }
       ]
     }
   }

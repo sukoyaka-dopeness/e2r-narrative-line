@@ -13,6 +13,17 @@ does not change the existing Berlin Wall sample's rights record, make Cedar a
 canonical cross-app Dataset, or authorize publication. Hub lists the
 NarrativeLine-owned candidate as a Gallery entry without taking ownership of
 its Dataset content.
+
+## Dimension Assessment content
+
+On 2026-10-09 Human adopted five Dimension definitions and 16 qualitative
+Assessments for each Cedar locale. These values are AI-authored fictional
+interpretations adopted as Dataset content; they are not calculated from Core
+records or external factual evaluations. The pair uses Dimension Assessment
+Candidate `0.2.0`; its EN/JA Dataset IDs remain distinct while Dimension IDs,
+scales, and Assessment values correspond. This content decision does not
+change authorship, localization, licensing, ownership, or publication status.
+
 Creation and EN/JA provenance, current content evidence, and the remaining
 Human Browser Acceptance boundary are recorded in
 [the candidate record](../../docs/cedar-observatory-showcase-release-candidate.md)
