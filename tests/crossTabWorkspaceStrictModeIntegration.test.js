@@ -73,6 +73,69 @@ test("StrictMode effect replay leaves the active tab registered for a clean Hand
   }
 });
 
+test("an untouched startup sample is not persisted or offered as a resumable workspace", async () => {
+  const environment = createDomTestEnvironment("https://narrativeline.test/#locale=en");
+  environment.window.scrollTo = () => {};
+  environment.window.requestAnimationFrame = (callback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.localStorage.clear();
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false, port: 0, strictPort: false }, appType: "custom" });
+
+  try {
+    const [{ default: App }, { LanguageProvider }] = await Promise.all([
+      server.ssrLoadModule("/src/App.tsx"),
+      server.ssrLoadModule("/src/i18n/LanguageContext.tsx"),
+    ]);
+    const homeActionButtons = () => [...container.querySelectorAll(".home-actions > button")];
+    await act(async () => root.render(React.createElement(StrictMode, null, React.createElement(LanguageProvider, null, React.createElement(App)))));
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 10)));
+
+    assert.equal(container.querySelector("h1")?.textContent, "Get Started");
+    assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), null);
+    assert.equal(homeActionButtons().length, 2, "Resume is absent on the untouched startup Home");
+    assert.ok(container.querySelector(".home-actions > div button"), "the in-memory sample action is available");
+
+    const languageButton = container.querySelector("header button");
+    assert.ok(languageButton, "the Home language control exists for the rerender step");
+    await act(async () => languageButton.click());
+    assert.equal(environment.document.documentElement.lang, "ja", "language selection caused an actual app state update");
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+    assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), null);
+    assert.equal(homeActionButtons().length, 2, "Resume stays absent after the state-driven rerender");
+
+    const secondLanguageButton = container.querySelector("header button");
+    assert.ok(secondLanguageButton, "the language control remains after rerender");
+    await act(async () => secondLanguageButton.click());
+    assert.equal(environment.document.documentElement.lang, "en");
+    assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), null);
+    assert.equal(homeActionButtons().length, 2);
+
+    const sampleButton = container.querySelector(".home-actions > div button");
+    assert.ok(sampleButton, "the explicit sample acquisition button exists");
+    await act(async () => sampleButton.click());
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+    assert.equal(container.querySelector("h1")?.textContent, "Timeline", container.textContent);
+    const saved = environment.window.localStorage.getItem("narrativeline.lastDataset");
+    assert.ok(saved, "explicit sample acquisition persists the Dataset");
+    assert.equal(JSON.parse(saved).events.length, 15);
+
+    const homeNavigationButton = container.querySelector(".app-header--with-navigation-action button");
+    assert.ok(homeNavigationButton, "Timeline exposes Home navigation");
+    await act(async () => homeNavigationButton.click());
+    assert.equal(homeActionButtons().length, 3, "the active session exposes Resume on Home");
+    const resumeButton = homeActionButtons()[0];
+    assert.ok(resumeButton, "the active session Resume control exists");
+    await act(async () => resumeButton.click());
+    assert.equal(container.querySelector("h1")?.textContent, "Timeline");
+  } finally {
+    await act(async () => root.unmount());
+    await server.close();
+    environment.cleanup();
+  }
+});
 test("a blocked clean-tab Handoff explains the peer conflict and can be retried after it clears", async () => {
   const environment = createDomTestEnvironment(
     `https://narrativeline.test/#locale=en&datasetUrl=${encodeURIComponent(datasetUrl)}`,

@@ -172,6 +172,8 @@ function App() {
   const startupLocaleAppliedRef = useRef(false);
 
   const [dataset, setDatasetState] = useState<Dataset>(storedDataset ?? sample);
+  const [hasResumeSession, setHasResumeSession] = useState(storedDataset !== undefined);
+  const workspacePersistenceEnabledRef = useRef(storedDataset !== undefined);
   const [relativeTimeState, setRelativeTimeState] = useState(() =>
     classifyRelativeTimeEvidence(storedDataset ?? sample),
   );
@@ -223,6 +225,8 @@ function App() {
   const setDataset = useCallback((next: Dataset | ((current: Dataset) => Dataset)) => {
     const resolved = typeof next === "function" ? next(datasetRef.current) : next;
     datasetRef.current = resolved;
+    workspacePersistenceEnabledRef.current = true;
+    setHasResumeSession(true);
     setDatasetState(resolved);
     const modified = isDatasetModified(resolved, acceptedDatasetBaselineRef.current);
     crossTabWorkspaceRef.current?.setActive(modified || hasPendingUserWork(pendingSourcesRef.current));
@@ -601,7 +605,7 @@ function App() {
   }, [state]);
 
   useEffect(() => {
-    if (handoffLoading || datasetCandidate) return;
+    if (!workspacePersistenceEnabledRef.current || handoffLoading || datasetCandidate) return;
     const serialized = JSON.stringify(dataset);
     if (serialized !== JSON.stringify(datasetRef.current)) return;
     const workspace = crossTabWorkspaceRef.current;
@@ -1250,7 +1254,7 @@ function App() {
           onOpenTimeline={() => handleOpenDataset(sample, [], "sample")}
           onOpenShowcase={() => handleOpenDataset(showcase, [], "sample")}
           onResumeDataset={handleResumeDataset}
-          hasResumeDataset={storedDataset !== undefined}
+          hasResumeDataset={hasResumeSession}
           onCreateDataset={() => handleOpenDataset(createDataset(), [], "new")}
           onImportDataset={handleImportDataset}
           handoffLoading={handoffLoading}
