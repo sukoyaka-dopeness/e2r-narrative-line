@@ -83,13 +83,30 @@ export function updateDatasetTitle(dataset: Dataset, title: string): Dataset {
 }
 
 export function getDatasetExportFilename(dataset: Dataset): string {
-  const title = dataset.extensions?.metadata?.title?.trim();
-  const safeTitle = title
-    ?.replace(/[<>:"/\\|?*]/g, "-")
+  const title = dataset.extensions?.metadata?.title;
+  const safeTitle = typeof title === "string" ? title.trim()
+    .replace(/[\p{Cc}<>:"/\\|?*]/gu, "-")
     .replace(/[. -]+$/g, "")
-    .trim();
+    .trim() : "";
+  const usableTitle = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i.test(safeTitle)
+    ? ""
+    : safeTitle;
 
-  return `${safeTitle || "e2r-dataset"}.e2r.json`;
+  const filename = `${usableTitle || "e2r-dataset"}.e2r.json`;
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(filename);
+  if (bytes.length <= 180) return filename;
+
+  let hash = 0x811c9dc5;
+  for (const byte of bytes) hash = Math.imul(hash ^ byte, 0x01000193) >>> 0;
+  const trailer = `…-${hash.toString(16).padStart(8, "0")}.e2r.json`;
+  const prefixBudget = 180 - encoder.encode(trailer).length;
+  let prefix = "";
+  for (const character of usableTitle) {
+    if (encoder.encode(prefix + character).length > prefixBudget) break;
+    prefix += character;
+  }
+  return prefix + trailer;
 }
 
 export function createDataset(): Dataset {
