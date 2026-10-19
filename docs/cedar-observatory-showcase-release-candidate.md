@@ -1,7 +1,27 @@
 # Cedar Observatory showcase — local release candidate
 
 Date: 2026-09-30
-Status: NarrativeLine `0.2.0` application-owned sample candidate; sample-data policy selected, Human Browser Acceptance and publication pending
+Original status (2026-09-30): NarrativeLine `0.2.0` application-owned sample candidate; sample-data policy selected, Human Browser Acceptance and publication pending
+
+## Current disposition — 2026-10-19
+
+The original Cedar EN/JA story was published with NarrativeLine `0.2.0` and
+its Hub Gallery entry. The four-Dimension, 15-Assessment update described below
+was subsequently Human-adopted as content and received bounded ParameterPlotter
+sample-integration Human Browser Acceptance. Human selected both updated owner
+files for the **local NarrativeLine `0.2.1` release candidate**. They remain
+unpublished at this revision; content adoption and application review do not
+substitute for the separate public-write decision. Hub's Cedar Raw JSON links
+follow NarrativeLine `main`, so publishing this candidate would also change
+the Dataset retrieved through the existing Hub entry. NarrativeLine preserves
+the Dimension Assessment Candidate `0.2.0` payload as an unknown Extension;
+this does not promote that Candidate or imply native Assessment editing.
+The 2026-10-19 integrated `0.2.1` Human Browser Review accepted Cedar EN/JA
+acquisition and display within its bounded RC scope; it did not authorize
+publication or a new cross-app sample contract.
+See the [0.2.1 candidate record](release-candidate-0.2.1-preparation-2026-10-19.md)
+for the exact source and release-review boundary. The dated statements below
+retain their original preparation context.
 
 ## Content adoption and subsequent revision — 2026-10-09
 

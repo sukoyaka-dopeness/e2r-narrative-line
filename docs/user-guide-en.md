@@ -22,7 +22,7 @@ to an Event named “Apollo 11 Moon landing.”
 
 From Home, choose **Open Berlin Wall example** for the built-in onboarding story,
 **Open Cedar Observatory example** for a story with time relationships, or
-**Resume Editing** to return to the Dataset you were editing. The Timeline is
+**Continue Editing** to return to the Dataset you were editing. The Timeline is
 the main workspace for selecting Events and opening their details.
 
 The Timeline toolbar stays available while you work. Choose **Add Event** to
@@ -142,6 +142,15 @@ To name the timeline, enter a title at the top of the Timeline and choose **Appl
 Choose **Export E2R JSON** to save the Dataset. A title is used for the filename; without a title, the fallback is `e2r-dataset.e2r.json`.
 
 Before export, NarrativeLine validates the Dataset. The exported file keeps the information needed to open and edit the Dataset in another compatible E2R application.
+
+The browser-local workspace and a downloaded JSON file are separate. If another
+NarrativeLine tab has unapplied work, replacing its Dataset can be refused. If
+another tab has saved a newer revision, an older tab's write is refused with a
+warning; its visible work remains available in that tab. Resolve the draft in
+its original tab, or use **Export E2R JSON** where available to keep a copy of
+visible work before reloading or retrying. **Continue Editing** returns to the
+current session; Reload reads the saved browser workspace again. Export does
+not itself confirm that the browser-local workspace was saved.
 
 The language control in the Header shows the current language and lets you
 switch between English and Japanese. The Header Home link returns to Home, and
