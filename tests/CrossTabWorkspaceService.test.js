@@ -154,6 +154,37 @@ test("an older tab cannot overwrite the serialized Dataset revision", async () =
   second.dispose();
 });
 
+test("startup revision stays bound to the Dataset read before a peer saves", async () => {
+  const storage = new MemoryStorage();
+  const locks = new FakeLockManager();
+  const r1 = '{"revision":1,"title":"Berlin"}';
+  const r2 = '{"revision":2,"title":"Cedar"}';
+  storage.setItem("narrativeline.lastDataset", r1);
+  const startupRead = { raw: storage.getItem("narrativeline.lastDataset"), readable: true };
+  const peer = createCrossTabWorkspaceService(storage, locks, fakeWindow(), "peer");
+  await Promise.resolve();
+  assert.equal((await peer.save(r2)).ok, true);
+  const stale = createCrossTabWorkspaceService(storage, locks, fakeWindow(), "stale", startupRead);
+  const rejected = await stale.save(r1);
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.conflict, true);
+  assert.equal(storage.getItem("narrativeline.lastDataset"), r2);
+  stale.dispose();
+  peer.dispose();
+});
+
+test("unreadable startup workspace fails closed even if storage becomes readable", async () => {
+  const storage = new MemoryStorage();
+  const service = createCrossTabWorkspaceService(storage, new FakeLockManager(), fakeWindow(), "unreadable", {
+    raw: null,
+    readable: false,
+  });
+  const result = await service.save('{"revision":1}');
+  assert.equal(result.ok, false);
+  assert.equal(storage.getItem("narrativeline.lastDataset"), null);
+  service.dispose();
+});
+
 test("missing Web Locks fails closed without changing the saved Dataset", async () => {
   const storage = new MemoryStorage();
   storage.setItem("narrativeline.lastDataset", '{"revision":"current"}');

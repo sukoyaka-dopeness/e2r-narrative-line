@@ -1,0 +1,30 @@
+# Startup Dataset / Revision Race: Bounded Safety Fix
+
+Status: **HUMAN ACCEPTED / CLOSED (BOUNDED)** — 2026-10-19.
+
+## Confirmed defect and boundary
+
+At `eeaafb746e8e311ffe7a4b366fe50768c8955a04`, the App loaded saved Dataset R1 during startup render. The cross-tab Coordinator later read its expected storage revision independently. If another tab saved R2 between those reads, the Coordinator accepted R2 as its baseline while the App still held R1. Initial autosave then wrote R1 over R2 without a conflict warning. The previous isolated Edge/CDP investigation reproduced this once in development and twice in production builds. This is a confirmed defect in the startup path; ordinary stale-writer tests did not cover the split read.
+
+The adopted [Cross-Context Workspace Safety contract](../../e2r-spec/docs/cross-app/cross-context-workspace-safety-design-2026-10-10.md) requires stale writes to stop before overwriting newer saved work, while retaining recoverable in-memory work. Test 37's [bounded Human startup and Resume acceptance](test-37-startup-workspace-resume-alignment.md) remains valid for its recorded operations; it did not test this race.
+
+## Correction
+
+The App now captures the saved raw Dataset and parses the adopted Dataset from that same startup read. It gives the captured raw value to the Coordinator as the expected revision. A storage read failure is passed as an unsafe state, so writes fail closed. The Coordinator still checks the current raw value inside its exclusive write lock; an intervening R2 differs from the R1 baseline and is rejected. The App keeps its existing conflict warning, in-memory Dataset, Resume, and Export paths. No Dataset format, ownership model, or Cross-App contract changed.
+
+## Evidence
+
+- **Automated service test:** a peer saves R2 after R1 is captured and before the stale Coordinator starts. The stale save returns a conflict; storage remains byte-equal to R2. A startup read failure also refuses a later write.
+- **Automated App integration test:** the test changes storage from R1 to R2 immediately after the App's startup read. The initial autosave is rejected, R2 remains byte-equal in storage, the conflict warning appears, and Continue Editing retains R1 in the view.
+- **Codex isolated browser, production build:** Edge 155, disposable profile, `127.0.0.1:5596/e2r-narrative-line/#locale=en`. A timed test injection replaced the saved value with R2 immediately after the App read R1, before Coordinator work. The UI showed the conflict warning and Continue Editing; storage remained byte-equal to R2 after Resume and Export. The retained Berlin view showed 15 Events, and the Export Blob JSON contained 15 Events. The saved Cedar fixture contained 12 Events. This controls the critical ordering in a real browser, but the R2 write was test instrumentation rather than an independent Tab B action. The earlier pre-fix two-tab browser evidence established the original defect; this post-fix run does not claim exhaustive real multi-tab timing coverage or download completion.
+- **Regression gates:** `npm test` passed 370/370, `npm run lint` passed, `npm run build` passed, and `git diff --check` reported no whitespace errors. Existing startup/Resume, stale-writer, replacement, Export, and BFCache tests remain in the passing suite.
+
+## Formal Human decision — 2026-10-19
+
+Human formally accepted this bounded correction to the confirmed startup revision race. Acceptance covers keeping the adopted startup Dataset and its expected raw revision aligned, so an older R1 cannot silently replace a newer R2 in the tested ordering. The defect's pre-fix **CONFIRMED DEFECT** status remains historical evidence; it is not recast as an unverified hypothesis. At the implementation checkpoint above, Human Browser Acceptance was still pending. This section records the subsequent decision without changing that chronology.
+
+Human reported an isolated Edge guest-browser review of the corrected NarrativeLine: normal startup and Timeline display, Dataset title editing, Home to Continue Editing, F5 reload and subsequent Resume, retention of the title `Human Revision Test 2` and Berlin's 15 Events, no unintended conflict warning on that normal path, and E2R JSON Export. Human reported the result as OK and submitted a Timeline screenshot and Export JSON. The screenshot supports visible state only; the interaction sequence and absence of an unintended warning are Human operation reports, not deductions from that image. Human did **not** manually reproduce the R1/R2 race after the fix.
+
+The submitted `Human Revision Test 2.e2r.json` was independently read for this documentation checkpoint: 13,072 bytes, SHA-256 `153ee12c932c0b5e342dd14fdd4d2197ca967514da96237d3604aa47b65282a5`, `extensions.metadata.title` equal to `Human Revision Test 2`, and 15 Events. This directly supports the submitted file's contents, not a byte-level comparison with browser storage or an application guarantee that every download completes. The exact bundle hash or byte identity of the Human-reviewed runtime was not supplied; the reported review was of the corrected working tree based on HEAD `eeaafb746e8e311ffe7a4b366fe50768c8955a04`. The local Git checkpoint after this record identifies the reviewed correction as a reproducible source state, without asserting byte identity to the earlier Human browser session.
+
+The automated and Codex browser evidence above supplements this Human decision. In the post-fix Edge check, R2 was injected at the critical ordering point; it was not independently saved by Tab B. Untested interleavings, browsers, abnormal termination, hosted deployment, and actual download completion remain outside this bounded acceptance. Test 37 and its earlier Human acceptance retain their own limited scope. Cross-Context Workspace Safety overall remains **PENDING**; this closure does not change other applications' acceptance or authorize a release. The historical ParameterPlotter Tab C root cause remains **UNRESOLVED**, ParameterPlotter Product Acceptance **PENDING**, and ParameterPlotter Public Release **NO-GO**.

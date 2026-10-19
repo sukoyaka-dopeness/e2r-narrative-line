@@ -36,6 +36,8 @@ export type WorkspaceWriteResult =
   | { ok: true; raw: string }
   | { ok: false; reason: string; conflict?: boolean; blockedByPeer?: boolean };
 
+export type InitialWorkspaceRevision = { raw: string | null; readable: boolean };
+
 export function activeNarrativeLineTabs(
   storage: Storage,
   heldLockNames: Set<string>,
@@ -60,6 +62,7 @@ export function createCrossTabWorkspaceService(
   lockManager: LockManager | undefined,
   target: Pick<Window, "addEventListener" | "removeEventListener">,
   tabId = crypto.randomUUID(),
+  initialRevision?: InitialWorkspaceRevision,
 ) {
   const statusKey = `${TAB_PREFIX}${tabId}`;
   let active = false;
@@ -72,8 +75,13 @@ export function createCrossTabWorkspaceService(
   let resolveReady: ((ready: boolean) => void) | undefined;
   let ready: Promise<boolean> = Promise.resolve(false);
   const listeners = new Set<() => void>();
-  try { expectedRaw = storage.getItem(STORAGE_KEY); }
-  catch { expectedRaw = null; coordinationError = "Browser workspace state could not be read safely."; }
+  if (initialRevision) {
+    expectedRaw = initialRevision.raw;
+    if (!initialRevision.readable) coordinationError = "Browser workspace state could not be read safely.";
+  } else {
+    try { expectedRaw = storage.getItem(STORAGE_KEY); }
+    catch { expectedRaw = null; coordinationError = "Browser workspace state could not be read safely."; }
+  }
 
   const publish = () => {
     if (disposed) return;

@@ -152,14 +152,20 @@ function App() {
   );
   const sample = language === "ja" ? sampleDataset : sampleDatasetEn;
   const showcase = language === "ja" ? showcaseDataset : showcaseDatasetEn;
-  const storedDataset = (() => {
+  const [startupWorkspace] = useState(() => {
+    let raw: string | null;
     try {
-      const source = window.localStorage.getItem("narrativeline.lastDataset");
-      return source ? importDatasetJson(source).dataset : undefined;
+      raw = window.localStorage.getItem("narrativeline.lastDataset");
     } catch {
-      return undefined;
+      return { raw: null, readable: false, dataset: undefined };
     }
-  })();
+    try {
+      return { raw, readable: true, dataset: raw ? importDatasetJson(raw).dataset : undefined };
+    } catch {
+      return { raw, readable: true, dataset: undefined };
+    }
+  });
+  const storedDataset = startupWorkspace.dataset;
   const [state, setState] = useState<AppState>({
     currentScreen: "home",
     currentDialog: null,
@@ -256,6 +262,8 @@ function App() {
       window.localStorage,
       window.navigator.locks,
       window,
+      undefined,
+      startupWorkspace,
     );
     crossTabWorkspaceRef.current = workspace;
     let peerStatusRetry: number | undefined;
@@ -300,7 +308,7 @@ function App() {
         crossTabWorkspaceRef.current = null;
       }
     };
-  }, []);
+  }, [startupWorkspace]);
 
   useEffect(() => {
     if (state.currentScreen === "home") refreshPeerStatusRef.current?.();
