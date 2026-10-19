@@ -85,9 +85,10 @@ Footer padding are reduced at viewport widths of 600 px or less.
 The Credits modal displays the application name and version, creator, first
 successful public deployment date, latest update date, AI acknowledgement, and
 links to both the NarrativeLine and E2R specification repositories. The
-`0.2.1` local release candidate displays `2026-08-06` and `2026-10-19`.
-The latter is the candidate preparation update date, not a claim that `0.2.1`
-has been published; the `0.2.0` release displayed `2026-09-30`.
+published `0.2.1` build displays `2026-08-06` and `2026-10-19`.
+The latter was set during candidate preparation and is also the actual
+publication date; see the [publication record](release-0.2.1-publication-and-post-deployment-verification-2026-10-19.md).
+The `0.2.0` release displayed `2026-09-30`.
 The modal can be dismissed with `Close`, Escape, or the shared modal dismissal
 behavior.
 

@@ -9,16 +9,18 @@ The original Cedar EN/JA story was published with NarrativeLine `0.2.0` and
 its Hub Gallery entry. The four-Dimension, 15-Assessment update described below
 was subsequently Human-adopted as content and received bounded ParameterPlotter
 sample-integration Human Browser Acceptance. Human selected both updated owner
-files for the **local NarrativeLine `0.2.1` release candidate**. They remain
-unpublished at this revision; content adoption and application review do not
-substitute for the separate public-write decision. Hub's Cedar Raw JSON links
-follow NarrativeLine `main`, so publishing this candidate would also change
-the Dataset retrieved through the existing Hub entry. NarrativeLine preserves
+files for the **local NarrativeLine `0.2.1` release candidate**. Human later
+authorized public SHA `54bc709b695b98de382c75e90459fd53cd85caff`,
+and [publication](release-0.2.1-publication-and-post-deployment-verification-2026-10-19.md)
+completed on 2026-10-19. The public Cedar EN/JA Raw JSON bytes matched the
+authorized Git blobs. Hub's existing Cedar links follow NarrativeLine `main`
+and now retrieve these updated owner files; this does not establish a new
+Human review of every receiving app. NarrativeLine preserves
 the Dimension Assessment Candidate `0.2.0` payload as an unknown Extension;
 this does not promote that Candidate or imply native Assessment editing.
 The 2026-10-19 integrated `0.2.1` Human Browser Review accepted Cedar EN/JA
-acquisition and display within its bounded RC scope; it did not authorize
-publication or a new cross-app sample contract.
+acquisition and display within its bounded RC scope; that acceptance did not
+itself authorize publication or a new cross-app sample contract.
 See the [0.2.1 candidate record](release-candidate-0.2.1-preparation-2026-10-19.md)
 for the exact source and release-review boundary. The dated statements below
 retain their original preparation context.

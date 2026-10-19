@@ -2,6 +2,11 @@
 
 Date: 2026-10-19
 
+This record preserves the local candidate and Human review decisions at the
+time they were made. The subsequent public release and current
+post-deployment verification status are in the
+[2026-10-19 publication record](release-0.2.1-publication-and-post-deployment-verification-2026-10-19.md).
+
 Preparation status: LOCAL CANDIDATE / HUMAN BROWSER REVIEW PENDING
 
 Current decision (2026-10-19): HUMAN ACCEPTED / CLOSED (BOUNDED) for the
