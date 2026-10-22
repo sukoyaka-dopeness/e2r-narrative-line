@@ -35,14 +35,14 @@ Graph editing, semantic modeling, and other specialized tasks are expected to be
 
 NarrativeLine is currently under active development.
 
-At the 2026-10-22 pre-publication checkpoint for the planned 2026-10-23 JST
-release, a local `0.2.2` candidate
-contains three separately committed changes with bounded local Human Browser
-acceptance: History 2 same-day ordering, Event Detail footer clearance, and
-the Ko-fi Home link. Credits `Updated: 2026-10-23` is approved metadata for the
-planned JST deployment date, not evidence that deployment occurred. See the
-[0.2.2 candidate record](docs/release-candidate-0.2.2-preparation-2026-10-22.md);
-actual publication and production verification require a separate release record.
+NarrativeLine `0.2.2` was published on 2026-10-23 JST from
+`3fb4f76076aaea1dde414a95e273d6fd85088825`. Pages deployment succeeded.
+The bounded production Browser Use verification of History 2 same-day ordering,
+Event Detail footer clearance, and the Ko-fi Home link passed; Human accepted
+that Codex-operated browser evidence. **Formal Release Closure remains pending
+the final Human decision.** See the [0.2.2 publication and acceptance record](docs/release-0.2.2-publication-and-post-deployment-acceptance-2026-10-23.md).
+The [0.2.2 candidate record](docs/release-candidate-0.2.2-preparation-2026-10-22.md)
+retains the historical pre-publication checkpoint.
 
 The first milestone is a Minimum Viable Product (MVP) focused on the essential timeline editing workflow.
 
