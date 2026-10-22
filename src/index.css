@@ -1563,6 +1563,30 @@ button:disabled {
   border-top: 1px solid var(--border);
 }
 
+#root:has(.detail-screen--event) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-frame:has(.detail-screen--event) {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-frame:has(.detail-screen--event) .app-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.detail-screen--event {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin-bottom: var(--event-action-footer-height, 0px);
+  padding-bottom: 24px;
+}
+
 .danger-action {
   color: #b00020;
   border-color: var(--border);
@@ -1717,9 +1741,9 @@ button:disabled {
     padding: 20px 16px 152px;
   }
 
-  /* The grouped Event footer adds one 40px button and an 8px gap. */
+  /* Event content scrolls above the measured action footer at every width. */
   .detail-screen--event {
-    padding-bottom: calc(152px + 40px + 8px);
+    padding-bottom: 24px;
   }
 
   .timeline-screen {

@@ -229,6 +229,26 @@ export function EventDetailScreen({
     null,
   );
   const disposingDraftRef = useRef(false);
+  const detailScreenRef = useRef<HTMLDivElement>(null);
+  const actionFooterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const detailScreen = detailScreenRef.current;
+    const actionFooter = actionFooterRef.current;
+    if (!detailScreen || !actionFooter) return;
+
+    const updateFooterHeight = () => {
+      detailScreen.style.setProperty(
+        "--event-action-footer-height",
+        `${actionFooter.getBoundingClientRect().height}px`,
+      );
+    };
+    updateFooterHeight();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(updateFooterHeight);
+    observer.observe(actionFooter);
+    return () => observer.disconnect();
+  }, []);
   const hasPendingEdits =
     event !== null &&
     (name !== (event.name ?? "") ||
@@ -372,7 +392,7 @@ export function EventDetailScreen({
   const handleSave = () => requestSave(false);
   const handleSaveAndAddEntity = () => requestSave(true);
   return (
-    <div className="detail-screen detail-screen--event">
+    <div className="detail-screen detail-screen--event" ref={detailScreenRef}>
       <div className="detail-header">
         <h1>{ja ? "できごとの詳細" : "Event Detail"}</h1>
       </div>
@@ -684,7 +704,7 @@ export function EventDetailScreen({
       <br />
       <br />
 
-      <div className="detail-primary-actions">
+      <div className="detail-primary-actions" ref={actionFooterRef}>
         <div className="detail-primary-actions__primary">
           <button
             type="button"
