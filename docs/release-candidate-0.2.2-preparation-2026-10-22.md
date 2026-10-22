@@ -1,8 +1,9 @@
 # NarrativeLine 0.2.2 local release candidate preparation
 
-Status: **LOCAL COMMITS PREPARED / PUBLICATION PENDING**. This document records
-the local candidate, not a deployed `0.2.2` release or production verification.
-The currently published application remains `0.2.1` at
+Status at the 2026-10-23 metadata-finalization checkpoint:
+**LOCAL COMMITS PREPARED / PUBLICATION PENDING**. This document records the
+local candidate, not a deployed `0.2.2` release or production verification. At this checkpoint,
+the published application remains `0.2.1` at
 `54bc709b695b98de382c75e90459fd53cd85caff`.
 
 ## Included work and acceptance
@@ -25,12 +26,14 @@ the existing handoff contract, or the published `0.2.1` revision.
 ## Version and publication date gate
 
 The local candidate uses `0.2.2` in the package, lockfile, and EN/JA Credits
-Application display. Credits `First release` remains `2026-08-06`.
-Credits `Updated` remains `2026-10-19`, the previous release date; it is **not**
-metadata for a future `0.2.2` deployment. Once the actual deployment date in
-JST is settled, Human must approve changing `Updated` and the matching tests,
-then review the resulting final commit SHA and complete push range. Do not
-publish this candidate with the old `Updated` value as its new release date.
+Application display. Credits `First release` remains `2026-08-06`. At the
+initial 2026-10-22 preparation checkpoint, Credits `Updated` still showed
+`2026-10-19`, the previous release date. Human subsequently selected
+2026-10-23 (JST) as the planned deployment date; EN/JA Credits and their tests
+now use `Updated: 2026-10-23`. This is planned-release metadata, not evidence
+of a successful deployment. Before any push, Human must approve the final
+commit SHA and complete range. If deployment is expected to occur on a later
+JST date, stop for a new Human date decision and corresponding final SHA.
 
 The existing `main` push workflow runs tests, lint, build, and automatic Pages
 deployment. No push, workflow execution, deployment, tag, or release is part of
@@ -39,10 +42,18 @@ closure are later, separate gates.
 
 ## Local integrated verification
 
-After the three change commits and the `0.2.2` version edits, Codex ran the
-combined candidate through `npm test` (**375/375 PASS**), `npm run lint`
-(PASS), and `npm run build` (PASS). The EN/JA Credits test checks the `0.2.2`
-Application label, retained `2026-08-06` First release, and retained
-`2026-10-19` Updated. These results are local automated evidence; the earlier
-bounded Human Browser reviews remain separate, and the public `0.2.2` build has
-not been verified.
+At the initial 2026-10-22 checkpoint, after the three change commits and the
+`0.2.2` version edits, Codex ran the combined candidate through `npm test`
+(**375/375 PASS**), `npm run lint` (PASS), and `npm run build` (PASS). The
+EN/JA Credits test then checked the `0.2.2` Application label, retained
+`2026-08-06` First release, and still-current `2026-10-19` Updated. This is
+historical local automated evidence. The 2026-10-23 metadata-finalization
+checks are reported separately from it. The earlier bounded Human Browser
+reviews remain separate, and the public `0.2.2` build has not been verified.
+
+After the approved 2026-10-23 Updated change, Codex reran the integrated
+candidate: `npm test` **375/375 PASS**, `npm run lint` PASS, and `npm run build`
+PASS. A source/build check found `0.2.2` in package, lockfile, EN/JA Credits
+expectations, and generated JS; the generated JS includes `2026-10-23`.
+Credits First release remains `2026-08-06`. This is local automated evidence,
+not Human Browser re-acceptance or public deployment verification.

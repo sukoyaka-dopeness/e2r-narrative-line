@@ -81,7 +81,7 @@ export function AppFrame({
           <p>{copy.creditsApplicationLabel}: NarrativeLine 0.2.2</p>
           <p>{copy.creditsCreatedByLabel}: sukoyaka-dopeness</p>
           <p>{copy.creditsFirstReleaseLabel}: 2026-08-06</p>
-          <p>{copy.creditsUpdatedLabel}: 2026-10-19</p>
+          <p>{copy.creditsUpdatedLabel}: 2026-10-23</p>
           <p>{copy.creditsGratitude}</p>
           <p>
             <a href="https://github.com/sukoyaka-dopeness/e2r-narrative-line" target="_blank" rel="noreferrer">
