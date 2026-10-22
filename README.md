@@ -41,8 +41,10 @@ The bounded production Browser Use verification of History 2 same-day ordering,
 Event Detail footer clearance, and the Ko-fi Home link passed; Human accepted
 that Codex-operated browser evidence. A subsequent production-dependency npm
 advisory check completed with zero findings; development dependencies remain a
-separate audit scope. **Formal Release Closure remains pending the final Human
-decision.** See the [0.2.2 publication and acceptance record](docs/release-0.2.2-publication-and-post-deployment-acceptance-2026-10-23.md).
+separate audit scope. **Formal Release Closure is HUMAN ACCEPTED / CLOSED
+(BOUNDED) as of 2026-10-23 JST** for the published source SHA above.
+Documentation publication is a separate step. See the [0.2.2 publication and
+acceptance record](docs/release-0.2.2-publication-and-post-deployment-acceptance-2026-10-23.md).
 The [0.2.2 candidate record](docs/release-candidate-0.2.2-preparation-2026-10-22.md)
 retains the historical pre-publication checkpoint.
 

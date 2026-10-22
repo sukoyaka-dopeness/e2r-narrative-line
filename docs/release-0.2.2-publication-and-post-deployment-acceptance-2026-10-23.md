@@ -4,7 +4,7 @@ Date: 2026-10-23 (JST)
 
 Current state: **PUBLISHED / PAGES DEPLOYMENT SUCCEEDED; PRODUCTION BROWSER
 VERIFICATION PASS (BOUNDED); HUMAN ACCEPTED THE CODEX BROWSER EVIDENCE
-(BOUNDED); FORMAL RELEASE CLOSURE PENDING FINAL HUMAN DECISION.**
+(BOUNDED); FORMAL RELEASE CLOSURE HUMAN ACCEPTED / CLOSED (BOUNDED).**
 
 This record concerns the published `0.2.2` application at
 `3fb4f76076aaea1dde414a95e273d6fd85088825`. It follows the [local release
@@ -72,9 +72,9 @@ unperformed actions are not recorded as PASS.
 | Codex production Browser Use verification | **PASS (BOUNDED)** for the three released changes under the cases above. This is agent-operated evidence. |
 | Human acceptance of that Codex evidence | **ACCEPTED (BOUNDED)** on 2026-10-23, by explicit Human decision. It does not create a new Human-operated production Browser PASS. |
 | Production dependency advisory | **VERIFIED / NO HIGH-OR-CRITICAL FINDINGS** in the subsequent `npm audit --omit=dev --audit-level=high` check described below; this is limited to the audited production dependencies. |
-| NarrativeLine `0.2.2` Formal Release Closure | **PENDING FINAL HUMAN DECISION.** No closure is declared by this record or its local commit. |
+| NarrativeLine `0.2.2` Formal Release Closure | **HUMAN ACCEPTED / CLOSED (BOUNDED)** on 2026-10-23 JST for the published SHA and the explicitly reviewed scope below. This final Human decision is separate from the later documentation commit and its publication. |
 
-## Formal Release Closure candidate for Human decision
+## Formal Release Closure proposal and final Human decision
 
 The exact `0.2.2` publication SHA, successful tests/lint/build and Pages
 deployment, published application/credits identity, bounded production
@@ -82,11 +82,12 @@ Browser Use PASS, and Human acceptance of that evidence support a **bounded
 Formal Release Closure candidate** for these three released changes. No new
 runtime, Dataset, or specification defect was identified in the reviewed
 production paths. The subsequent production-dependency advisory result below
-completes the previously missing advisory evidence for this bounded candidate.
-The Human may decide whether to close this release within the explicit limits
-above; this document makes no final closure decision.
+completed the previously missing advisory evidence for this bounded candidate.
+This was the proposal at the preceding documentation checkpoint, not a closure
+decision at that time. The final Human decision is recorded below.
 
-The following are outside the proposed closure: all History 2 precision,
+The following were excluded from the proposal and remain outside the accepted
+closure: all History 2 precision,
 time-zone, or multiple-assertion conditions; all Event Detail widths and
 scrolling methods; actual Event deletion; exhaustive browser/assistive
 technology compatibility; all Dataset/Workspace replacement and cross-context
@@ -120,8 +121,35 @@ advisory query resolves its **production-dependency evidence gap**, but does
 not identify the internal cause of the access denial or establish the safety
 of development dependencies, the entire build toolchain, or unknown future
 vulnerabilities. Human has accepted this production audit result and retained
-the broader dependency audit as an independent follow-up. Final bounded
-Formal Release Closure still requires a separate explicit Human decision.
+the broader dependency audit as an independent follow-up. At the preceding
+documentation checkpoint, final bounded Formal Release Closure still required
+a separate explicit Human decision.
+
+### Final Human decision — 2026-10-23 JST
+
+Human formally approved NarrativeLine `0.2.2` **HUMAN ACCEPTED / CLOSED
+(BOUNDED)** for the application published from
+`3fb4f76076aaea1dde414a95e273d6fd85088825`. The closure covers the
+successful publication and Pages deployment, the recorded three-change
+production Browser Use verification, Human acceptance of that Codex-operated
+evidence, and the successful production-dependency advisory check. It does not
+turn Codex Browser Use into a new Human-operated production browser test.
+
+The closure is limited to the History 2 Berlin Wall EN/JA same-day order,
+Event Detail FIX2 visibility and safe confirmation behavior at the reviewed
+widths and dirty state, and Ko-fi Home EN/JA presentation and link operation,
+as detailed above. The exclusions in this section remain in force, including
+History 2 semantics beyond the reviewed cases, Validator acceptance, untested
+Event Detail actions and browser/viewport conditions, actual Event deletion,
+Dataset/Workspace safety paths beyond the checks, and development-dependency
+or whole-toolchain security assessment. The `docs/ui-spec.md` Back-position
+discrepancy and shared favicon remain independent maintenance follow-ups.
+
+This Human decision closes the bounded `0.2.2` release assessment; it does not
+change the published application SHA or retroactively close earlier candidate
+and failed-check checkpoints. This documentation is recorded in later local
+commits. Publishing those commits, and the Pages workflow triggered by a
+`main` push, require separate Human authorization.
 
 The current E2R-SPEC Roadmap and E2R Knowledge updates are separate follow-up
 work. This local NarrativeLine documentation checkpoint neither publishes
