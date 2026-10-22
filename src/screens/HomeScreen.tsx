@@ -9,6 +9,7 @@ import type { PeerWorkspaceStatus } from "../services/CrossTabWorkspaceService";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
+const KO_FI_URL = "https://ko-fi.com/sukoyaka_dopeness";
 
 type Props = {
   onOpenTimeline: () => void;
@@ -158,9 +159,14 @@ export function HomeScreen({
         {ja ? "日本語ユーザーガイド" : "English user guide"}
       </a>
 
-      <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
-        {copy.supportE2r}
-      </a>
+      <div className="home-support-links">
+        <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
+          {copy.supportE2r}
+        </a>
+        <a className="support-link support-link--ko-fi" href={KO_FI_URL} target="_blank" rel="noopener noreferrer">
+          {copy.supportE2rOnKofi}
+        </a>
+      </div>
 
       {fileReadError && <p role="alert">{copy.localFileReadFailure}</p>}
 

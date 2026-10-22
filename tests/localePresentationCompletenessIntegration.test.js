@@ -169,7 +169,7 @@ test("uses Japanese presentation for the startup Handoff loading status", async 
   }
 });
 
-test("renders the low-prominence GitHub Sponsors support link on Home", async () => {
+test("renders the low-prominence GitHub Sponsors and Ko-fi support links on Home", async () => {
   const rendered = await renderApp({ persistedLocale: "en" });
   try {
     const link = rendered.document.querySelector(".support-link");
@@ -179,11 +179,20 @@ test("renders the low-prominence GitHub Sponsors support link on Home", async ()
     assert.equal(link.getAttribute("target"), "_blank");
     assert.equal(link.getAttribute("rel"), "noreferrer");
     assert.equal(rendered.document.querySelector(".app-footer")?.contains(link), false);
+    const koFiLink = rendered.document.querySelector(".support-link--ko-fi");
+    assert.ok(koFiLink);
+    assert.equal(koFiLink.textContent, "Support E2R on Ko-fi");
+    assert.equal(koFiLink.getAttribute("href"), "https://ko-fi.com/sukoyaka_dopeness");
+    assert.equal(koFiLink.getAttribute("target"), "_blank");
+    assert.equal(koFiLink.getAttribute("rel"), "noopener noreferrer");
+    assert.equal(link.parentElement, koFiLink.parentElement);
+    assert.equal(rendered.document.querySelector(".app-footer")?.contains(koFiLink), false);
 
     const localeButton = findHeaderLocaleButton(rendered.document, "日本語");
     assert.ok(localeButton);
     await act(async () => localeButton.click());
     assert.equal(rendered.document.querySelector(".support-link")?.textContent, "GitHub SponsorsでE2Rを支援する");
+    assert.equal(rendered.document.querySelector(".support-link--ko-fi")?.textContent, "Ko-fiでE2Rを支援する");
   } finally {
     rendered.cleanup();
   }

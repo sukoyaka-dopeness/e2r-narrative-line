@@ -157,6 +157,7 @@ body {
 .home-screen-content .replacement-safety-retry { box-sizing: border-box; width: 100%; min-width: 0; overflow-wrap: anywhere; }
 .home-screen-content .replacement-safety-retry .modal-actions { justify-content: center; }
 .home-screen .home-guide-link { font-size: 0.875rem; }
+.home-screen .home-support-links { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; max-width: 100%; }
 .home-screen .support-link { display: block; margin-top: 0; color: var(--text); font-size: 0.875rem; text-align: center; text-underline-offset: 0.18em; }
 
 .app-footer {
