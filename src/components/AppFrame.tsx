@@ -78,7 +78,7 @@ export function AppFrame({
           onBackdropDismiss={() => setIsCreditsOpen(false)}
         >
           <h2 id="credits-heading">{ja ? "\u30af\u30ec\u30b8\u30c3\u30c8" : "Credits"}</h2>
-          <p>{copy.creditsApplicationLabel}: NarrativeLine 0.2.1</p>
+          <p>{copy.creditsApplicationLabel}: NarrativeLine 0.2.2</p>
           <p>{copy.creditsCreatedByLabel}: sukoyaka-dopeness</p>
           <p>{copy.creditsFirstReleaseLabel}: 2026-08-06</p>
           <p>{copy.creditsUpdatedLabel}: 2026-10-19</p>

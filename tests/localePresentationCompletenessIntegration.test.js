@@ -205,7 +205,7 @@ test("renders all requested Credits metadata in English and Japanese", async () 
     const dialog = english.document.querySelector('[role="alertdialog"]');
     assert.ok(dialog);
     for (const value of [
-      "Application: NarrativeLine 0.2.1",
+      "Application: NarrativeLine 0.2.2",
       "Creator: sukoyaka-dopeness",
       "First release: 2026-08-06",
       "Updated: 2026-10-19",
@@ -230,7 +230,7 @@ test("renders all requested Credits metadata in English and Japanese", async () 
     assert.equal(dialog.textContent.includes("Created by"), false);
     assert.equal(containsJapanesePresentation(dialog.textContent), true);
     for (const value of [
-      "アプリケーション: NarrativeLine 0.2.1",
+      "アプリケーション: NarrativeLine 0.2.2",
       "作成者: sukoyaka-dopeness",
       "初回リリース: 2026-08-06",
       "更新日: 2026-10-19",
