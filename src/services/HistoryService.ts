@@ -317,8 +317,8 @@ export function compareEventsByHistoryDate(
       return dayComparison;
     }
 
-    const leftTime = getEventHistoryTime(left);
-    const rightTime = getEventHistoryTime(right);
+    const leftTime = getEventHistoryTime(left) ?? (dataset ? leftDate : undefined);
+    const rightTime = getEventHistoryTime(right) ?? (dataset ? rightDate : undefined);
     for (const field of ["hour", "minute", "second"] as const) {
       const timeComparison = compareOptionalNumber(leftTime?.[field], rightTime?.[field]);
       if (timeComparison !== 0) {
