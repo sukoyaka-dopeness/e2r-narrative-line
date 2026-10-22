@@ -71,6 +71,7 @@ unperformed actions are not recorded as PASS.
 | Publication and Pages deployment | **SUCCEEDED** for the exact published SHA, independently of browser interaction acceptance. |
 | Codex production Browser Use verification | **PASS (BOUNDED)** for the three released changes under the cases above. This is agent-operated evidence. |
 | Human acceptance of that Codex evidence | **ACCEPTED (BOUNDED)** on 2026-10-23, by explicit Human decision. It does not create a new Human-operated production Browser PASS. |
+| Production dependency advisory | **VERIFIED / NO HIGH-OR-CRITICAL FINDINGS** in the subsequent `npm audit --omit=dev --audit-level=high` check described below; this is limited to the audited production dependencies. |
 | NarrativeLine `0.2.2` Formal Release Closure | **PENDING FINAL HUMAN DECISION.** No closure is declared by this record or its local commit. |
 
 ## Formal Release Closure candidate for Human decision
@@ -80,30 +81,50 @@ deployment, published application/credits identity, bounded production
 Browser Use PASS, and Human acceptance of that evidence support a **bounded
 Formal Release Closure candidate** for these three released changes. No new
 runtime, Dataset, or specification defect was identified in the reviewed
-production paths. The Human may decide whether to close this release within
-the explicit limits above; this document makes no final closure decision.
+production paths. The subsequent production-dependency advisory result below
+completes the previously missing advisory evidence for this bounded candidate.
+The Human may decide whether to close this release within the explicit limits
+above; this document makes no final closure decision.
 
 The following are outside the proposed closure: all History 2 precision,
 time-zone, or multiple-assertion conditions; all Event Detail widths and
 scrolling methods; actual Event deletion; exhaustive browser/assistive
 technology compatibility; all Dataset/Workspace replacement and cross-context
-safety paths; other E2R applications; and Candidate-to-Stable promotion.
+safety paths; other E2R applications; Candidate-to-Stable promotion; and a
+security assessment of development dependencies or the entire build toolchain.
 The `docs/ui-spec.md` Back-position discrepancy and the shared favicon
 follow-up are independent maintenance items, not findings from this bounded
 production check.
 
 An earlier `0.2.1` release-candidate record called for a network-capable
-production-dependency advisory check. No completed advisory result for this
-`0.2.2` recording was found in the reviewed release documents. A fresh
-`npm audit --omit=dev --audit-level=high` attempt at this documentation
-checkpoint could not reach the npm advisory endpoint; its result is **NOT
-VERIFIED**, not a security PASS. The prior exact-SHA publication authorization
-and successful deployment are historical facts; the Human should explicitly
-decide whether this outstanding advisory evidence is required before Formal
-Release Closure. No vulnerability conclusion follows from the failed request.
+production-dependency advisory check. At the preceding `0.2.2` documentation
+checkpoint (`05f72aaeb56813a4925cb460bc49bf341f7c8309`), no completed
+advisory result was found in the reviewed release documents. The
+`npm audit --omit=dev --audit-level=high` attempt at that checkpoint could
+not reach the npm advisory endpoint; its result was **NOT VERIFIED**, not a
+security PASS. No vulnerability conclusion followed from that failed request.
+
+The subsequent `NL-0.2.2-NPM-ADVISORY-KNOWLEDGE-AUDIT1` investigation found
+that restricted execution returned `EACCES` for both the advisory request and
+a registry ping. A formally authorized npm run outside that network restriction
+completed `npm audit --omit=dev --audit-level=high` against the current
+`package-lock.json` with exit code 0. The JSON report contained zero info,
+low, moderate, high, and critical findings (production dependencies: 5).
+This result was confirmed again during this documentation preparation. The
+local commit preceding this one changes documentation only; `package.json` and
+`package-lock.json` are identical to the published `0.2.2` source at
+`3fb4f76076aaea1dde414a95e273d6fd85088825`.
+
+The prior connection failure remains a historical result. The successful
+advisory query resolves its **production-dependency evidence gap**, but does
+not identify the internal cause of the access denial or establish the safety
+of development dependencies, the entire build toolchain, or unknown future
+vulnerabilities. Human has accepted this production audit result and retained
+the broader dependency audit as an independent follow-up. Final bounded
+Formal Release Closure still requires a separate explicit Human decision.
 
 The current E2R-SPEC Roadmap and E2R Knowledge updates are separate follow-up
 work. This local NarrativeLine documentation checkpoint neither publishes
 those repositories nor extends their acceptance decisions. A later push of
-this documentation commit would trigger the existing Pages workflow and needs
-separate Human authorization; it is not part of this record.
+the local documentation commits would trigger the existing Pages workflow and
+needs separate Human authorization; it is not part of this record.
