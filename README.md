@@ -35,7 +35,8 @@ Graph editing, semantic modeling, and other specialized tasks are expected to be
 
 NarrativeLine is currently under active development.
 
-At the 2026-10-23 pre-publication checkpoint, a local `0.2.2` release candidate
+At the 2026-10-22 pre-publication checkpoint for the planned 2026-10-23 JST
+release, a local `0.2.2` candidate
 contains three separately committed changes with bounded local Human Browser
 acceptance: History 2 same-day ordering, Event Detail footer clearance, and
 the Ko-fi Home link. Credits `Updated: 2026-10-23` is approved metadata for the

@@ -1,6 +1,7 @@
 # NarrativeLine 0.2.2 local release candidate preparation
 
-Status at the 2026-10-23 metadata-finalization checkpoint:
+Status at the 2026-10-22 metadata-finalization checkpoint for the planned
+2026-10-23 JST release:
 **LOCAL COMMITS PREPARED / PUBLICATION PENDING**. This document records the
 local candidate, not a deployed `0.2.2` release or production verification. At this checkpoint,
 the published application remains `0.2.1` at
@@ -47,7 +48,7 @@ At the initial 2026-10-22 checkpoint, after the three change commits and the
 (**375/375 PASS**), `npm run lint` (PASS), and `npm run build` (PASS). The
 EN/JA Credits test then checked the `0.2.2` Application label, retained
 `2026-08-06` First release, and still-current `2026-10-19` Updated. This is
-historical local automated evidence. The 2026-10-23 metadata-finalization
+historical local automated evidence. The subsequent metadata-finalization
 checks are reported separately from it. The earlier bounded Human Browser
 reviews remain separate, and the public `0.2.2` build has not been verified.
 
