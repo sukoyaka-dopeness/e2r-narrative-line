@@ -1254,7 +1254,7 @@ function App() {
     datasetCandidate && !datasetModified && !pendingUserWork && !(datasetCandidate.source === "handoff" && storedDataset) && crossTabError ? (
       <section className="replacement-safety-retry" aria-label={language === "ja" ? "Dataset置き換えの安全確認" : "Dataset replacement safety"}>
         <p role="alert">{crossTabError}</p>
-        <CandidateImportWarnings warnings={datasetCandidate.warnings} />
+        <CandidateImportWarnings warnings={datasetCandidate.warnings} dataset={datasetCandidate.dataset} />
         <div className="modal-actions">
           {crossTabConflict && datasetCandidate.source === "handoff"
             ? <button type="button" onClick={() => window.location.reload()}>{copy.reloadToRetryHandoff}</button>
@@ -1282,6 +1282,7 @@ function App() {
           pendingUserWork={pendingUserWork}
           restoredDatasetHandoff={datasetCandidate.source === "handoff" && Boolean(storedDataset)}
           candidateWarnings={datasetCandidate.warnings}
+          candidateDataset={datasetCandidate.dataset}
           error={!datasetModified && !pendingUserWork ? crossTabError : null}
           busy={false}
           onCancel={handleCancelReplacement}

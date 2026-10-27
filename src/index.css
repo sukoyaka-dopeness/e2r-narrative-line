@@ -322,6 +322,35 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.import-information--compact {
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  background: transparent;
+}
+
+.import-information--compact > .sample-extension-notice {
+  margin-top: 0;
+}
+
+.sample-extension-notice > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sample-extension-notice summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sample-extension-notice > p {
+  margin: 10px 0;
+}
+
+.sample-extension-notice code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .import-failure-notice {
   margin: 0 0 24px;
   padding: 14px 16px;
@@ -1521,6 +1550,11 @@ button:disabled {
   border-radius: 6px;
   background: var(--accent-bg);
   overflow-wrap: anywhere;
+}
+
+.replacement-candidate-warnings--compact {
+  padding: 8px 12px;
+  background: transparent;
 }
 
 .replacement-candidate-warnings h3 {

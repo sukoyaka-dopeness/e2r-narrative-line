@@ -1,5 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- shared pure copy and details belong to one warning presentation */
 import type { DatasetImportWarning } from "../services/DatasetService";
+import type { Dataset } from "../models/Dataset";
+import { isKnownDimensionAssessmentNotice } from "../services/KnownSampleExtensionNotice";
 
 type Locale = "en" | "ja";
 type Scope = "current" | "candidate";
@@ -9,6 +11,25 @@ const extensionRecognitionCodes = new Set([
   "specification_unavailable",
   "extension_version_unspecified",
 ]);
+
+export function SampleExtensionNotice({ dataset, warnings, locale, scope }: {
+  dataset: Dataset;
+  warnings: DatasetImportWarning[];
+  locale: Locale;
+  scope: Scope;
+}) {
+  if (!isKnownDimensionAssessmentNotice(dataset, warnings)) return null;
+  return <details className="sample-extension-notice">
+    <summary>{locale === "ja" ? "追加情報" : "Additional information"}</summary>
+    <p>{locale === "ja"
+      ? `この${scope === "candidate" ? "置き換え候補" : "Dataset"}には、Dimension Assessment 0.2.0という追加データがあります。NarrativeLineにはその内容を表示・編集する機能はありません。`
+      : `This ${scope === "candidate" ? "replacement candidate" : "Dataset"} contains Dimension Assessment 0.2.0 additional data. NarrativeLine cannot display or edit its contents.`}</p>
+    <p>{locale === "ja"
+      ? "公式Cedarサンプルでは、読み込み・書き出し・再読み込みで追加データの保持を確認しています。このDatasetのすべての編集経路での保持や内容の正しさは保証されません。タイムラインの編集は続けられます。"
+      : "The official Cedar sample retained this additional data in tested import, export, and re-import paths. This does not guarantee its validity or preservation through every edit. You can continue editing the timeline."}</p>
+    <ImportWarningDetails warnings={warnings} locale={locale} />
+  </details>;
+}
 
 export function getImportWarningExplanation(
   warnings: DatasetImportWarning[],

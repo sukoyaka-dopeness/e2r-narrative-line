@@ -19,7 +19,13 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
     container.querySelectorAll<HTMLElement>(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
     ),
-  );
+  ).filter((element) => {
+    for (let parent = element.parentElement; parent && parent !== container; parent = parent.parentElement) {
+      if (parent.tagName === "DETAILS" && !(parent as HTMLDetailsElement).open
+        && !(parent === element.parentElement && element.tagName === "SUMMARY")) return false;
+    }
+    return true;
+  });
 }
 
 export function ModalDialog({

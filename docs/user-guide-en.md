@@ -217,6 +217,8 @@ Errors prevent a Dataset from opening. Import information explains legacy migrat
 
 Current Dataset and replacement-candidate notices identify which Dataset they describe. Ordinary explanations summarize the issue; expand **Diagnostic details** for exact codes, severity, and paths. The presence of an Extension this app cannot fully inspect does not by itself mean the Dataset is broken, but its values are not guaranteed to survive every edit or Export. If a selected JSON file fails to import, the separate **Import failed** notice explains the failure and how to retry; it does not describe or replace the Current Dataset. A newly created Dataset declares its generated Metadata version; external and older Datasets are not silently given missing declarations.
 
+For the reviewed official Cedar Observatory EN/JA sample, **Additional information** is a compact, initially closed entry for Dimension Assessment 0.2.0 data. Open it to read what NarrativeLine cannot display or edit, what was checked for this sample's import/export/re-import, and the original technical diagnostics under **Diagnostic details**. You can continue editing the Timeline. This explanation applies only when the exact reviewed sample and its declaration match; it does not promise preservation through every edit or apply to unknown or changed Extension data. Current Dataset information and replacement-candidate information stay in their respective locations. Actual import, save, and Export failures retain separate notices.
+
 On narrow screens, the Timeline remains usable with its responsive layout and
 compact navigation controls. The same editing and export actions are available;
 scroll the page to reach the workspace content and toolbar actions.

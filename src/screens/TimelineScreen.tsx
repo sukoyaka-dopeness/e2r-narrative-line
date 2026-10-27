@@ -9,7 +9,8 @@ import type {
 } from "../services/DatasetService";
 import { downloadDatasetExport } from "../services/DatasetService";
 import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
-import { getImportWarningExplanation, ImportWarningDetails } from "../components/ImportWarningPresentation";
+import { getImportWarningExplanation, ImportWarningDetails, SampleExtensionNotice } from "../components/ImportWarningPresentation";
+import { isKnownDimensionAssessmentNotice } from "../services/KnownSampleExtensionNotice";
 import { ImportFailureNotice } from "../components/ImportFailureNotice";
 import { useTimelineCardDrag, type TimelineCardDrop } from "../components/useTimelineCardDrag";
 import { RelativeTimeTimelineProjection } from "../components/RelativeTimeTimelineProjection";
@@ -496,7 +497,12 @@ export function TimelineScreen({
 
       <RelativeTimeDiagnosticNotice state={relativeTimeState} />
 
-      {importWarnings.length > 0 && (
+      {isKnownDimensionAssessmentNotice(dataset, importWarnings) && (
+        <section className="import-information import-information--compact" aria-label={ja ? "読み込み情報" : "Import information"}>
+          <SampleExtensionNotice dataset={dataset} warnings={importWarnings} locale={language} scope="current" />
+        </section>
+      )}
+      {importWarnings.length > 0 && !isKnownDimensionAssessmentNotice(dataset, importWarnings) && (
         <section
           className="import-information"
           aria-labelledby="import-information-heading"
