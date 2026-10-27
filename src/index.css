@@ -319,6 +319,34 @@ button:disabled {
   border: 1px solid var(--accent-border);
   border-radius: 6px;
   background: var(--accent-bg);
+  overflow-wrap: anywhere;
+}
+
+.import-failure-notice {
+  margin: 0 0 24px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, #b42318 65%, var(--border));
+  border-radius: 6px;
+  background: color-mix(in srgb, #b42318 7%, var(--bg));
+  overflow-wrap: anywhere;
+}
+
+.import-failure-notice h2 {
+  margin-top: 0;
+}
+
+.import-failure-notice details {
+  margin-top: 12px;
+}
+
+.import-failure-notice summary {
+  cursor: pointer;
+  color: var(--text-h);
+}
+
+.import-failure-notice code {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .import-information > ul,
@@ -335,6 +363,7 @@ button:disabled {
   display: inline;
   margin: 0;
   padding: 2px 5px;
+  overflow-wrap: anywhere;
 }
 
 .import-information details {
@@ -344,6 +373,24 @@ button:disabled {
 .import-information summary {
   cursor: pointer;
   color: var(--text-h);
+}
+
+.import-warning-details {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.import-warning-details summary {
+  cursor: pointer;
+}
+
+.import-warning-details code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.import-warning-details li + li {
+  margin-top: 8px;
 }
 
 @media (max-width: 600px) {
@@ -1457,6 +1504,37 @@ button:disabled {
 
 .dataset-replacement-dialog {
   width: min(100%, 42rem);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dataset-replacement-dialog:focus-visible {
+  outline: none;
+}
+
+.replacement-candidate-warnings {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+  overflow-wrap: anywhere;
+}
+
+.replacement-candidate-warnings h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.replacement-candidate-warnings p {
+  margin: 0 0 8px;
+}
+
+.replacement-candidate-warnings ul {
+  margin: 0;
+  padding-left: 24px;
 }
 
 .dataset-replacement-actions button {

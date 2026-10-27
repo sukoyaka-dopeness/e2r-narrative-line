@@ -47,3 +47,17 @@ test("provides Japanese copy for every D6 state", () => {
     exportDataset: "Datasetを書き出す",
   });
 });
+
+test("restored startup Handoff offers explicit EN/JA keep, replace, and export choices", () => {
+  const en = getDatasetReplacementCopy("en", "restored-handoff");
+  const ja = getDatasetReplacementCopy("ja", "restored-handoff");
+  assert.match(en.body, /saved in this browser/);
+  assert.match(en.body, /not exported/);
+  assert.match(en.cancel, /Keep current Dataset/);
+  assert.match(en.discard, /Replace with linked Dataset/);
+  assert.match(en.exportAndContinue, /Export and Continue/);
+  assert.match(ja.body, /このブラウザー/);
+  assert.match(ja.cancel, /現在のDatasetを維持/);
+  assert.match(ja.discard, /リンク先のDatasetに置き換える/);
+  assert.match(ja.exportAndContinue, /書き出して続行/);
+});

@@ -6,7 +6,7 @@ import { EntityDetailScreen, type EntityDetailDraft } from "./screens/EntityDeta
 import { EntityPickerScreen } from "./screens/EntityPickerScreen";
 import { EntityCreateScreen, type EntityCreateDraft } from "./screens/EntityCreateScreen";
 import { AppFrame } from "./components/AppFrame";
-import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
+import { CandidateImportWarnings, DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { LocaleConflictDialog } from "./components/LocaleConflictDialog";
 import { DetailBackConfirmationDialog } from "./components/DetailBackConfirmationDialog";
 import type { DetailDiscardCopyKind } from "./services/DetailDiscardCopyService";
@@ -72,6 +72,13 @@ import {
   type DatasetCandidateSource,
 } from "./services/DatasetCandidateService";
 import { createCrossTabWorkspaceService, crossTabWriteFailure, type PeerWorkspaceStatus } from "./services/CrossTabWorkspaceService";
+import {
+  forgetAcceptedHandoff,
+  getHandoffRecognitionStorage,
+  isAcceptedHandoffReload,
+  rememberAcceptedHandoff,
+  rememberSavedHandoffDataset,
+} from "./services/AcceptedHandoffRecognitionService";
 import { useLanguage } from "./i18n/LanguageContext";
 import { getPresentationMessages } from "./i18n/messages";
 import {
@@ -160,7 +167,15 @@ function App() {
       return { raw: null, readable: false, dataset: undefined };
     }
     try {
-      return { raw, readable: true, dataset: raw ? importDatasetJson(raw).dataset : undefined };
+      const imported = raw ? importDatasetJson(raw) : undefined;
+      return {
+        raw,
+        readable: true,
+        dataset: imported?.dataset,
+        warnings: imported?.dataset ? imported.issues.filter(
+          (issue): issue is DatasetImportWarning => "severity" in issue && issue.severity === "warning",
+        ) : [],
+      };
     } catch {
       return { raw, readable: true, dataset: undefined };
     }
@@ -201,7 +216,7 @@ function App() {
   const [replacementBlockedByPeer, setReplacementBlockedByPeer] = useState(false);
   const crossTabMountedRef = useRef(true);
   const [sourceDatasetUrl, setSourceDatasetUrl] = useState<string | undefined>();
-  const [datasetCandidate, setDatasetCandidate] = useState<DatasetCandidate | null>(null);
+  const [datasetCandidate, setDatasetCandidate] = useState<(DatasetCandidate & { warnings: DatasetImportWarning[] }) | null>(null);
   const [replacementError, setReplacementError] = useState(false);
   const [eventDeletionError, setEventDeletionError] = useState(false);
   const [handoffLoading, setHandoffLoading] = useState(
@@ -385,7 +400,9 @@ function App() {
     ),
     [datasetModified, pendingUserWork],
   );
-  const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>([]);
+  const [importWarnings, setImportWarnings] = useState<DatasetImportWarning[]>(
+    startupWorkspace.warnings ?? [],
+  );
   const restoringHistoryRef = useRef(false);
   const historyInitializedRef = useRef(false);
   const previousScreenRef = useRef(state.currentScreen);
@@ -628,6 +645,10 @@ function App() {
         }
         setCrossTabError(crossTabWriteFailure(language, result.reason));
       } else {
+        const recognitionStorage = getHandoffRecognitionStorage();
+        if (recognitionStorage && serialized === JSON.stringify(datasetRef.current)) {
+          rememberSavedHandoffDataset(recognitionStorage, serialized);
+        }
         setCrossTabConflict(false);
         setReplacementBlockedByPeer(false);
         setCrossTabError(null);
@@ -647,7 +668,6 @@ function App() {
 
   const acceptStagedDataset = async (
     candidateToAccept = datasetCandidate,
-    warningsToKeep: DatasetImportWarning[] = [],
   ) => {
     if (!candidateToAccept) return;
     const acceptedDataset = acceptDatasetCandidate(candidateToAccept);
@@ -661,6 +681,14 @@ function App() {
       }
       setCrossTabError(crossTabWriteFailure(language, write?.reason ?? "Cross-tab safety could not be verified."));
       return;
+    }
+    const recognitionStorage = getHandoffRecognitionStorage();
+    if (recognitionStorage) {
+      if (candidateToAccept.source === "handoff" && startupHandoff.kind === "valid") {
+        rememberAcceptedHandoff(recognitionStorage, startupHandoff.datasetUrl, serialized);
+      } else {
+        forgetAcceptedHandoff(recognitionStorage);
+      }
     }
     setCrossTabConflict(false);
     setReplacementBlockedByPeer(false);
@@ -679,7 +707,7 @@ function App() {
     setEntityCreateDraft(undefined);
     setReplacementError(false);
     setEventDeletionError(false);
-    setImportWarnings(warningsToKeep);
+    setImportWarnings(candidateToAccept.warnings);
     setSourceDatasetUrl(
       candidateToAccept.source === "handoff" && startupHandoff.kind === "valid"
         ? startupHandoff.datasetUrl
@@ -708,15 +736,14 @@ function App() {
     warnings: DatasetImportWarning[] = [],
     source: DatasetCandidateSource = "local",
   ): Promise<void> | undefined => {
-    const candidate = stageDatasetCandidate(nextDataset, source);
+    const candidate = { ...stageDatasetCandidate(nextDataset, source), warnings };
     setDatasetCandidate(candidate);
-    setImportWarnings(warnings);
     setReplacementError(false);
     setCrossTabConflict(false);
     setReplacementBlockedByPeer(false);
     setCrossTabError(null);
-    if (!datasetModified && !pendingUserWork) {
-      return acceptStagedDataset(candidate, warnings);
+    if (!datasetModified && !pendingUserWork && !(source === "handoff" && storedDataset)) {
+      return acceptStagedDataset(candidate);
     }
 
     if (datasetModified || pendingUserWork) return;
@@ -807,6 +834,17 @@ function App() {
           (issue): issue is DatasetImportWarning =>
             "severity" in issue && issue.severity === "warning",
         );
+        const recognitionStorage = getHandoffRecognitionStorage();
+        if (storedDataset && recognitionStorage && isAcceptedHandoffReload({
+          storage: recognitionStorage,
+          datasetUrl: handoff.datasetUrl,
+          fetchedDataset: result.dataset,
+          savedDatasetJson: startupWorkspace.raw,
+        })) {
+          setSourceDatasetUrl(handoff.datasetUrl);
+          setState((currentState) => navigate(currentState, "timeline"));
+          return;
+        }
         await handleOpenDataset(result.dataset, warnings, "handoff");
       } catch {
         setHandoffFailure("Could not open the Dataset from the handoff link.");
@@ -820,7 +858,6 @@ function App() {
   }, [localeResolution]);
 
   const handleResumeDataset = () => {
-    setImportWarnings([]);
     setState((currentState) =>
       navigate(
         {
@@ -1214,9 +1251,10 @@ function App() {
   };
 
   const renderDatasetReplacementRetryFeedback = () => (
-    datasetCandidate && !datasetModified && !pendingUserWork && crossTabError ? (
+    datasetCandidate && !datasetModified && !pendingUserWork && !(datasetCandidate.source === "handoff" && storedDataset) && crossTabError ? (
       <section className="replacement-safety-retry" aria-label={language === "ja" ? "Dataset置き換えの安全確認" : "Dataset replacement safety"}>
         <p role="alert">{crossTabError}</p>
+        <CandidateImportWarnings warnings={datasetCandidate.warnings} />
         <div className="modal-actions">
           {crossTabConflict && datasetCandidate.source === "handoff"
             ? <button type="button" onClick={() => window.location.reload()}>{copy.reloadToRetryHandoff}</button>
@@ -1238,10 +1276,13 @@ function App() {
     suppressPeerBlockError = false,
   } = {}) => (
     <>
-      {includeDialog && datasetCandidate && (datasetModified || pendingUserWork) && (
+      {includeDialog && datasetCandidate && (datasetModified || pendingUserWork || (datasetCandidate.source === "handoff" && Boolean(storedDataset))) && (
         <DatasetReplacementDialog
           datasetModified={datasetModified}
           pendingUserWork={pendingUserWork}
+          restoredDatasetHandoff={datasetCandidate.source === "handoff" && Boolean(storedDataset)}
+          candidateWarnings={datasetCandidate.warnings}
+          error={!datasetModified && !pendingUserWork ? crossTabError : null}
           busy={false}
           onCancel={handleCancelReplacement}
           onDiscard={handleDiscardReplacement}

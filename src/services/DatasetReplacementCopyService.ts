@@ -3,7 +3,8 @@ export type DatasetReplacementLanguage = "en" | "ja";
 export type DatasetReplacementState =
   | "modified-only"
   | "pending-only"
-  | "modified-and-pending";
+  | "modified-and-pending"
+  | "restored-handoff";
 
 export type DatasetReplacementCopy = {
   title: string;
@@ -15,6 +16,13 @@ export type DatasetReplacementCopy = {
 };
 
 const englishCopy: Record<DatasetReplacementState, DatasetReplacementCopy> = {
+  "restored-handoff": {
+    title: "Replace the restored Dataset?",
+    body: "A Dataset is saved in this browser. It may contain edits that you have not exported. Keep it, export it, or explicitly replace it with the Dataset from this link.",
+    cancel: "Keep current Dataset",
+    discard: "Replace with linked Dataset",
+    exportAndContinue: "Export and Continue",
+  },
   "modified-only": {
     title: "Replace the current Dataset?",
     body: "The current Dataset has changes that have not been exported.",
@@ -38,6 +46,13 @@ const englishCopy: Record<DatasetReplacementState, DatasetReplacementCopy> = {
 };
 
 const japaneseCopy: Record<DatasetReplacementState, DatasetReplacementCopy> = {
+  "restored-handoff": {
+    title: "復元したDatasetを置き換えますか？",
+    body: "このブラウザーにはDatasetが保存されています。まだ書き出していない編集が含まれる可能性があります。現在のDatasetを維持するか、書き出すか、リンク先のDatasetへの置換を明示的に選んでください。",
+    cancel: "現在のDatasetを維持",
+    discard: "リンク先のDatasetに置き換える",
+    exportAndContinue: "書き出して続行",
+  },
   "modified-only": {
     title: "現在のDatasetを置き換えますか？",
     body: "現在のDatasetには、まだ書き出していない変更があります。",

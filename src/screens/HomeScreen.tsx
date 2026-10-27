@@ -6,6 +6,7 @@ import type {
 import { useLanguage } from "../i18n/LanguageContext";
 import { getPresentationMessages } from "../i18n/messages";
 import type { PeerWorkspaceStatus } from "../services/CrossTabWorkspaceService";
+import { ImportFailureNotice } from "../components/ImportFailureNotice";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
@@ -24,16 +25,6 @@ type Props = {
   suppressPeerWorkNotice?: boolean;
   replacementFeedback?: ReactNode;
 };
-
-function formatImportIssue(issue: DatasetImportIssue): string {
-  const location = issue.path === "" ? "the document" : issue.path;
-  const relatedIds =
-    "relatedIds" in issue && issue.relatedIds?.length
-      ? ` (${issue.relatedIds.join(", ")})`
-      : "";
-
-  return `${issue.code} at ${location}${relatedIds}`;
-}
 
 export function HomeScreen({
   onOpenTimeline,
@@ -170,18 +161,7 @@ export function HomeScreen({
 
       {fileReadError && <p role="alert">{copy.localFileReadFailure}</p>}
 
-      {importIssues.length > 0 && (
-        <section aria-labelledby="import-errors-heading">
-        <h2 id="import-errors-heading">{ja ? "読み込みに失敗しました" : "Import failed"}</h2>
-          <ul>
-            {importIssues.map((issue, index) => (
-              <li key={`${issue.code}-${issue.path}-${index}`}>
-                {formatImportIssue(issue)}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <ImportFailureNotice issues={importIssues} locale={language} headingId="import-errors-heading" hasCurrentDataset={false} />
       </div>
     </main>
   );

@@ -9,6 +9,8 @@ import type {
 } from "../services/DatasetService";
 import { downloadDatasetExport } from "../services/DatasetService";
 import { WorkspaceMoreMenu } from "../components/WorkspaceMoreMenu";
+import { getImportWarningExplanation, ImportWarningDetails } from "../components/ImportWarningPresentation";
+import { ImportFailureNotice } from "../components/ImportFailureNotice";
 import { useTimelineCardDrag, type TimelineCardDrop } from "../components/useTimelineCardDrag";
 import { RelativeTimeTimelineProjection } from "../components/RelativeTimeTimelineProjection";
 import { RelativeTimeDiagnosticNotice } from "../components/RelativeTimeDiagnosticNotice";
@@ -64,32 +66,6 @@ function formatExportIssue(issue: DatasetExportIssue): string {
       : "";
 
   return `${issue.code} at ${location}${relatedIds}`;
-}
-
-function formatImportWarning(issue: DatasetImportWarning): string {
-  const location = issue.path === "" ? "the document" : issue.path;
-  const relatedIds =
-    "relatedIds" in issue && issue.relatedIds?.length
-      ? ` (${issue.relatedIds.join(", ")})`
-      : "";
-  const profile = "profile" in issue ? ` (${issue.profile})` : "";
-
-  return `${issue.code}${profile} at ${location}${relatedIds}`;
-}
-
-function formatImportIssue(issue: DatasetImportIssue): string {
-  const location = issue.path === "" ? "the document" : issue.path;
-  const relatedIds =
-    "relatedIds" in issue && issue.relatedIds?.length
-      ? ` (${issue.relatedIds.join(", ")})`
-      : "";
-
-  return `${issue.code} at ${location}${relatedIds}`;
-}
-
-function getExtensionId(path: string): string | undefined {
-  const match = /\/extensions\/([^/]+)/.exec(path);
-  return match?.[1].replaceAll("~1", "/").replaceAll("~0", "~");
 }
 
 function formatTimelineEventTime(
@@ -314,13 +290,6 @@ export function TimelineScreen({
       code !== "legacy_dataset_migrated" &&
       code !== "extension_version_unspecified",
   );
-  const unspecifiedExtensionIds = [
-    ...new Set(
-      unspecifiedVersionWarnings
-        .map(({ path }) => getExtensionId(path))
-        .filter((value): value is string => value !== undefined),
-    ),
-  ];
 
   const handleExport = () => {
     const result = onExportDataset();
@@ -522,16 +491,7 @@ export function TimelineScreen({
 
       {isImporting && <p role="status">{ja ? "開いています…" : "Opening…"}</p>}
       {fileReadError && <p role="alert">{copy.localFileReadFailure}</p>}
-      {importIssues.length > 0 && (
-        <section aria-labelledby="timeline-import-errors-heading">
-          <h2 id="timeline-import-errors-heading">{ja ? "読み込みに失敗しました" : "Import failed"}</h2>
-          <ul>
-            {importIssues.map((issue, index) => (
-              <li key={`${issue.code}-${issue.path}-${index}`}>{formatImportIssue(issue)}</li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <ImportFailureNotice issues={importIssues} locale={language} headingId="timeline-import-errors-heading" hasCurrentDataset />
       {downloadError && <p role="alert">{copy.exportFailure}</p>}
 
       <RelativeTimeDiagnosticNotice state={relativeTimeState} />
@@ -556,38 +516,20 @@ export function TimelineScreen({
               <li>
                 {ja ? (
                   <>
-                    {unspecifiedExtensionIds.length > 0 && (
-                      <><code>{unspecifiedExtensionIds.join(", ")}</code> の</>
-                    )}
                     Extension仕様バージョンが宣言されていません。旧Datasetでは正常な状態で、読み込みと編集を続けられますが、作成時の正確な仕様バージョンは断定できません。
                   </>
                 ) : (
                   <>
-                    The Extension specification version
-                    {unspecifiedExtensionIds.length > 0 && (
-                      <> for <code>{unspecifiedExtensionIds.join(", ")}</code></>
-                    )}{" "}
-                    is not declared. This is normal for a legacy Dataset and does not prevent reading or editing it, but the exact specification version used when it was created is unknown.
+                    An Extension specification version is not declared. This can be normal for a legacy Dataset and does not by itself prevent reading or editing it, but the exact version used when it was created is unknown.
                   </>
                 )}
               </li>
             )}
-            {otherImportWarnings.map((issue, index) => (
-              <li key={`${issue.code}-${issue.path}-${index}`}>
-                {formatImportWarning(issue)}
-              </li>
-            ))}
+            {otherImportWarnings.length > 0 && (
+              <li>{getImportWarningExplanation(otherImportWarnings, language, "current")}</li>
+            )}
           </ul>
-          <details>
-            <summary>{ja ? "診断詳細" : "Diagnostic details"}</summary>
-            <ul>
-              {importWarnings.map((issue, index) => (
-                <li key={`${issue.code}-${issue.path}-${index}`}>
-                  <code>{formatImportWarning(issue)}</code>
-                </li>
-              ))}
-            </ul>
-          </details>
+          <ImportWarningDetails warnings={importWarnings} locale={language} />
         </section>
       )}
 

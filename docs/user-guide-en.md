@@ -186,6 +186,8 @@ If the Handoff link is invalid, or if Dataset acquisition, JSON parsing, or Data
 
 Opening a Dataset from a Handoff link uses the same replacement protection as other Dataset-opening actions. If current work could be lost, NarrativeLine asks for confirmation before replacing it.
 
+If a Dataset is already saved in this browser, a new Handoff asks before replacing it. After you explicitly accept a Handoff, reloading the same link can resume your saved edits without asking again when the link and fetched Dataset still match that acceptance and the browser's saved Dataset matches the last successful save. A changed source, different link, or uncertain state returns to the protected confirmation path; a Handoff link alone never authorizes replacement.
+
 After a successful Handoff, the link remains in the address bar as a
 reference to where the Dataset was obtained. In the technical representation
 this is `datasetUrl`; it is not the Dataset's identity, does not represent
@@ -212,6 +214,8 @@ extension remains Candidate, so this wording does not claim that every History
 When an imported Dataset contains the experimental `linkscape-graph` Coordinate in an exact supported graph format, Entity Detail offers **Edit Recorded Coordinate**. It changes only the existing numeric `x` and `y` values. Other Spaces, missing values, and Event Coordinates remain read-only.
 
 Errors prevent a Dataset from opening. Import information explains legacy migration and other non-blocking conditions. NarrativeLine converts its legacy Event date representation to the current History representation during import. The selected source file is not changed, and dates in a newly exported file use the current History representation. A legacy Dataset whose Extension specification versions are undeclared can still be read and edited. Exact diagnostic codes and JSON Pointer locations remain available under **Diagnostic details**.
+
+Current Dataset and replacement-candidate notices identify which Dataset they describe. Ordinary explanations summarize the issue; expand **Diagnostic details** for exact codes, severity, and paths. The presence of an Extension this app cannot fully inspect does not by itself mean the Dataset is broken, but its values are not guaranteed to survive every edit or Export. If a selected JSON file fails to import, the separate **Import failed** notice explains the failure and how to retry; it does not describe or replace the Current Dataset. A newly created Dataset declares its generated Metadata version; external and older Datasets are not silently given missing declarations.
 
 On narrow screens, the Timeline remains usable with its responsive layout and
 compact navigation controls. The same editing and export actions are available;

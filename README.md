@@ -48,6 +48,12 @@ acceptance record](docs/release-0.2.2-publication-and-post-deployment-acceptance
 The [0.2.2 candidate record](docs/release-candidate-0.2.2-preparation-2026-10-22.md)
 retains the historical pre-publication checkpoint.
 
+The local [0.2.3 Public Beta preparation](docs/public-beta-0.2.3-release-candidate-preparation-2026-10-27.md)
+has **CONDITIONAL GO (BOUNDED)** and a separately Human-accepted bounded RC.
+It remains uncommitted and unpublished. Human selected 2026-10-27 JST as its
+release date, but Commit and publication authorization are pending. The
+published release remains `0.2.2`.
+
 The first milestone is a Minimum Viable Product (MVP) focused on the essential timeline editing workflow.
 
 ---

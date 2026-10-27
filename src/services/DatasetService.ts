@@ -8,7 +8,13 @@ import {
   migrateLegacyDataset,
   type LegacyDatasetMigrationIssue,
 } from "./LegacyDatasetService.ts";
-import { addExportSpecificationDeclaration } from "./SpecificationDeclarationService.ts";
+import {
+  addExportSpecificationDeclaration,
+  METADATA_EXTENSION_VERSION,
+  reconcileGeneratedMetadataUse,
+  SPECIFICATION_EXTENSION_ID,
+  SPECIFICATION_EXTENSION_VERSION,
+} from "./SpecificationDeclarationService.ts";
 
 export interface DatasetImportSyntaxIssue {
   code: "json_parse_error";
@@ -76,10 +82,11 @@ export function updateDatasetTitle(dataset: Dataset, title: string): Dataset {
     delete extensions.metadata;
   }
 
-  return {
+  const updated: Dataset = {
     ...dataset,
     ...(Object.keys(extensions).length > 0 ? { extensions } : { extensions: undefined }),
   };
+  return reconcileGeneratedMetadataUse(dataset, updated);
 }
 
 export function getDatasetExportFilename(dataset: Dataset): string {
@@ -118,6 +125,10 @@ export function createDataset(): Dataset {
     extensions: {
       metadata: {
         datasetId: createDatasetId(),
+      },
+      [SPECIFICATION_EXTENSION_ID]: {
+        specVersion: SPECIFICATION_EXTENSION_VERSION,
+        uses: [{ extension: "metadata", version: METADATA_EXTENSION_VERSION }],
       },
     },
   };

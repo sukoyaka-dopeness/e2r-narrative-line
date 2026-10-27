@@ -1,7 +1,6 @@
 import {
   useEffect,
   useRef,
-  type KeyboardEvent,
   type RefObject,
   type ReactNode,
 } from "react";
@@ -18,7 +17,7 @@ type ModalDialogProps = {
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
     ),
   );
 }
@@ -49,50 +48,47 @@ export function ModalDialog({
     };
   }, [initialFocusRef]);
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onDismiss();
-      return;
-    }
+  useEffect(() => {
+    const handleModalKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onDismiss();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
 
-    if (event.key !== "Tab") {
-      return;
-    }
+      const focusableElements = getFocusableElements(dialog);
 
-    const dialog = dialogRef.current;
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
 
-    if (!dialog) {
-      return;
-    }
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement = focusableElements.at(-1)!;
+      const activeElement = document.activeElement;
+      const hasFocusableFocus = focusableElements.includes(activeElement as HTMLElement);
 
-    const focusableElements = getFocusableElements(dialog);
-
-    if (focusableElements.length === 0) {
-      event.preventDefault();
-      dialog.focus();
-      return;
-    }
-
-    const firstFocusableElement = focusableElements[0];
-    const lastFocusableElement = focusableElements.at(-1)!;
-
-    if (
-      event.shiftKey &&
-      (document.activeElement === firstFocusableElement ||
-        !dialog.contains(document.activeElement))
-    ) {
-      event.preventDefault();
-      lastFocusableElement.focus();
-    } else if (
-      !event.shiftKey &&
-      (document.activeElement === lastFocusableElement ||
-        !dialog.contains(document.activeElement))
-    ) {
-      event.preventDefault();
-      firstFocusableElement.focus();
-    }
-  };
+      if (
+        event.shiftKey &&
+        (activeElement === firstFocusableElement || !hasFocusableFocus)
+      ) {
+        event.preventDefault();
+        lastFocusableElement.focus();
+      } else if (
+        !event.shiftKey &&
+        (activeElement === lastFocusableElement || !hasFocusableFocus)
+      ) {
+        event.preventDefault();
+        firstFocusableElement.focus();
+      }
+    };
+    document.addEventListener("keydown", handleModalKeyDown, true);
+    return () => document.removeEventListener("keydown", handleModalKeyDown, true);
+  }, [onDismiss]);
 
   return (
     <div
@@ -107,7 +103,6 @@ export function ModalDialog({
         aria-modal="true"
         aria-labelledby={ariaLabelledby}
         tabIndex={-1}
-        onKeyDown={handleKeyDown}
         className={className ? `modal-dialog ${className}` : "modal-dialog"}
       >
         {children}

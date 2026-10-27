@@ -204,25 +204,25 @@ test("a blocked clean-tab Handoff explains the peer conflict and can be retried 
     });
     await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
 
+    const replacementDialog = container.querySelector(".dataset-replacement-dialog");
+    assert.ok(replacementDialog);
+    assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), currentSource);
+    await act(async () => replacementDialog.querySelector(".button-danger").click());
     const alert = container.querySelector('[role="alert"]');
     assert.match(alert?.textContent ?? "", /Another NarrativeLine tab has unapplied Dataset changes/);
     assert.equal(alert?.textContent.includes("current Dataset has changes that have not been exported"), false);
-    const homeContent = container.querySelector(".home-screen-content");
-    const retryFeedback = container.querySelector(".replacement-safety-retry");
+    const retryFeedback = container.querySelector(".dataset-replacement-dialog");
     const peerWorkWarning = container.querySelector(".cross-tab-work-warning");
     assert.ok(retryFeedback);
     assert.equal(peerWorkWarning, null);
-    assert.ok(homeContent?.contains(retryFeedback));
-    assert.ok(homeContent?.contains(alert));
+    assert.ok(retryFeedback?.contains(alert));
     assert.equal(container.querySelectorAll('[role="alert"]').length, 1);
-    assert.equal(container.querySelector('[role="dialog"]'), null);
-    assert.equal(container.textContent.includes("Retry replacement"), true);
+    assert.ok(container.querySelector('[role="alertdialog"]'));
     assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), currentSource);
 
     releasePeer();
     await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
-    const retry = [...container.querySelectorAll("button")]
-      .find((button) => button.textContent === "Retry replacement");
+    const retry = container.querySelector(".dataset-replacement-dialog .button-danger");
     assert.ok(retry);
     await act(async () => { retry.click(); });
     await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
@@ -297,12 +297,12 @@ test("canceling a peer-blocked Home replacement restores only the live peer-work
     await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
 
     const homeContent = container.querySelector(".home-screen-content");
-    assert.ok(container.querySelector(".replacement-safety-retry"));
+    assert.ok(container.querySelector(".dataset-replacement-dialog"));
+    await act(async () => container.querySelector(".dataset-replacement-dialog .button-danger").click());
     assert.equal(container.querySelector(".cross-tab-work-warning"), null);
     assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), currentSource);
 
-    const cancel = [...container.querySelectorAll("button")]
-      .find((button) => button.textContent === "Cancel replacement");
+    const cancel = container.querySelector(".dataset-replacement-dialog .replacement-cancel");
     assert.ok(cancel);
     await act(async () => { cancel.click(); });
     await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
@@ -310,7 +310,7 @@ test("canceling a peer-blocked Home replacement restores only the live peer-work
     const peerWarning = container.querySelector(".cross-tab-work-warning");
     assert.ok(peerWarning, homeContent?.textContent);
     assert.ok(homeContent?.contains(peerWarning));
-    assert.equal(container.querySelector(".replacement-safety-retry"), null);
+    assert.equal(container.querySelector(".dataset-replacement-dialog"), null);
     assert.equal(container.querySelectorAll('[role="alert"]').length, 0);
     assert.equal(environment.window.localStorage.getItem("narrativeline.lastDataset"), currentSource);
 

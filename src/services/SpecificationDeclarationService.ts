@@ -11,9 +11,10 @@ import {
 export const SPECIFICATION_EXTENSION_ID =
   "draft.github.sukoyaka-dopeness.specification";
 export const SPECIFICATION_EXTENSION_VERSION = "0.1.0";
+export const METADATA_EXTENSION_VERSION = "1.0.0";
 
 const supportedVersions = new Map<string, string>([
-  ["metadata", "1.0.0"],
+  ["metadata", METADATA_EXTENSION_VERSION],
   ["history", "1.0.0"],
   [COORDINATE_EXTENSION_ID, COORDINATE_FORMAT_VERSION],
 ]);
@@ -185,6 +186,45 @@ export function getCompleteSupportedExtensionUses(
           : {}),
       };
     });
+}
+
+/** Keep a title-generated Metadata payload and a matching declaration inventory in step. */
+export function reconcileGeneratedMetadataUse(previous: Dataset, updated: Dataset): Dataset {
+  const hadMetadata = previous.extensions?.metadata !== undefined;
+  const hasMetadata = updated.extensions?.metadata !== undefined;
+  if (hadMetadata === hasMetadata) return updated;
+
+  const specification = previous.extensions?.[SPECIFICATION_EXTENSION_ID];
+  if (specification === undefined) {
+    if (!hasMetadata) return updated;
+    const declared = addExportSpecificationDeclaration(updated);
+    return declared.status === "added" ? declared.dataset : updated;
+  }
+  if (!isRecord(specification) ||
+      specification.specVersion !== SPECIFICATION_EXTENSION_VERSION ||
+      !Array.isArray(specification.uses) ||
+      specification.uses.some((item) => !isRecord(item) ||
+        typeof item.extension !== "string" || typeof item.version !== "string")) {
+    return updated;
+  }
+  const uses = specification.uses as SpecificationUse[];
+  const before = collectExtensionIds(previous);
+  before.delete(SPECIFICATION_EXTENSION_ID);
+  if (uses.length !== before.size ||
+      new Set(uses.map((item) => item.extension)).size !== uses.length ||
+      uses.some((item) => !before.has(item.extension))) {
+    return updated;
+  }
+  const nextUses = hasMetadata
+    ? [...uses, { extension: "metadata", version: METADATA_EXTENSION_VERSION }]
+    : uses.filter((item) => item.extension !== "metadata");
+  return {
+    ...updated,
+    extensions: {
+      ...(updated.extensions ?? {}),
+      [SPECIFICATION_EXTENSION_ID]: { ...specification, uses: nextUses },
+    },
+  };
 }
 
 /** Keep an existing complete declaration complete when an edit first creates stable History. */

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  createDataset,
   exportDatasetJson,
   getDatasetExportFilename,
   importDatasetJson,
@@ -347,6 +348,88 @@ test("updates the optional Dataset title without discarding metadata", () => {
     datasetId: "dataset-1",
     source: "test",
   });
+});
+
+test("a newly generated Dataset declares its Metadata through save, restore, title edit, and Export", () => {
+  const created = createDataset();
+  const expectedDeclaration = {
+    specVersion: "0.1.0",
+    uses: [{ extension: "metadata", version: "1.0.0" }],
+  };
+  assert.deepEqual(created.extensions["draft.github.sukoyaka-dopeness.specification"], expectedDeclaration);
+  assert.deepEqual(validateCoreDataset(created).issues, []);
+
+  const titled = updateDatasetTitle(created, "  Test Dataset  ");
+  assert.equal(titled.extensions.metadata.title, "Test Dataset");
+  assert.deepEqual(titled.extensions["draft.github.sukoyaka-dopeness.specification"], expectedDeclaration);
+  const saved = JSON.stringify(titled);
+  const restored = importDatasetJson(saved);
+  assert.equal(restored.isValid, true);
+  assert.deepEqual(restored.issues, []);
+  assert.deepEqual(restored.dataset, titled);
+
+  const exported = exportDatasetJson(restored.dataset);
+  assert.equal(exported.isValid, true);
+  assert.deepEqual(JSON.parse(exported.json), titled);
+  assert.deepEqual(importDatasetJson(exported.json).issues, []);
+
+  const clearedTitle = updateDatasetTitle(titled, " ");
+  assert.equal(clearedTitle.extensions.metadata.title, undefined);
+  assert.equal(clearedTitle.extensions.metadata.datasetId, created.extensions.metadata.datasetId);
+  assert.deepEqual(clearedTitle.extensions["draft.github.sukoyaka-dopeness.specification"], expectedDeclaration);
+});
+
+test("title authoring declares only newly generated Metadata when the full inventory is known", () => {
+  const external = validDataset();
+  const authored = updateDatasetTitle(external, "Imported title");
+  assert.equal(external.extensions, undefined);
+  assert.deepEqual(authored.extensions["draft.github.sukoyaka-dopeness.specification"], {
+    specVersion: "0.1.0",
+    uses: [{ extension: "metadata", version: "1.0.0" }],
+  });
+  assert.deepEqual(validateCoreDataset(authored).issues, []);
+
+  const cleared = updateDatasetTitle(authored, "");
+  assert.equal(cleared.extensions.metadata, undefined);
+  assert.deepEqual(cleared.extensions["draft.github.sukoyaka-dopeness.specification"], {
+    specVersion: "0.1.0",
+    uses: [],
+  });
+  assert.deepEqual(validateCoreDataset(cleared).issues, []);
+
+  const previouslyDeclared = {
+    ...validDataset(),
+    extensions: {
+      "draft.github.sukoyaka-dopeness.specification": { specVersion: "0.1.0", uses: [] },
+    },
+  };
+  const withTitle = updateDatasetTitle(previouslyDeclared, "Declared title");
+  assert.deepEqual(withTitle.extensions["draft.github.sukoyaka-dopeness.specification"].uses, [
+    { extension: "metadata", version: "1.0.0" },
+  ]);
+  assert.deepEqual(validateCoreDataset(withTitle).issues, []);
+});
+
+test("external Metadata and unsupported Extension versions are not silently completed", () => {
+  const legacy = {
+    ...validDataset(),
+    extensions: { metadata: { datasetId: "legacy-id" } },
+  };
+  const imported = importDatasetJson(JSON.stringify(legacy));
+  assert.ok(imported.issues.some((issue) => issue.code === "extension_version_unspecified"));
+  const edited = updateDatasetTitle(imported.dataset, "Legacy title");
+  assert.equal(edited.extensions["draft.github.sukoyaka-dopeness.specification"], undefined);
+  assert.ok(validateCoreDataset(edited).issues.some((issue) => issue.code === "extension_version_unspecified"));
+  assert.deepEqual(legacy.extensions, { metadata: { datasetId: "legacy-id" } });
+
+  const unknown = {
+    ...validDataset(),
+    extensions: { "vendor.example.unknown": { preserved: true } },
+  };
+  const withTitle = updateDatasetTitle(unknown, "Title with unknown Extension");
+  assert.deepEqual(withTitle.extensions["vendor.example.unknown"], { preserved: true });
+  assert.equal(withTitle.extensions["draft.github.sukoyaka-dopeness.specification"], undefined);
+  assert.ok(validateCoreDataset(withTitle).issues.some((issue) => issue.code === "extension_version_unspecified"));
 });
 
 test("uses a safe Dataset title for export filenames", () => {

@@ -71,6 +71,17 @@ test("exercises guarded Back dialog presentation, cancellation, discard, focus, 
     assert.equal(buttons[1].className, "button-danger");
     assert.equal(rendered.environment.document.activeElement, buttons[0]);
 
+    act(() => {
+      buttons[0].blur();
+      rendered.environment.document.body.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", { key: "Tab", shiftKey: true, bubbles: true, cancelable: true }));
+    });
+    assert.equal(rendered.environment.document.activeElement, buttons[1]);
+    act(() => {
+      dialog.focus();
+      dialog.dispatchEvent(new rendered.environment.window.KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
+    });
+    assert.equal(rendered.environment.document.activeElement, buttons[0]);
+
     act(() => buttons[0].click());
     assert.deepEqual(rendered.events, ["cancel"]);
     assert.equal(rendered.dialog(), null);
