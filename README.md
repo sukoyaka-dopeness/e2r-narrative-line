@@ -48,11 +48,13 @@ acceptance record](docs/release-0.2.2-publication-and-post-deployment-acceptance
 The [0.2.2 candidate record](docs/release-candidate-0.2.2-preparation-2026-10-22.md)
 retains the historical pre-publication checkpoint.
 
-The local [0.2.3 Public Beta preparation](docs/public-beta-0.2.3-release-candidate-preparation-2026-10-27.md)
-has **CONDITIONAL GO (BOUNDED)** and a separately Human-accepted bounded RC.
-It remains uncommitted and unpublished. Human selected 2026-10-27 JST as its
-release date, but Commit and publication authorization are pending. The
-published release remains `0.2.2`.
+NarrativeLine `0.2.3` is the current published Public Beta release, deployed on
+2026-10-27 JST from
+[`2958d546dcabad73544d4c9639566c8197bdb98a`](https://github.com/sukoyaka-dopeness/e2r-narrative-line/commit/2958d546dcabad73544d4c9639566c8197bdb98a).
+Its Formal Publication Closure is **HUMAN ACCEPTED / CLOSED (BOUNDED)**; see the
+[0.2.3 publication and acceptance record](docs/release-0.2.3-publication-and-post-deployment-acceptance-2026-10-27.md).
+The [0.2.3 Public Beta preparation](docs/public-beta-0.2.3-release-candidate-preparation-2026-10-27.md)
+retains the historical pre-publication checkpoint.
 
 The first milestone is a Minimum Viable Product (MVP) focused on the essential timeline editing workflow.
 
