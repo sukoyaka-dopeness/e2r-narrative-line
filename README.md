@@ -56,12 +56,12 @@ Its Formal Publication Closure is **HUMAN ACCEPTED / CLOSED (BOUNDED)**; see the
 The [0.2.3 Public Beta preparation](docs/public-beta-0.2.3-release-candidate-preparation-2026-10-27.md)
 retains the historical pre-publication checkpoint.
 
-NarrativeLine `0.2.4` is the Human-accepted bounded Public Beta release for the
-Cedar Observatory Sample Dataset warning UX improvement. The release date is
-2026-10-28 JST. See the [candidate and acceptance record](docs/cedar-sample-warning-ux-local-candidate-2026-10-28.md)
-and [0.2.4 release record](docs/public-beta-0.2.4-release-candidate-preparation-2026-10-28.md)
-for its scope and publication evidence. The formal RC acceptance and release
-authorization are separate from post-deployment publication verification.
+NarrativeLine `0.2.4` is the current published Public Beta release, deployed on
+2026-10-28 JST from [`9bb46c688160a75078f019fe563d0b8bc27341f4`](https://github.com/sukoyaka-dopeness/e2r-narrative-line/commit/9bb46c688160a75078f019fe563d0b8bc27341f4).
+The bounded Cedar Observatory Sample Dataset warning UX was Human accepted.
+Public HTTPS and built assets were technically verified within the scope in the
+[0.2.4 release and verification record](docs/public-beta-0.2.4-release-candidate-preparation-2026-10-28.md).
+Formal Publication Closure remains a separate Human decision.
 
 The first milestone is a Minimum Viable Product (MVP) focused on the essential timeline editing workflow.
 
