@@ -198,6 +198,25 @@ test("renders the low-prominence GitHub Sponsors and Ko-fi support links on Home
   }
 });
 
+test("Home Hub navigation sends only the current locale and stays separate from support", async () => {
+  const rendered = await renderApp({ persistedLocale: "en" });
+  try {
+    for (const locale of ["en", "ja"]) {
+      if (locale === "ja") await act(async () => findHeaderLocaleButton(rendered.document, "日本語").click());
+      const group = rendered.document.querySelector(".home-ecosystem");
+      const link = group?.querySelector("a");
+      assert.equal(link?.textContent.trim(), locale === "ja" ? "E2R Hubでほかのアプリを見る" : "Explore other E2R apps on E2R Hub");
+      assert.equal(link?.getAttribute("href"), `https://sukoyaka-dopeness.github.io/e2r-hub/#locale=${locale}`);
+      assert.equal(link?.getAttribute("target"), "_blank");
+      assert.equal(link?.getAttribute("rel"), "noopener noreferrer");
+      assert.ok(link?.getAttribute("aria-label")?.includes(locale === "ja" ? "新しいタブ" : "new tab"));
+      assert.ok(group?.previousElementSibling?.classList.contains("home-guide-link"));
+      assert.ok(group?.nextElementSibling?.classList.contains("home-support-links"));
+      assert.equal(rendered.document.querySelector(".app-footer")?.contains(link), false);
+    }
+  } finally { rendered.cleanup(); }
+});
+
 test("renders all requested Credits metadata in English and Japanese", async () => {
   const english = await renderApp({ persistedLocale: "en" });
   try {
