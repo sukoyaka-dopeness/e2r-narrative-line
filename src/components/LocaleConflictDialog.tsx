@@ -1,6 +1,6 @@
 import { ModalDialog } from "./ModalDialog";
 import type { Language } from "../i18n/LanguageContext";
-import { getLocaleChoiceLabel } from "../services/LocalePreferenceService";
+import { useRef } from "react";
 
 type Props = {
   savedLanguage: Language;
@@ -9,16 +9,12 @@ type Props = {
   onUseRequestedLanguage: () => void;
 };
 
-const copy = {
-  en: {
-    title: "Display this link in another language?",
-    message: "This link requests a different display language from your saved preference.",
-  },
-  ja: {
-    title: "別の言語でこのリンクを表示しますか？",
-    message: "このリンクは、保存されている表示言語とは異なる言語を指定しています。",
-  },
-} as const;
+function finishLocaleChoice(action: () => void) {
+  action();
+  window.requestAnimationFrame(() => {
+    if (document.activeElement === document.body) document.querySelector<HTMLElement>("header a, header button")?.focus();
+  });
+}
 
 export function LocaleConflictDialog({
   savedLanguage,
@@ -26,22 +22,21 @@ export function LocaleConflictDialog({
   onUseSavedLanguage,
   onUseRequestedLanguage,
 }: Props) {
-  const text = copy[savedLanguage];
-  const savedLabel = getLocaleChoiceLabel(savedLanguage, "saved");
-  const requestedLabel = getLocaleChoiceLabel(requestedLanguage, "requested");
+  const savedRef = useRef<HTMLButtonElement>(null);
 
   return (
     <ModalDialog
       ariaLabelledby="locale-conflict-title"
-      onDismiss={onUseSavedLanguage}
-      onBackdropDismiss={onUseSavedLanguage}
+      ariaDescribedby="locale-conflict-detail"
+      initialFocusRef={savedRef}
+      onDismiss={() => finishLocaleChoice(onUseSavedLanguage)}
+      onBackdropDismiss={() => finishLocaleChoice(onUseSavedLanguage)}
       className="locale-conflict-dialog"
     >
-      <h2 id="locale-conflict-title">{text.title}</h2>
-      <p>{text.message}</p>
+      <h2 id="locale-conflict-title"><span lang="en">Which language would you like to use?</span><span lang="ja">どちらの言語で表示しますか？</span></h2>
+      <p id="locale-conflict-detail" className="locale-conflict-help"><span lang="en">Your choice applies to this visit only. Your saved language will not change.</span><span lang="ja">この選択は今回の表示にのみ適用されます。保存済みの言語は変更されません。</span></p>
       <div className="modal-actions">
-        <button type="button" lang={savedLabel.lang} onClick={onUseSavedLanguage}>{savedLabel.label}</button>
-        <button type="button" lang={requestedLabel.lang} onClick={onUseRequestedLanguage}>{requestedLabel.label}</button>
+        {(["en", "ja"] as const).map(language => <button key={language} ref={language === savedLanguage ? savedRef : undefined} type="button" lang={language} onClick={() => finishLocaleChoice(language === requestedLanguage ? onUseRequestedLanguage : onUseSavedLanguage)}>{language === "en" ? "English" : "日本語"}</button>)}
       </div>
     </ModalDialog>
   );

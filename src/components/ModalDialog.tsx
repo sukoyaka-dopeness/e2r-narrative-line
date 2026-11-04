@@ -7,6 +7,7 @@ import {
 
 type ModalDialogProps = {
   ariaLabelledby: string;
+  ariaDescribedby?: string;
   children: ReactNode;
   onDismiss: () => void;
   onBackdropDismiss?: () => void;
@@ -30,6 +31,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 
 export function ModalDialog({
   ariaLabelledby,
+  ariaDescribedby,
   children,
   onDismiss,
   onBackdropDismiss,
@@ -108,6 +110,7 @@ export function ModalDialog({
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
         tabIndex={-1}
         className={className ? `modal-dialog ${className}` : "modal-dialog"}
       >
