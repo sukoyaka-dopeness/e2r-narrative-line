@@ -1,6 +1,6 @@
 import { ModalDialog } from "./ModalDialog";
 import type { Language } from "../i18n/LanguageContext";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 type Props = {
   savedLanguage: Language;
@@ -9,13 +9,6 @@ type Props = {
   onUseRequestedLanguage: () => void;
 };
 
-function finishLocaleChoice(action: () => void) {
-  action();
-  window.requestAnimationFrame(() => {
-    if (document.activeElement === document.body) document.querySelector<HTMLElement>("header a, header button")?.focus();
-  });
-}
-
 export function LocaleConflictDialog({
   savedLanguage,
   requestedLanguage,
@@ -23,6 +16,20 @@ export function LocaleConflictDialog({
   onUseRequestedLanguage,
 }: Props) {
   const savedRef = useRef<HTMLButtonElement>(null);
+  const resolutionStarted = useRef(false);
+  useEffect(() => () => {
+    if (!resolutionStarted.current) return;
+    // Wait for the resolving render and ordinary modal cleanup to finish.
+    window.requestAnimationFrame(() => {
+      // A subsequent Handoff dialog owns focus while it is open.
+      if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
+      document.querySelector<HTMLElement>("header a.app-brand")?.focus({ preventScroll: true });
+    });
+  }, []);
+  function finishLocaleChoice(action: () => void) {
+    resolutionStarted.current = true;
+    action();
+  }
 
   return (
     <ModalDialog

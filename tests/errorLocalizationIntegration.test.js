@@ -26,6 +26,7 @@ async function withViteServer(callback) {
 async function renderApp({ hash, persistedLocale, fetcher }) {
   const environment = createDomTestEnvironment(`https://narrativeline.test/${hash}`);
   environment.window.scrollTo = () => {};
+  environment.window.requestAnimationFrame = callback => { callback(0); return 0; };
   if (persistedLocale) environment.window.localStorage.setItem("narrativeline.language", persistedLocale);
 
   const previousFetch = Object.getOwnPropertyDescriptor(globalThis, "fetch");
@@ -123,6 +124,7 @@ test("resolves requested Japanese before one failed handoff without changing per
 
     assert.equal(rendered.document.querySelector('[role="alertdialog"]'), null);
     assert.equal(fetchCount, 1);
+    assert.equal(rendered.document.activeElement, rendered.document.querySelector("header a.app-brand"));
     const alert = rendered.document.querySelector('[role="alert"]');
     assert.ok(alert);
     assert.notEqual(alert.textContent, englishFailure);
