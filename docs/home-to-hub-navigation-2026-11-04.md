@@ -2,7 +2,7 @@
 
 Date: 2026-11-04 JST
 
-Status: BOUNDED HUMAN ACCEPTANCE RECORDED / SEQUENTIAL PUBLICATION AUTHORIZED / PUBLICATION AND HUMAN CLOSURE PENDING
+Status: PUBLIC E2E PASS (BOUNDED) / HUMAN PUBLICATION CLOSURE APPROVED (BOUNDED)
 
 The Human-selected link appears only in `HomeScreen`, after the locale-matched
 Guide and before the separate Sponsors/Ko-fi group. It uses the current
@@ -83,3 +83,40 @@ Current full repository checks passed on 2026-11-04: tests, available lint (or
 ParameterPlotter syntax check), and build. The implementation/test/dependency
 SHA-256 manifest matches the final candidate; no runtime change was introduced
 during acceptance recording. See isolated publication diagnostic logs for output.
+
+## Actual publication evidence — 2026-11-04 (local addendum)
+
+Commit `e85c5d6802c862708e17918572413194f3af9a6f` contains exactly HomeScreen.tsx,
+index.css, localePresentationCompletenessIntegration.test.js and this record.
+Ordinary main push and [Pages run 41818751921](https://github.com/sukoyaka-dopeness/e2r-narrative-line/actions/runs/41818751921)
+PASS, after Hub's public Phase A PASS. Public Home:
+https://sukoyaka-dopeness.github.io/e2r-narrative-line/
+
+Actual public Home to public Hub passed EN/JA at 1280 and 390px in disposable
+isolated Edge: labels, order, typography parity, no overflow, new tab/null opener,
+receiver locale, top/manual switching and unchanged source Home/Dataset storage.
+Desktop JA and Narrow EN screenshots were inspected. Public entry asset
+index-BnAi9UVJ.js matched the exact-SHA Pages build log. Public Hub reverse
+launches to NarrativeLine also passed both languages. No material regression
+was found in these performed checks; screen-reader speech and all edit/failure
+states remain unverified.
+
+Sequential publication later stopped on LiaisonScape's server-side push failure.
+The shared Hub record contains exact details and preservation checks. Final
+four-app public E2E and Human Publication Closure remain pending. This result
+addendum is local only; no second documentation commit or push was made.
+
+## Bounded Publication Closure — 2026-11-12 JST
+
+The subsequently completed four-repository publication and Codex-operated public
+E2E checks are recorded in the Hub and LiaisonScape Home-to-Hub records. The
+earlier sequential stop above remains a historical snapshot. Human confirmed
+the new-tab route to Hub and approved bounded Home-to-Hub Publication Closure.
+This is separate from earlier candidate Acceptance and Codex public checks;
+Human did not claim to perform their full browser matrix.
+
+**CLOSED (BOUNDED).** Public checks covered EN/JA at effective 1280/390px,
+locale reception and clean synthetic Dataset round trips. Screen-reader speech,
+pending-edit/save-failure states, exhaustive engines and full Dataset byte
+identity remain unverified. The separate dirty Locale record is outside this
+Closure and remains untouched.
