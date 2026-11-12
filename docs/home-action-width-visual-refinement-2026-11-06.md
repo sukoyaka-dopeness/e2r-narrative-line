@@ -193,3 +193,46 @@ and this record alongside A's files. Old mixed public addenda remain uncommitted
 and byte-preserved. Earlier acceptance/publication history and independent
 Publication Closure decisions are unchanged. Local Commit is authorized; Push,
 Deployment and Publication Closure remain unauthorized and unperformed.
+
+## Public browser evidence and audit - 2026-11-12
+
+The previous authorization statement is retained as the local-acceptance
+snapshot. The accepted source was subsequently pushed and deployed; see the
+[Locale refinement publication record](locale-conflict-focus-geometry-2026-11-07.md)
+for the exact revision, workflow and historical official Browser Use BLOCKED.
+
+An independent isolated Chrome headless/CDP review measured the public Home in
+English across all three applications. At effective widths 1280 and 360px, all
+three primary action areas measured 320px. At 320px, NarrativeLine measured
+286px and LiaisonScape and ParameterPlotter each measured 288px. The Human
+accepted this 2px difference in the 2026-11-07 local decision. The recorded DOM
+measurements show no horizontal document overflow in these nine observations.
+They do not establish Japanese Home geometry, screen-reader speech, other browser
+engines, all editing/save-failure conditions or complete deployed asset identity.
+
+The evidence audit reconstructed the nine observations in
+`workspace/diagnostics/public-visual-review-20261112/geometry-results.json`.
+The results do not contain deployed asset hashes or Git SHAs; previous sampled
+deployment checks provide a bounded association. This CDP evidence is separate
+from official Browser Use, which remains BLOCKED, and from the Human's prior
+local acceptance. Publication Acceptance and Closure remain Human decisions.
+
+## Human Publication Acceptance and Closure - 2026-11-12
+
+**PUBLICATION ACCEPTANCE APPROVED (BOUNDED) / PUBLICATION CLOSURE APPROVED
+(BOUNDED).** The Human formally adopted the preceding public Chrome/CDP
+evidence and closed the NarrativeLine Home action-width refinement. The
+three-app English Home measurements were 320px at 1280 and 360px, and 286px
+for NarrativeLine versus 288px for LiaisonScape and ParameterPlotter at 320px.
+The Human accepted the 2px difference. Codex operated the browser; this does
+not claim the Human repeated those measurements. The 2026-11-07 local Human
+Acceptance remains separate and unchanged.
+
+The Human also separately closed the cross-app Locale Conflict Dialog visual
+refinement, as recorded in the [Locale record](locale-conflict-focus-geometry-2026-11-07.md).
+Official Browser Use remains BLOCKED and is not equated with CDP. Screen-reader
+speech, successor Handoff-dialog focus contention, other browser engines, all
+edit/save-failure states, full delivered dependency identity, unobserved
+console warnings and Runtime paths, and Cross-Context Workspace Safety overall
+remain outside the bounded closures; they are not automatically FAIL or new
+publication blockers. No other workstream or product-wide release is closed.
